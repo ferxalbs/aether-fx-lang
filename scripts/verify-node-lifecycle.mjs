@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import { mkdtemp, rm, writeFile, readFile, readdir, mkdir } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { compile } from '@aether-fx/core';
+import { loadProject, exportVideo, createOfflineRenderer } from '@aether-fx/node';
+const loaded=await loadProject('fixtures/short/little-light.afx');assert(loaded.ok);
+const document=structuredClone(loaded.value.plan.document);
+document.shots=[{...document.shots[0],duration:12,keys:[],morphs:[],exposures:[]}];document.audio.duration=12;
+const compiled=compile(document,loaded.value.assets.manifest);assert(compiled.ok,JSON.stringify(compiled));
+const project={plan:compiled.value,assets:loaded.value.assets};
+const directory=await mkdtemp(join(tmpdir(),'afx export lifecycle '));
+const checks={},records=[];
+const pids=()=>{const result=spawnSync('ps',['-axo','pid,ppid,args'],{encoding:'utf8'});assert.equal(result.status,0);return result.stdout.split('\n').filter(s=>/^\s*\d+\s+\d+\s+(?:.*chrome.*--type=|.*chrome.*--remote-debugging-pipe|.*ffmpeg.*-f image2pipe)/.test(s)).map(s=>s.trim().split(/\s+/)[0]);};
+const initial=new Set(pids());
+const rejection=async(name,options,code)=>{const start=performance.now();await assert.rejects(exportVideo(project,{backend:'chromium',output:join(directory,name+'.webm'),width:320,height:180,...options}),error=>{assert.equal(error.code,code);return true;});assert.deepEqual(await readdir(directory),[]);checks[name]='PASS';records.push({name,milliseconds:performance.now()-start,code});};
+try {
+  const pre=new AbortController();pre.abort();await rejection('preAbort',{signal:pre.signal},'EXPORT_ABORTED');
+  await rejection('timeout',{timeoutMs:1},'EXPORT_TIMEOUT');
+  const mid=new AbortController();let progress=0;
+  await rejection('cancelAfterFrame',{signal:mid.signal,onProgress:p=>{progress=p.frame;mid.abort();}},'EXPORT_ABORTED');assert.equal(progress,1);
+  await rejection('callbackFailure',{onProgress:()=>{throw new Error('Host stopped export');}},'EXPORT_FAILED');
+  const output=join(directory,'preserved.webm');await writeFile(output,'USER DATA');
+  await assert.rejects(exportVideo(project,{backend:'chromium',output,width:320,height:180}),error=>error.code==='EXPORT_FAILED'&&error.cause?.code==='EEXIST');
+  assert.equal(await readFile(output,'utf8'),'USER DATA');assert.deepEqual(await readdir(directory),['preserved.webm']);checks.outputPreserved='PASS';await rm(output);
+  const report=await exportVideo(project,{backend:'chromium',output:join(directory,'success.webm'),width:320,height:180});assert.equal(report.frames,12);assert.equal(report.queueCapacity,1);assert.deepEqual(report.blockedRequests,[]);
+  const probe=spawnSync('ffprobe',['-v','error','-count_frames','-show_streams','-of','json',report.output],{encoding:'utf8'});assert.equal(probe.status,0);const video=JSON.parse(probe.stdout).streams.find(s=>s.codec_type==='video');assert.equal(video.nb_read_frames,'12');checks.realShortExport='PASS';
+  const renderer=await createOfflineRenderer(project.plan,project.assets,{width:320,height:180});await renderer.captureFrame(0);await Promise.all([renderer.dispose(),renderer.dispose()]);await assert.rejects(renderer.captureFrame(0),error=>error.code==='RENDERER_DISPOSED');checks.idempotentRendererDispose='PASS';
+  const leaked=pids().filter(pid=>!initial.has(pid));assert.deepEqual(leaked,[]);checks.noOwnedProcessLeaks='PASS';
+  await mkdir('artifacts/short',{recursive:true});await writeFile('artifacts/short/node-lifecycle-report.json',JSON.stringify({node:process.version,checks,records,success:report,processObservation:{initial:[...initial],leaked},limitations:['Process observation uses ps on the local Unix host; full pipeline memory remains a separate gate']},null,2)+'\n');console.log(JSON.stringify({checks,records},null,2));
+}finally{await rm(directory,{recursive:true,force:true});}

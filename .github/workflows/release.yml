@@ -1,0 +1,8 @@
+name: AETHER Fx release preparation
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    uses: ./.github/workflows/ci.yml

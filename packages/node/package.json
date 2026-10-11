@@ -1,0 +1,71 @@
+{
+  "name": "@aether-fx/node",
+  "version": "0.2.0-rc.3",
+  "type": "module",
+  "description": "Explicit local assets, Skia rendering and external FFmpeg export for AETHER Fx",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./integrated": {
+      "types": "./dist/integrated.d.ts",
+      "import": "./dist/integrated.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@aether-fx/canvas": "0.2.0-rc.3",
+    "@aether-fx/compiler": "0.2.0-rc.3",
+    "@aether-fx/core": "0.2.0-rc.3",
+    "@napi-rs/canvas": "1.0.11",
+    "playwright": "1.64.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ferxalbs/aether-fx-lang.git",
+    "directory": "packages/node"
+  },
+  "homepage": "https://github.com/ferxalbs/aether-fx-lang#readme",
+  "bugs": {
+    "url": "https://github.com/ferxalbs/aether-fx-lang/issues"
+  },
+  "keywords": [
+    "aether-fx",
+    "animation",
+    "2d",
+    "typescript",
+    "afx"
+  ],
+  "peerDependencies": {
+    "@mediabunny/server": "1.61.3",
+    "node-av": "6.1.1",
+    "mediabunny": "1.61.3"
+  },
+  "peerDependenciesMeta": {
+    "@mediabunny/server": {
+      "optional": true
+    },
+    "node-av": {
+      "optional": true
+    },
+    "mediabunny": {
+      "optional": true
+    }
+  }
+}

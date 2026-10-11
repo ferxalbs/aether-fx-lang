@@ -1,0 +1,112 @@
+name: AETHER Fx acceptance
+on:
+  pull_request:
+  push:
+    branches: [main, codex/aether-fx-v0.2-public-ci]
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['24.21.0', '22.12.0']
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - run: npx --no-install playwright install --with-deps chromium firefox webkit
+      - run: bash scripts/ci-install-ffmpeg.sh
+      - name: Diagnose Firefox clock and configure runner audio
+        run: |
+          npm run build
+          node scripts/verify-package-metadata.mjs
+          set +e
+          xvfb-run -a node scripts/verify-web-export.mjs artifacts/metadata-packages artifacts/ci-firefox-baseline firefox
+          afx_audio_baseline=$?
+          set -e
+          if [ "$afx_audio_baseline" -ne 0 ]; then
+            node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFile } from 'node:fs/promises';
+          const report=JSON.parse(await readFile('artifacts/ci-firefox-baseline/firefox-preview-timeout.json'));
+          assert.equal(report.snapshot.frame,97);
+          assert(report.snapshot.audio.contexts.length>0);
+          assert(report.snapshot.audio.contexts.every(context=>context.currentTime===0));
+          assert(!report.snapshot.audio.operations.some(operation=>operation.event==='resume-resolved'));
+          JS
+            mkdir -p artifacts/ci-audio
+            pactl info > artifacts/ci-audio/before.txt 2>&1 || true
+            sudo apt-get install -y pulseaudio
+            pulseaudio --start --exit-idle-time=-1
+            pactl load-module module-null-sink sink_name=aether_ci sink_properties=device.description=AETHER_CI
+            pactl set-default-sink aether_ci
+            pactl info > artifacts/ci-audio/after.txt
+            xvfb-run -a node scripts/verify-web-export.mjs artifacts/metadata-packages artifacts/ci-firefox-audio firefox
+          fi
+      - name: Full acceptance (all gates retained)
+        id: acceptance
+        continue-on-error: true
+        run: xvfb-run -a npm run verify:ci
+      - name: Generate current native benchmark inputs
+        if: ${{ always() && steps.acceptance.outcome != 'skipped' }}
+        run: node scripts/benchmark-native-candidate.mjs artifacts/native-benchmark
+      - name: Preserve complete acceptance outcome
+        if: ${{ always() && steps.acceptance.outcome == 'failure' }}
+        run: exit 1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ always() }}
+        with:
+          name: validation-inputs-node-${{ matrix.node }}
+          path: |
+            artifacts/
+            packages/*/dist/
+            .work/aether-fx/authoring/
+            .work/aether-fx/scenes-acceptance/
+            .work/aether-fx/fuzz-acceptance/report.json
+            .work/aether-fx/quickstart/report.json
+            .work/aether-fx/native-lifecycle.json
+          include-hidden-files: true
+          retention-days: 14
+          if-no-files-found: error
+
+  assemble:
+    name: Assemble unapproved validation snapshot
+    needs: acceptance
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['24.21.0', '22.12.0']
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: validation-inputs-node-${{ matrix.node }}
+          path: .
+      - run: node scripts/prepare-candidate.mjs --out artifacts/linux-validation-${{ github.run_id }}-node-${{ matrix.node }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ always() }}
+        with:
+          name: unapproved-snapshot-node-${{ matrix.node }}
+          path: artifacts/linux-validation-*/
+          retention-days: 14
+          if-no-files-found: error

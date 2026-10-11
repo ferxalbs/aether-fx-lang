@@ -1,0 +1,42 @@
+{
+  "name": "aether-fx-next-example",
+  "version": "0.2.0-rc.3",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "prepare:local": "node ../../scripts/prepare-next-example.mjs",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aether-fx/core": "0.2.0-rc.3",
+    "@aether-fx/compiler": "0.2.0-rc.3",
+    "@aether-fx/canvas": "0.2.0-rc.3",
+    "@aether-fx/react": "0.2.0-rc.3",
+    "@aether-fx/node": "0.2.0-rc.3",
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ferxalbs/aether-fx-lang.git",
+    "directory": "examples/next-app"
+  },
+  "homepage": "https://github.com/ferxalbs/aether-fx-lang#readme",
+  "bugs": {
+    "url": "https://github.com/ferxalbs/aether-fx-lang/issues"
+  }
+}

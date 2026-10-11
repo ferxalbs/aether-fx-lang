@@ -1,0 +1,65 @@
+{
+  "name": "@aether-fx/export",
+  "version": "0.2.0-rc.3",
+  "type": "module",
+  "description": "Capability-checked progressive WebCodecs WebM export for AETHER Fx",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./aac": {
+      "types": "./dist/aac.d.ts",
+      "import": "./dist/aac.js"
+    },
+    "./mp4": {
+      "types": "./dist/mp4.d.ts",
+      "import": "./dist/mp4.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@aether-fx/canvas": "0.2.0-rc.3",
+    "@aether-fx/core": "0.2.0-rc.3",
+    "mediabunny": "1.61.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ferxalbs/aether-fx-lang.git",
+    "directory": "packages/export"
+  },
+  "homepage": "https://github.com/ferxalbs/aether-fx-lang#readme",
+  "bugs": {
+    "url": "https://github.com/ferxalbs/aether-fx-lang/issues"
+  },
+  "keywords": [
+    "aether-fx",
+    "animation",
+    "2d",
+    "typescript",
+    "afx"
+  ],
+  "peerDependencies": {
+    "@mediabunny/aac-encoder": "1.61.3"
+  },
+  "peerDependenciesMeta": {
+    "@mediabunny/aac-encoder": {
+      "optional": true
+    }
+  }
+}

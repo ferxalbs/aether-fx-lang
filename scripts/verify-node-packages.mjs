@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, readFile, writeFile, lstat, cp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { resolve, join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { loadProject } from '@aether-fx/node';
+import { evaluate } from '@aether-fx/core';
+import { checkReleaseManifests } from './release-config.mjs';
+import { loadReleaseArchives } from './release-archives.mjs';
+const release=await checkReleaseManifests();
+const root=process.cwd(),archiveDirectory=process.argv[2] ? resolve(process.argv[2]) : undefined,out=resolve(process.argv[3] ?? (archiveDirectory ? 'artifacts/seven-package-consumer' : 'artifacts/node-packages')),consumer=await mkdtemp(join(tmpdir(),'afx node consumer '));await mkdir(out,{recursive:true});
+const run=(command,args,cwd=root)=>{const r=spawnSync(command,args,{cwd,encoding:'utf8',timeout:120000,maxBuffer:4*1024*1024});assert.equal(r.status,0,`${command}: ${r.error??r.stderr}\n${r.stdout}`);return r.stdout;};
+try {
+  const tarballs=archiveDirectory ? await loadReleaseArchives(archiveDirectory) : [];
+  if(!archiveDirectory)for(const name of ['core','compiler','canvas','react','export','node','cli']){
+    const directory=join(root,'packages',name),dry=JSON.parse(run('npm',['pack','--dry-run','--json'],directory))[0];assert(!dry.files.some(f=>f.path.startsWith('src/')||f.path.includes('node_modules')||f.path.endsWith('.tgz')));assert(dry.files.some(f=>f.path==='README.md'));
+    const packed=JSON.parse(run('npm',['pack','--json','--pack-destination',out],directory))[0],path=join(out,packed.filename),bytes=await readFile(path);
+    tarballs.push({name:`@aether-fx/${name}`,path,sha256:createHash('sha256').update(bytes).digest('hex'),files:dry.files.map(f=>f.path)});
+  }
+  await writeFile(join(consumer,'package.json'),JSON.stringify({private:true,type:'module'}));run('npm',['install','--ignore-scripts','--no-audit','--no-fund',...tarballs.map(t=>t.path),'@types/node@26.6.5','@types/react@19.3.0'],consumer);
+  for(const t of tarballs){const dir=join(consumer,'node_modules',t.name);assert(!(await lstat(dir)).isSymbolicLink());const pkg=JSON.parse(await readFile(join(dir,'package.json'),'utf8'));assert.equal(pkg.version,release.version);assert(!Object.values(pkg.dependencies??{}).some(v=>/^(workspace:|file:)/.test(v)));for(const key of ['types','import'])await lstat(join(dir,pkg.exports['.'][key]));}
+  for(const name of ['node-av','@mediabunny/server','@mediabunny/aac-encoder'])await assert.rejects(lstat(join(consumer,'node_modules',name)),error=>error.code==='ENOENT','Default graph unexpectedly installs '+name);
+  await cp(join(root,'fixtures/short'),join(consumer,'project with spaces'),{recursive:true});
+  await mkdir(join(consumer,'fixtures'),{recursive:true});await cp(join(root,'fixtures/curve.afx'),join(consumer,'fixtures/curve.afx'));
+  const documentation=[];
+  for(const name of ['quickstart','api']){
+    const markdown=await readFile(join(root,'docs',name+'.md'),'utf8'),match=markdown.match(/<!-- verify:node -->\s*```js\n([\s\S]*?)\n```/);assert(match,`Missing runnable ${name} example`);
+    const file='docs-'+name+'.mjs';await writeFile(join(consumer,file),match[1]);const output=JSON.parse(run(process.execPath,[file],consumer));
+    assert.deepEqual(output,name==='quickstart'?{duration:480,frame:97,shot:'first',timestampUs:4041667}:{duration:480,shot:'first',revision:1,layer:1});documentation.push({file:'docs/'+name+'.md',sha256:createHash('sha256').update(match[1]).digest('hex'),output});
+  }
+  await writeFile(join(consumer,'consumer.ts'),`import * as core from '@aether-fx/core';import * as compiler from '@aether-fx/compiler';import * as canvas from '@aether-fx/canvas';import {FxPlayer,type FxPlayerProps} from '@aether-fx/react';import {queryWebExport,exportWebM,type WebExportSink} from '@aether-fx/export';import {loadProject,exportVideo,createOfflineRenderer,doctor,type ExportReport} from '@aether-fx/node';import {doctor as cliDoctor} from '@aether-fx/cli';async function check(){const loaded=await loadProject('project with spaces/little-light.afx');if(loaded.ok){const report:ExportReport=await exportVideo(loaded.value,{output:'short.webm',width:320,height:180});const renderer=await createOfflineRenderer(loaded.value.plan,loaded.value.assets);const bytes:Buffer=await renderer.captureFrame(0);await renderer.dispose();}return cliDoctor();}`);
+  await writeFile(join(consumer,'tsconfig.json'),JSON.stringify({compilerOptions:{strict:true,target:'ES2022',module:'NodeNext',moduleResolution:'NodeNext',noEmit:true,allowJs:true,checkJs:true,skipLibCheck:false,types:['node']},files:['consumer.ts','docs-quickstart.mjs','docs-api.mjs']}));run(join(root,'node_modules/.bin/tsc'),['-p',join(consumer,'tsconfig.json')],consumer);
+  const loaded=await loadProject('fixtures/short/little-light.afx');assert(loaded.ok);const expected=createHash('sha256').update(JSON.stringify(Array.from({length:480},(_,frame)=>evaluate(loaded.value.plan,{frame})))).digest('hex');
+  await writeFile(join(consumer,'verify.mjs'),`import {createPlayer,createRenderer} from '@aether-fx/canvas';import {compileSource} from '@aether-fx/compiler';import {FxPlayer} from '@aether-fx/react';import {queryWebExport,exportWebM} from '@aether-fx/export';import {doctor} from '@aether-fx/cli';import {loadProject} from '@aether-fx/node';for(const fn of [createPlayer,createRenderer,compileSource,FxPlayer,queryWebExport,exportWebM,doctor])if(typeof fn!=='function')throw new Error('Missing public function');if(typeof document!=='undefined')throw new Error('Unexpected DOM in Node');import {evaluate} from '@aether-fx/core';import {createHash} from 'node:crypto';const r=await loadProject('project with spaces/little-light.afx');if(!r.ok)throw new Error(JSON.stringify(r));const hash=createHash('sha256').update(JSON.stringify(Array.from({length:480},(_,frame)=>evaluate(r.value.plan,{frame})))).digest('hex');if(hash!==${JSON.stringify(expected)})throw new Error('Isolated semantic mismatch');console.log('NODE_PASS');`);assert.match(run(process.execPath,['verify.mjs'],consumer),/NODE_PASS/);
+  const bin=join(consumer,'node_modules/.bin/afx'),fixture='project with spaces/little-light.afx';assert(JSON.parse(run(bin,['doctor'],consumer)).ok);assert.equal(JSON.parse(run(bin,['check',fixture],consumer)).duration,480);
+  run(bin,['compile',fixture,'--out','plan with spaces.json'],consumer);const plan=JSON.parse(await readFile(join(consumer,'plan with spaces.json'),'utf8'));assert.equal(plan.duration,480);
+  const exportReport=JSON.parse(run(bin,['render',fixture,'--out','video with spaces.webm','--width','320','--height','180'],consumer));assert.equal(exportReport.frames,480);assert.equal(exportReport.backend,'native');assert.equal(exportReport.chromium,'none');assert.equal(exportReport.queueCapacity,1);assert.deepEqual(exportReport.blockedRequests,[]);
+  const metadata=JSON.parse(run('ffprobe',['-v','error','-count_frames','-show_streams','-of','json',exportReport.output],consumer));assert.equal(metadata.streams.find(s=>s.codec_type==='video').nb_read_frames,'480');assert.equal(metadata.streams.find(s=>s.codec_type==='audio').codec_name,'opus');
+  const checks={sevenRealTarballs:'PASS',archiveHashes:'PASS',allSevenNodeImportsWithoutDom:'PASS',isolatedImportsAndAll480Frames:'PASS',publicDeclarations:'PASS',cliExecutable:'PASS',doctorCheckCompile:'PASS',cliSkiaFfmpegRender:'PASS',excludedCodecsAbsentFromDefaultInstall:'PASS',pathsWithSpaces:'PASS',packagedDocumentationExamples:'PASS'};
+  await writeFile(join(out,'report.json'),JSON.stringify({node:process.version,checks,tarballs,exportReport,documentation,limitations:['All seven archives pass this isolated Node/declaration/CLI consumer; browser and Next consumers remain separate gates','Hosted CI and physical-device qualification are separate']},null,2)+'\n');await writeFile(join(out,'SHA256SUMS'),tarballs.map(t=>`${t.sha256}  ${t.path.split('/').at(-1)}`).join('\n')+'\n');console.log(JSON.stringify({checks,report:join(out,'report.json')},null,2));
+}finally{await rm(consumer,{recursive:true,force:true});}

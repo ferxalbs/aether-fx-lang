@@ -1,0 +1,45 @@
+{
+  "name": "@aether-fx/core",
+  "version": "0.2.0-rc.3",
+  "type": "module",
+  "description": "Universal document, compilation and evaluation for AETHER Fx",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema": "./dist/document.schema.json"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ferxalbs/aether-fx-lang.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/ferxalbs/aether-fx-lang#readme",
+  "bugs": {
+    "url": "https://github.com/ferxalbs/aether-fx-lang/issues"
+  },
+  "keywords": [
+    "aether-fx",
+    "animation",
+    "2d",
+    "typescript",
+    "afx"
+  ]
+}

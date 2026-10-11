@@ -1,0 +1,722 @@
+[
+  {
+    "id": "p01",
+    "category": "typography",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Two line launch announcement. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p02",
+    "category": "typography",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Three timed captions. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p03",
+    "category": "typography",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: A quote with attribution. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p04",
+    "category": "typography",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Bold countdown. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p05",
+    "category": "typography",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Meeting title card. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p06",
+    "category": "typography",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Three words revealed sequentially. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p07",
+    "category": "typography",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: A calm reading card. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p08",
+    "category": "typography",
+    "split": "held-out",
+    "prompt": "Create a complete AETHER Fx animation: A kinetic heading. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p09",
+    "category": "logo",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Circle expanding into brand mark. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p10",
+    "category": "logo",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Star reveal. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p11",
+    "category": "logo",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Initial letter mark. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p12",
+    "category": "logo",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Orbital dots. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p13",
+    "category": "logo",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Polygon badge. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p14",
+    "category": "logo",
+    "split": "held-out",
+    "prompt": "Create a complete AETHER Fx animation: Minimal wordmark. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p15",
+    "category": "explainer",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Three steps of a workflow. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p16",
+    "category": "explainer",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Input transform output. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p17",
+    "category": "explainer",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: How a light switch works. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p18",
+    "category": "explainer",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Three layers of an app. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p19",
+    "category": "explainer",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: A cause and effect diagram. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p20",
+    "category": "explainer",
+    "split": "held-out",
+    "prompt": "Create a complete AETHER Fx animation: Sequential milestones. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p21",
+    "category": "data",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Three bars values 20 50 80. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p22",
+    "category": "data",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Line values 10 40 30 70. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p23",
+    "category": "data",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Two metric cards. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p24",
+    "category": "data",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Four bar comparison. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p25",
+    "category": "data",
+    "split": "held-out",
+    "prompt": "Create a complete AETHER Fx animation: A rising line. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p26",
+    "category": "data",
+    "split": "held-out",
+    "prompt": "Create a complete AETHER Fx animation: A balanced category chart. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p27",
+    "category": "character",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Character reaches for lantern. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p28",
+    "category": "character",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Character waves. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p29",
+    "category": "character",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Character bows. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p30",
+    "category": "character",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Character sits and stands. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p31",
+    "category": "character",
+    "split": "held-out",
+    "prompt": "Create a complete AETHER Fx animation: Character nods. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p32",
+    "category": "character",
+    "split": "held-out",
+    "prompt": "Create a complete AETHER Fx animation: Character carries a box. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p33",
+    "category": "transition",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: A lower third name role. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p34",
+    "category": "transition",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Wipe between two titles. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p35",
+    "category": "transition",
+    "split": "held-out",
+    "prompt": "Create a complete AETHER Fx animation: Sliding caption strip. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p36",
+    "category": "transition",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: A chapter transition. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p37",
+    "category": "loop",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Three orbiting circles. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p38",
+    "category": "loop",
+    "split": "held-out",
+    "prompt": "Create a complete AETHER Fx animation: A pulsing background. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p39",
+    "category": "loop",
+    "split": "dev",
+    "prompt": "Create a complete AETHER Fx animation: Alternating geometric pattern. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  },
+  {
+    "id": "p40",
+    "category": "loop",
+    "split": "held-out",
+    "prompt": "Create a complete AETHER Fx animation: A breathing gradient-like solid palette. 640x360, 24fps, 4 seconds; readable high contrast text when applicable, safe margins 24px. Use declared assets only. Render initial, quarter, half, three-quarter and final frame. Intentional entrance offscreen and title fades are allowed only before/after reading intervals.",
+    "checks": {
+      "margin": 24,
+      "durationSeconds": 4,
+      "durationTolerance": 0.1,
+      "contrastReading": 4.5,
+      "exceptions": [
+        "background bleed",
+        "declared entrance",
+        "declared fade",
+        "intentional stillness"
+      ]
+    }
+  }
+]

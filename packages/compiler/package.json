@@ -1,0 +1,48 @@
+{
+  "name": "@aether-fx/compiler",
+  "version": "0.2.0-rc.3",
+  "type": "module",
+  "description": "Safe declarative AETHER Fx lexer, parser and normalizer",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@aether-fx/core": "0.2.0-rc.3",
+    "chevrotain": "13.2.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ferxalbs/aether-fx-lang.git",
+    "directory": "packages/compiler"
+  },
+  "homepage": "https://github.com/ferxalbs/aether-fx-lang#readme",
+  "bugs": {
+    "url": "https://github.com/ferxalbs/aether-fx-lang/issues"
+  },
+  "keywords": [
+    "aether-fx",
+    "animation",
+    "2d",
+    "typescript",
+    "afx"
+  ]
+}

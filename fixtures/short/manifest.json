@@ -1,0 +1,25 @@
+[
+  {
+    "id": "nunito",
+    "kind": "font",
+    "version": 1,
+    "hash": "bb55a5ca5c2042335b3991af27c4d0705d0ef41cac6164ac737fd8f2a1e85207"
+  },
+  {
+    "id": "paper",
+    "kind": "image",
+    "version": 1,
+    "hash": "023cade062dee70dfa8c8dc4ad7412e5d8ba5e7836fdd9ddab6a3d24ada75ac1",
+    "width": 128,
+    "height": 128
+  },
+  {
+    "id": "score",
+    "kind": "audio",
+    "version": 1,
+    "hash": "e9b6753970cc676abe4b0b4c2f1ba6b50d9d3dab75ef9d9e0a70bb00d9553460",
+    "duration": 20,
+    "sampleRate": 48000,
+    "channels": 2
+  }
+]

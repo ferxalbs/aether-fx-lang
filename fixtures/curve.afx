@@ -1,0 +1,43 @@
+// Minimal built-package fixture; the illustrated acceptance short is separate.
+project curve {
+  version: 1;
+  viewport: (1280, 720);
+  fps: (24, 1);
+  shape smile {
+    contour outline {
+      start: (0, 0);
+      closed: false;
+      cubic arc { control1: (25, 40); control2: (75, 40); end: (100, 0); }
+    }
+  }
+  shape happy {
+    contour outline {
+      start: (0, 0);
+      closed: false;
+      cubic arc { control1: (25, 80); control2: (75, 80); end: (100, 0); }
+    }
+  }
+  part mouth {
+    shape: @smile;
+    material: { fill: null; stroke: "#2463eb"; strokeWidth: 6; };
+  }
+  actor hero { parts: [@mouth]; transform: { x: 200; y: 250; }; }
+  pose neutral { parts: { mouth: { shape: @smile; }; }; }
+  pose grin { parts: { mouth: { shape: @happy; }; }; }
+  drawing closed { parts: { mouth: @smile; }; }
+  scene movie {
+    shot first {
+      duration: 144f;
+      key move0 { target: @hero; property: x; frame: 0f; value: 200; }
+      key move1 { target: @hero; property: x; frame: 120f; value: 500; }
+    }
+    shot second {
+      duration: 192f;
+      morph expression { actor: @hero; from: @neutral; to: @grin; start: 0f; end: 60f; }
+    }
+    shot third {
+      duration: 144f;
+      expose blink { actor: @hero; drawing: @closed; start: 24f; end: 26f; }
+    }
+  }
+}

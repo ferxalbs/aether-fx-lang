@@ -1,0 +1,55 @@
+// Every v0 declaration, both comment forms, units, arrays, tuples and references.
+project corpus {
+  version: 1;
+  revision: 2;
+  viewport: (1280, 720);
+  fps: (30000, 1001);
+  asset nunito { kind: font; src: "Nunito.ttf"; version: 1; locked: true; }
+  asset paper { kind: image; src: "paper.png"; }
+  asset score { kind: audio; src: "score.wav"; }
+  shape neutralShape {
+    contour outline {
+      start: (0, 0); closed: false;
+      cubic arc { control1: (25, -20); control2: (75, -20); end: (100, 0); }
+    }
+  }
+  shape smileShape {
+    contour outline {
+      start: [0, 0]; closed: false;
+      cubic arc { control1: [25, 40]; control2: [75, 40]; end: [100, 0]; }
+    }
+  }
+  part mouth {
+    shape: @neutralShape; pivot: (50, 0); layer: 1;
+    transform: { x: -1e2; rotation: 0rad; opacity: 0.8; visible: true; };
+    material: { fill: null; stroke: "#2463eb"; strokeWidth: 6; fillRule: evenodd; };
+  }
+  part label { parent: @mouth; text: { content: "Escaped \"text\" \u263a"; font: @nunito; size: 24; }; }
+  part texture { image: { asset: @paper; width: 128; height: 128; }; layer: -1; }
+  actor hero { parts: [@mouth, @label]; transform: { x: 200; y: 250; rotation: 10deg; }; parent: null; }
+  actor object { parts: (@texture); layer: 2; }
+  pose neutral { parts: { mouth: { shape: @neutralShape; transform: { opacity: 0.8; }; }; }; }
+  pose smile { parts: { mouth: { shape: @smileShape; transform: { opacity: 1; }; }; }; }
+  drawing blink { parts: { mouth: @neutralShape; }; }
+  background distant { actor: @hero; parallax: 0.5; }
+  /* Scenes flatten their shots in declaration order. */
+  scene opening {
+    shot first {
+      duration: 144f;
+      initial hero { x: 200; opacity: 1; }
+      camera wide { x: 0; y: 0; scaleX: 1; scaleY: 1; rotation: 0rad; }
+      key turn0 { target: @hero; property: rotation; frame: 0f; value: 350deg; rotationMode: shortest; hold: 2f; }
+      key turn1 { target: @hero; property: rotation; frame: 120f; value: 10deg; }
+      key move0 { target: @hero; property: x; frame: 0f; value: 200; easing: (0.4, 0, 0.2, 1); }
+      key move1 { target: @hero; property: x; frame: 120f; value: 500; }
+      key contact { target: @object; property: parent; frame: 60f; value: @hero.mouth; }
+      morph expression { actor: @hero; from: @neutral; to: @smile; start: 12f; end: 60f; }
+      expose blinkOnce { actor: @hero; drawing: @blink; start: 72f; end: 74f; }
+    }
+  }
+  scene closing {
+    shot second { duration: 192f; initial object { parent: null; } }
+    shot third { duration: 144f; }
+  }
+  audio music { asset: @score; offset: 0f; trimStart: 0f; duration: 480f; gain: 0.8; }
+}

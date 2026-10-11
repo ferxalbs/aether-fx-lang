@@ -1,0 +1,1132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aether-fx.invalid/schema/document-v1",
+  "$ref": "#/$defs/document",
+  "$defs": {
+    "vec2": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "transform": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "scaleX": {
+          "type": "number"
+        },
+        "scaleY": {
+          "type": "number"
+        },
+        "rotation": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "visible": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "scaleX",
+        "scaleY",
+        "rotation",
+        "opacity",
+        "visible"
+      ],
+      "additionalProperties": false
+    },
+    "partialTransform": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "scaleX": {
+          "type": "number"
+        },
+        "scaleY": {
+          "type": "number"
+        },
+        "rotation": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "visible": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "material": {
+      "type": "object",
+      "properties": {
+        "fill": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stroke": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "strokeWidth": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fillRule": {
+          "enum": [
+            "nonzero",
+            "evenodd"
+          ]
+        }
+      },
+      "required": [
+        "fill",
+        "stroke",
+        "strokeWidth",
+        "fillRule"
+      ],
+      "additionalProperties": false
+    },
+    "segment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "control1": {
+          "$ref": "#/$defs/vec2"
+        },
+        "control2": {
+          "$ref": "#/$defs/vec2"
+        },
+        "end": {
+          "$ref": "#/$defs/vec2"
+        }
+      },
+      "required": [
+        "id",
+        "control1",
+        "control2",
+        "end"
+      ],
+      "additionalProperties": false
+    },
+    "contour": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "start": {
+          "$ref": "#/$defs/vec2"
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/segment"
+          }
+        },
+        "closed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "start",
+        "segments",
+        "closed"
+      ],
+      "additionalProperties": false
+    },
+    "shape": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "contours": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contour"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "contours"
+      ],
+      "additionalProperties": false
+    },
+    "asset": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "kind": {
+          "enum": [
+            "image",
+            "font",
+            "audio"
+          ]
+        },
+        "src": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "locked": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "kind",
+        "src",
+        "locked"
+      ],
+      "additionalProperties": false
+    },
+    "manifestAsset": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "kind": {
+          "enum": [
+            "image",
+            "font",
+            "audio"
+          ]
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "duration": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "sampleRate": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "channels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "kind",
+        "hash"
+      ],
+      "additionalProperties": false
+    },
+    "part": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pivot": {
+          "$ref": "#/$defs/vec2"
+        },
+        "transform": {
+          "$ref": "#/$defs/transform"
+        },
+        "layer": {
+          "type": "number"
+        },
+        "shape": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "material": {
+          "$ref": "#/$defs/material"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string",
+                  "maxLength": 100000
+                },
+                "font": {
+                  "type": "string",
+                  "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                },
+                "size": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "content",
+                "font",
+                "size"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "image": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "asset": {
+                  "type": "string",
+                  "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+                },
+                "width": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "height": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "asset",
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "parent",
+        "pivot",
+        "transform",
+        "layer",
+        "shape",
+        "material",
+        "text",
+        "image"
+      ],
+      "additionalProperties": false
+    },
+    "partState": {
+      "type": "object",
+      "properties": {
+        "transform": {
+          "$ref": "#/$defs/partialTransform"
+        },
+        "shape": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "layer": {
+          "type": "number"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "pose": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "parts": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/partState"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "parts"
+      ],
+      "additionalProperties": false
+    },
+    "drawing": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "parts": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "parts"
+      ],
+      "additionalProperties": false
+    },
+    "actor": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          }
+        },
+        "transform": {
+          "$ref": "#/$defs/transform"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "layer": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "parts",
+        "transform",
+        "parent",
+        "layer"
+      ],
+      "additionalProperties": false
+    },
+    "background": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "actor": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "parallax": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "id",
+        "actor",
+        "parallax"
+      ],
+      "additionalProperties": false
+    },
+    "easing": {
+      "anyOf": [
+        {
+          "enum": [
+            "linear",
+            "ease-in",
+            "ease-out",
+            "ease-in-out",
+            "back-in",
+            "back-out",
+            "back-in-out",
+            "bounce-out"
+          ]
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "spring"
+            },
+            "frequency": {
+              "type": "number",
+              "minimum": 6,
+              "maximum": 50
+            },
+            "damping": {
+              "type": "number",
+              "minimum": 0.1,
+              "maximum": 1
+            },
+            "velocity": {
+              "type": "number",
+              "minimum": -2,
+              "maximum": 2
+            }
+          },
+          "required": [
+            "type",
+            "frequency",
+            "damping",
+            "velocity"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string",
+          "maxLength": 100000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "values": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "$ref": "#/$defs/value"
+        },
+        "y": {
+          "$ref": "#/$defs/value"
+        },
+        "scaleX": {
+          "$ref": "#/$defs/value"
+        },
+        "scaleY": {
+          "$ref": "#/$defs/value"
+        },
+        "rotation": {
+          "$ref": "#/$defs/value"
+        },
+        "opacity": {
+          "$ref": "#/$defs/value"
+        },
+        "visible": {
+          "$ref": "#/$defs/value"
+        },
+        "layer": {
+          "$ref": "#/$defs/value"
+        },
+        "parent": {
+          "$ref": "#/$defs/value"
+        },
+        "shape": {
+          "$ref": "#/$defs/value"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "values": {
+          "$ref": "#/$defs/values"
+        }
+      },
+      "required": [
+        "target",
+        "values"
+      ],
+      "additionalProperties": false
+    },
+    "key": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "target": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "property": {
+          "enum": [
+            "x",
+            "y",
+            "scaleX",
+            "scaleY",
+            "rotation",
+            "opacity",
+            "visible",
+            "layer",
+            "parent",
+            "shape"
+          ]
+        },
+        "frame": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "value": {
+          "$ref": "#/$defs/value"
+        },
+        "easing": {
+          "$ref": "#/$defs/easing"
+        },
+        "rotation": {
+          "enum": [
+            "direct",
+            "shortest"
+          ]
+        },
+        "hold": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id",
+        "target",
+        "property",
+        "frame",
+        "value",
+        "easing",
+        "rotation",
+        "hold"
+      ],
+      "additionalProperties": false
+    },
+    "morph": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "actor": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "from": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "easing": {
+          "$ref": "#/$defs/easing"
+        }
+      },
+      "required": [
+        "id",
+        "actor",
+        "from",
+        "to",
+        "start",
+        "end",
+        "easing"
+      ],
+      "additionalProperties": false
+    },
+    "exposure": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "actor": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "drawing": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id",
+        "actor",
+        "drawing",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    },
+    "camera": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "scaleX": {
+          "type": "number"
+        },
+        "scaleY": {
+          "type": "number"
+        },
+        "rotation": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "scaleX",
+        "scaleY",
+        "rotation"
+      ],
+      "additionalProperties": false
+    },
+    "shot": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "initial": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/initial"
+          }
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/key"
+          }
+        },
+        "morphs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/morph"
+          }
+        },
+        "exposures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/exposure"
+          }
+        },
+        "camera": {
+          "$ref": "#/$defs/camera"
+        }
+      },
+      "required": [
+        "id",
+        "duration",
+        "initial",
+        "keys",
+        "morphs",
+        "exposures",
+        "camera"
+      ],
+      "additionalProperties": false
+    },
+    "audio": {
+      "type": "object",
+      "properties": {
+        "asset": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "trimStart": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "gain": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "asset",
+        "offset",
+        "trimStart",
+        "duration",
+        "gain"
+      ],
+      "additionalProperties": false
+    },
+    "document": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "viewport": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "fps": {
+          "type": "object",
+          "properties": {
+            "numerator": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "denominator": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "numerator",
+            "denominator"
+          ],
+          "additionalProperties": false
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/asset"
+          }
+        },
+        "shapes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/shape"
+          }
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/part"
+          }
+        },
+        "poses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pose"
+          }
+        },
+        "drawings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/drawing"
+          }
+        },
+        "actors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/actor"
+          }
+        },
+        "backgrounds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/background"
+          }
+        },
+        "shots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/shot"
+          }
+        },
+        "audio": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/audio"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "revision",
+        "id",
+        "viewport",
+        "fps",
+        "assets",
+        "shapes",
+        "parts",
+        "poses",
+        "drawings",
+        "actors",
+        "backgrounds",
+        "shots",
+        "audio"
+      ],
+      "additionalProperties": false
+    },
+    "snapshot": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/values"
+          }
+        },
+        "shapes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/shape"
+          }
+        }
+      },
+      "required": [
+        "values",
+        "shapes"
+      ],
+      "additionalProperties": false
+    },
+    "plannedShot": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "shot": {
+          "$ref": "#/$defs/shot"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/snapshot"
+        }
+      },
+      "required": [
+        "start",
+        "shot",
+        "snapshot"
+      ],
+      "additionalProperties": false
+    },
+    "plan": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "document": {
+          "$ref": "#/$defs/document"
+        },
+        "manifest": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/manifestAsset"
+          }
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "shots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/plannedShot"
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "document",
+        "manifest",
+        "duration",
+        "shots"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

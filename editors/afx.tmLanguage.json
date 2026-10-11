@@ -1,0 +1,12 @@
+{
+  "name":"AETHER Fx", "scopeName":"source.afx", "fileTypes":["afx"],
+  "patterns":[
+    {"name":"comment.line.double-slash.afx","match":"//.*$"},
+    {"name":"comment.block.afx","begin":"/\\*","end":"\\*/"},
+    {"name":"string.quoted.double.afx","begin":"\"","end":"\"","patterns":[{"name":"constant.character.escape.afx","match":"\\\\(?:[\"\\\\/bfnrt]|u[0-9a-fA-F]{4})"}]},
+    {"name":"keyword.declaration.afx","match":"\\b(project|shape|contour|cubic|part|actor|pose|drawing|background|scene|shot|key|morph|expose|initial|camera|audio|asset|const|theme|component|instance|repeat|anchor)\\b"},
+    {"name":"variable.other.reference.afx","match":"@[A-Za-z][A-Za-z0-9_-]*(?:\\.[A-Za-z][A-Za-z0-9_-]*)*"},
+    {"name":"constant.numeric.afx","match":"-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?(?:f|s|ms|deg|rad)?\\b"},
+    {"name":"constant.language.afx","match":"\\b(true|false|null)\\b"}
+  ]
+}

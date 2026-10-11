@@ -1,0 +1,39 @@
+{
+  "fps": {
+    "numerator": 24,
+    "denominator": 1
+  },
+  "sampleRate": 48000,
+  "markers": [
+    {
+      "frame": 24,
+      "frequency": 880
+    },
+    {
+      "frame": 168,
+      "frequency": 1320
+    },
+    {
+      "frame": 360,
+      "frequency": 1760
+    }
+  ],
+  "visual": {
+    "target": "sync.syncPulse",
+    "projectPixels": {
+      "wide": [
+        1184,
+        86
+      ],
+      "second": [
+        1180.8,
+        86
+      ],
+      "close": [
+        1184,
+        86
+      ]
+    }
+  },
+  "audioPadding": "Opus decoder must honor pre-skip; report measured padding explicitly."
+}

@@ -1,0 +1,9 @@
+project example12 {
+ viewport:(640,360);fps:(24,1);
+ 
+ shape g {primitive:ellipse;radius:(60,40);} part p {shape:@g;material:{fill:"#2563eb";stroke:"#1e3a8a";strokeWidth:3;};} actor a {parts:[@p];transform:{x:120;y:180;};}
+ scene movie {shot intro {duration:2s;
+ key start {target:@a;property:x;frame:0f;value:120;easing:linear;}
+ key finish {target:@a;property:x;frame:47f;value:480;}
+ }}
+}

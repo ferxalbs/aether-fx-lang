@@ -1,0 +1,52 @@
+{
+  "name": "@aether-fx/cli",
+  "version": "0.2.0-rc.3",
+  "type": "module",
+  "description": "The afx check, compile, render and doctor command-line interface",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "afx": "./dist/afx.js"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@aether-fx/node": "0.2.0-rc.3",
+    "@aether-fx/compiler": "0.2.0-rc.3",
+    "@aether-fx/core": "0.2.0-rc.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ferxalbs/aether-fx-lang.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/ferxalbs/aether-fx-lang#readme",
+  "bugs": {
+    "url": "https://github.com/ferxalbs/aether-fx-lang/issues"
+  },
+  "keywords": [
+    "aether-fx",
+    "animation",
+    "2d",
+    "typescript",
+    "afx"
+  ]
+}

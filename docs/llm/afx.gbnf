@@ -1,0 +1,12 @@
+root ::= ws declaration ws
+ws ::= ([ \t\r\n] | "//" [^\r\n]* | block-comment)*
+id ::= [A-Za-z] [A-Za-z0-9_-]*
+path ::= id ("." id)*
+string ::= "\"" ([^"\\\r\n] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]))* "\""
+number ::= "-"? ("0" | [1-9] [0-9]*) ("." [0-9]+)? ([eE] [+-]? [0-9]+)?
+declaration ::= id ws path ws "{" ws (field | declaration)* "}" ws
+field ::= (id | string) ws ":" ws value ws ";" ws
+value ::= string | number (ws id)? | id | "@" path | "[" ws (value ws ("," ws value ws)*)? "]" | "(" ws (value ws ("," ws value ws)*)? ")" | "{" ws field* "}"
+block-comment ::= "/*" block-content
+block-content ::= "*/" | [^*] block-content | "*" block-star
+block-star ::= "/" | "*" block-star | [^*/] block-content
