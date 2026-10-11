@@ -6,4 +6,4 @@ Experimental Canvas 2D renderer, explicitly resolved resources and imperative pl
 
 `createPlayer(canvas, plan, resources?)` exposes play/pause/seekFrame/setPlaybackRate/getCurrentFrame/getStats/resize/dispose. Call play from a user gesture for audio. Resize accepts CSS dimensions and DPR. Dispose is idempotent, cancels RAF, disconnects audio and closes its owned AudioContext.
 
-The API is experimental. The inherited ISC declaration and copyright owner need confirmation before public release. The complete visual/audio acceptance gates remain separate from a successful fixture render.
+The API is experimental. Original code is licensed under Apache-2.0; see LICENSE and NOTICE. npm scope ownership remains unverified. The complete visual/audio acceptance gates remain separate from a successful fixture render.

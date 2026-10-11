@@ -5,6 +5,8 @@ const order = ['core', 'compiler', 'canvas', 'react', 'export', 'node', 'cli'];
 for (const name of (await readdir('packages')).sort((a, b) => order.indexOf(a) - order.indexOf(b))) {
   const root = `packages/${name}`;
   const pkg = JSON.parse(await readFile(`${root}/package.json`, 'utf8'));
+  await copyFile('LICENSE', `${root}/LICENSE`);
+  await copyFile('NOTICE', `${root}/NOTICE`);
   await build({
     entryPoints: [`${root}/src/index.${name === 'react' ? 'tsx' : 'ts'}`], outfile: `${root}/dist/index.js`,
     bundle: true, packages: 'external', format: 'esm', platform: ['node','cli'].includes(name)?'node':'neutral', target: 'es2022',

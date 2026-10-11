@@ -5,6 +5,36 @@ import { parse } from './parser.js';
 
 const frameFields=new Set(['frame','duration','start','end','offset','trimStart','hold']);
 const badKeys=new Set(['__proto__','prototype','constructor']);
+/** Follow canonical collection/field names back through DSL normalization. */
+function schemaSourceRange(root:Declaration,path=''):SourceRange {
+  const steps=path.split('/').slice(1);
+  const collections:Record<string,string>={assets:'asset',shapes:'shape',parts:'part',poses:'pose',drawings:'drawing',actors:'actor',backgrounds:'background',contours:'contour',segments:'cubic',initial:'initial',keys:'key',morphs:'morph',exposures:'expose'};
+  let node:Declaration|AstValue=root;
+  for(let i=0;i<steps.length;i++) {
+    let name=steps[i]!;
+    if('keyword' in node) {
+      if(name==='values'&&node.keyword==='initial')continue;
+      if(name==='shots'&&node.keyword==='project') {
+        const shot:Declaration|undefined=node.children.filter(d=>d.keyword==='scene').flatMap(d=>d.children.filter(c=>c.keyword==='shot'))[Number(steps[++i])];
+        if(!shot)break;node=shot;continue;
+      }
+      if(name==='camera'&&node.keyword==='shot') {const camera:Declaration|undefined=node.children.find(d=>d.keyword==='camera');if(!camera)break;node=camera;continue;}
+      if(name==='audio'&&node.keyword==='project') {const audio:Declaration|undefined=node.children.find(d=>d.keyword==='audio');if(!audio)break;node=audio;continue;}
+      const keyword=collections[name];
+      if(keyword&&node.children.some(d=>d.keyword===keyword)) {const child:Declaration|undefined=node.children.filter(d=>d.keyword===keyword)[Number(steps[++i])];if(!child)break;node=child;continue;}
+      if(name==='schemaVersion'&&node.keyword==='project')name='version';
+      if(name==='rotation'&&node.keyword==='key')name='rotationMode';
+      const field:AstField|undefined=node.fields.find(f=>f.name===name);if(!field)break;node=field.value;
+      if(name==='fps'&&node.kind==='array'&&steps[i+1]) {
+        const index=steps[i+1]==='numerator'?0:steps[i+1]==='denominator'?1:-1;
+        if(index>=0){i++;const item:AstValue|undefined=node.items[index];if(!item)break;node=item;}
+      }
+    } else if(node.kind==='array') {const item:AstValue|undefined=node.items[Number(name)];if(!item)break;node=item;}
+    else if(node.kind==='object') {const field:AstField|undefined=node.fields.find(f=>f.name===name);if(!field)break;node=field.value;}
+    else break;
+  }
+  return node.range;
+}
 export function normalize(ast:DocumentAST):Result<FxDocument> {
   const errors:Diagnostic[]=[];
   const fail=(code:string,message:string,range:SourceRange,id?:string)=>errors.push(diagnostic(code,message,{range,...(id?{id}:{})}));
@@ -98,7 +128,7 @@ export function normalize(ast:DocumentAST):Result<FxDocument> {
   }
   if (errors.length) return failure(errors);
   const invalid=checkSchema(result,'document');
-  if (invalid.length) return failure(invalid.map(e=>({...e,range:root.range})));
+  if (invalid.length) return failure(invalid.map(e=>({...e,range:schemaSourceRange(root,e.code==='SCHEMA_VERSION'?'/schemaVersion':e.path)})));
   return success(result as unknown as FxDocument);
 }
 export function compileSource(source:string,manifest:AssetManifest=[],options:Partial<Limits>={}):Result<PlaybackPlan> {

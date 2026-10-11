@@ -28,5 +28,15 @@
     "@types/node": "26.6.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ferxalbs/aether-fx-lang.git",
+    "directory": "examples/next-app"
+  },
+  "homepage": "https://github.com/ferxalbs/aether-fx-lang#readme",
+  "bugs": {
+    "url": "https://github.com/ferxalbs/aether-fx-lang/issues"
   }
 }

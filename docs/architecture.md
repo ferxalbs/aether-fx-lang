@@ -4,7 +4,7 @@ Reviewed 2026-10-10. The original request remains in `AETHER-Fx-v0-GOAL.md`; `GO
 
 ## Repository baseline
 
-The repository started with an uncommitted goal document, package manifest, lockfile and TypeScript installation. There were no implementation files, tests, Git commits or Git remote. The referenced `lenguaje-nativo-animacion-investigacion.md` is absent. Preserve the original goal and do not infer the missing research's contents. The manifest declared ISC; do not silently replace it with Apache-2.0. Confirm the license and copyright owner before public release.
+The repository started with an uncommitted goal document, package manifest, lockfile and TypeScript installation. There were no implementation files, tests, Git commits or Git remote. The referenced `lenguaje-nativo-animacion-investigacion.md` is absent. Preserve the original goal and do not infer the missing research's contents. The baseline manifest declared ISC. The owner subsequently authorized Apache-2.0 and supplied the copyright notice; LICENSE, NOTICE and docs/licensing.md record that decision.
 
 ## Verified local tools
 
@@ -18,8 +18,8 @@ The repository started with an uncommitted goal document, package manifest, lock
 | Vitest | 5.0.3; Node ^22.12 or ^24 or >=26 | npm metadata |
 | esbuild | 0.28.2; Node >=18 | npm metadata |
 | Playwright | 1.64.0; Node >=20 | npm metadata |
-| Mediabunny | 1.61.3 available | npm metadata; integration not yet installed or verified |
-| Proposed Next/React | Next 16.4.0 / React 19.3.0 available | npm metadata; integration not yet installed or verified |
+| Mediabunny | 1.61.3 pinned | Native browser exports and independently decoded WebM files |
+| Next/React | Next 16.4.0 / React 19.3.0 pinned | Isolated production Next and development StrictMode checks |
 | FFmpeg | libvpx-vp9 and libopus available | `ffmpeg -hide_banner -encoders` |
 
 Pin dependencies exactly and use the lockfile. The initial engine floor is Node >=22.12.0 because of the development toolchain; the foundation tests and isolated consumers have now also passed locally on Node 22.12.0. Full-product Node 22 CI remains an open gate before claiming complete v0 support. Available versions do not establish integration compatibility.
@@ -27,7 +27,7 @@ Pin dependencies exactly and use the lockfile. The initial engine floor is Node 
 ## Contracts resolved by this implementation
 
 - Authoring source uses named declarations and typed property data. Chevrotain parses syntax; normalization rejects unknown declarations/properties and resolves units. No JavaScript expression grammar or execution exists.
-- `Result<T>` is `{ ok: true, value } | { ok: false, diagnostics }`. Source failures carry zero-based, half-open UTF-16 offsets plus one-based line/column. Canonical JSON failures carry JSON paths; compile-source attaches the affected declaration range.
+- `Result<T>` is `{ ok: true, value } | { ok: false, diagnostics }`. Source failures carry zero-based, half-open UTF-16 offsets plus one-based line/column. Canonical JSON failures carry JSON paths; compile-source maps schema paths to the originating values and attaches affected declaration ranges for semantic failures. EOF uses the actual source end and numeric ranges include units.
 - Canonical documents and plans use independent `schemaVersion: 1`. The exported JSON Schema is draft 2020-12. Validation never coerces types or inserts defaults into externally supplied JSON. DSL normalization inserts documented defaults.
 - The schema evaluator supports exactly the JSON Schema constructs used by the exported schema. It is not a general-purpose schema library. Structural validation rejects nonfinite numbers, unknown properties, unsafe keys, cycles, nonplain objects and oversized nesting. The core contains no DOM, filesystem, networking or parser import.
 - IDs are stable within their collection. Actor targets are `actor` and `actor.part`; `camera` is reserved. Contour IDs are local to a shape and segment IDs are local to a contour. Correspondence requires identical IDs, order, contour closure and segment counts, never geometric proximity.
@@ -43,7 +43,7 @@ Pin dependencies exactly and use the lockfile. The initial engine floor is Node 
 
 ## Review findings and remaining investigation
 
-The goal's matrices and performance targets were proposals, not measured results. The earlier research file, license owner, npm scope ownership, repository URL, actual trusted publisher settings and physical mobile testing remain unknown. These do not prevent local implementation, but public release cannot claim them as verified.
+The goal's matrices and performance targets were proposals, not measured results. The earlier research file, npm scope ownership, actual trusted publisher settings and physical mobile testing remain unknown. The owner has supplied copyright/license metadata, and the actual Git remote is now recorded in docs/licensing.md. These do not prevent local implementation, but public release cannot claim them as verified.
 
 The player, resource resolver, browser export and Node export must test cancellation/cleanup as runtime behaviors. A schema validator cannot isolate Chromium. Node reference export must deny external requests, serve an allowlisted local resource set and invoke FFmpeg with separate arguments. Web export must query actual VP9/Opus configurations and return `EXPORT_UNSUPPORTED` when missing; no recording fallback.
 
@@ -63,3 +63,9 @@ The 480-frame curve fixture is a deterministic semantic regression fixture. It i
 React 19.3.0 and Next 16.4.0 are pinned. FxPlayer owns one player/resources session per plan/resolver identity, creates it in an effect, and retains its client directive in the built package. Current callback delivery uses useEffectEvent; controls delegate through a stable imperative ref. The existing Canvas/audio code handles frames outside React state.
 
 A six-tarball isolated consumer passes plain Node import/SSR, default Turbopack production Next build, server compilation, hydration, exact frame 97 pixels against offline Chromium, gesture controls and ten App Router navigation cleanup cycles. A separate development StrictMode harness proves effect replay and fifty real font/image/WAV/audio cleanup cycles plus replacement/cancellation/error paths. See docs/react-next.md for scope, commands and evidence. These tests do not prove the cross-browser or full pipeline memory gates.
+
+## Browser export verified (2026-10-10)
+
+The seventh implementation uses owned native WebCodecs configuration probes and encoders, with Mediabunny encoded-packet sources for WebM muxing. Explicit queue checks and sequential video flushes enforce bounds rather than relying on a single dequeue notification. Encoder and muxer failures are latched across asynchronous operations; cancellation closes native encoders and aborts the host's cooperative random-access sink. No alternate recorder implementation is retained.
+
+Four real tarballs pass isolated Node import, public types and browser graph checks. Chromium 156.0.8078.4, Firefox 157.0 and WebKit 27.2 pass desktop preview and complete 480-frame 720p exports; Chromium also passes 1080p and the demo download. Native lifetime counters are zero after success and failure. The independent decoder distinguishes 20-second source content from Opus pre-skip and the measured 13.5 ms browser audio tail. See docs/browser-export.md and artifacts/web-export for exact capabilities, codec/container metadata and limits. Full pipeline memory, physical mobile, full semantic corpus, final seven-package consumers and CI remain separate gates.

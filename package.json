@@ -2,7 +2,7 @@
   "name": "aether-fx-lang",
   "version": "0.1.0",
   "description": "AetherFX Language",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "private": true,
   "author": "",
   "type": "module",
@@ -20,7 +20,8 @@
     "verify:foundation": "npm run check && node scripts/verify-foundation.mjs",
     "verify:resources": "node scripts/verify-resources.mjs",
     "verify:node": "npm run check && node scripts/verify-node-lifecycle.mjs && node scripts/verify-node-packages.mjs",
-    "verify:react": "npm run check && node scripts/verify-react-next.mjs"
+    "verify:react": "npm run check && node scripts/verify-react-next.mjs",
+    "verify:web": "npm run check && node scripts/verify-web-export.mjs"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
@@ -30,5 +31,13 @@
     "react": "19.3.0",
     "typescript": "7.0.2",
     "vitest": "5.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ferxalbs/aether-fx-lang.git"
+  },
+  "homepage": "https://github.com/ferxalbs/aether-fx-lang#readme",
+  "bugs": {
+    "url": "https://github.com/ferxalbs/aether-fx-lang/issues"
   }
 }

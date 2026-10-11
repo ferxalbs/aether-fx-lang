@@ -4,6 +4,9 @@ import { applyPatch, compile, deserializeDocument, deserializePlan, evaluate, fr
 import type { FxDocument, PlaybackPlan, Result } from '@aether-fx/core';
 import { compileSource, normalize, parse, print } from '@aether-fx/compiler';
 const source=readFileSync(new URL('../fixtures/curve.afx',import.meta.url),'utf8');
+const corpus=readFileSync(new URL('../fixtures/language/all-constructs.afx',import.meta.url),'utf8');
+const shortSource=readFileSync(new URL('../fixtures/short/little-light.afx',import.meta.url),'utf8');
+const shortManifest=JSON.parse(readFileSync(new URL('../fixtures/short/manifest.json',import.meta.url),'utf8'));
 function unwrap<T>(r:Result<T>):T { if (!r.ok) throw new Error(JSON.stringify(r.diagnostics)); return r.value; }
 const document=()=>structuredClone(unwrap(normalize(unwrap(parse(source)))));
 const plan=()=>unwrap(compile(document()));
@@ -116,6 +119,67 @@ describe('structured edits',()=>{
   });
 });
 describe('source diagnostics',()=>{
+  const keywords=['project','asset','shape','contour','cubic','part','actor','pose','drawing','background','scene','shot','initial','key','morph','expose','camera','audio'];
+  const ast=unwrap(parse(corpus));
+  const declarations:(typeof ast.project)[]=[];
+  const visit=(d:typeof ast.project)=>{declarations.push(d);d.children.forEach(visit);};visit(ast.project);
+  const location=(input:string,start:number,end:number)=>{const lines=input.slice(0,start).split(/\r\n|\r|\n/);return {start,end,line:lines.length,column:lines.at(-1)!.length+1};};
+  it('roundtrips every v0 construction, units and IDs without changing any frame',()=>{
+    expect(new Set(declarations.map(d=>d.keyword))).toEqual(new Set(keywords));
+    const before=unwrap(compileSource(corpus,shortManifest)),after=unwrap(compileSource(print(ast),shortManifest));
+    expect(before.document).toEqual(after.document);expect(before.duration).toBe(480);
+    for(let frame=0;frame<480;frame++)expect(evaluate(after,{frame})).toEqual(evaluate(before,{frame}));
+  });
+  it.each(keywords)('locates an invalid property inside %s',(keyword)=>{
+    const declaration=declarations.find(d=>d.keyword===keyword)!,at=declaration.range.end-1,field='unexpected: 0;';
+    const input=corpus.slice(0,at)+field+corpus.slice(at),result=compileSource(input,shortManifest);
+    expect(result.ok).toBe(false);if(!result.ok)expect(result.diagnostics.find(d=>d.code==='PROPERTY_UNKNOWN')?.range).toEqual(location(input,at,at+field.length));
+  });
+  it.each(keywords)('locates truncated %s at the actual EOF',(keyword)=>{
+    const input=corpus.slice(0,declarations.find(d=>d.keyword===keyword)!.range.end-1)+'\r\n  ',result=parse(input);
+    expect(result.ok).toBe(false);if(!result.ok)expect(result.diagnostics[0]!.range).toEqual(location(input,input.length,input.length));
+  });
+  it.each(['','\n','\r','\r\n','// comment ☺\r\n'])('locates EOF with empty/comment-only input %j',(input)=>{
+    const result=parse(input);expect(result.ok).toBe(false);if(!result.ok)expect(result.diagnostics[0]!.range).toEqual(location(input,input.length,input.length));
+  });
+  it.each([
+    ['viewport: (1280, 720)','viewport: (0, 720)','/viewport/0','0'],
+    ['fps: (30000, 1001)','fps: (30000, 0)','/fps/denominator','0'],
+    ['opacity: 0.8; visible: true','opacity: 2; visible: true','/parts/0/transform/opacity','2'],
+    ['size: 24','size: -24','/parts/1/text/size','-24'],
+    ['width: 128','width: -128','/parts/2/image/width','-128'],
+    ['parallax: 0.5','parallax: 2','/backgrounds/0/parallax','2'],
+    ['duration: 144f','duration: 0f','/shots/0/duration','0f'],
+    ['x: 200; opacity: 1','x: [200]; opacity: 1','/shots/0/initial/0/values/x','[200]'],
+    ['rotationMode: shortest','rotationMode: invalid','/shots/0/keys/0/rotation','invalid'],
+    ['hold: 2f','hold: 0f','/shots/0/keys/0/hold','0f'],
+    ['scaleX: 1; scaleY','scaleX: "bad"; scaleY','/shots/0/camera/scaleX','"bad"'],
+    ['offset: 0f','offset: -1f','/audio/offset','-1f'],
+    ['version: 1;\n  revision','version: 2;\n  revision',undefined,'2'],
+  ])('locates the schema value in %s',(before,after,path,highlight)=>{
+    let difference=0;while(before![difference]===after![difference]&&difference<before!.length)difference++;
+    const input=corpus.replace(before!,after!),result=compileSource(input,shortManifest),start=input.indexOf(after!)+after!.indexOf(highlight!,difference);
+    expect(result.ok).toBe(false);if(!result.ok){const d=result.diagnostics.find(d=>d.path===path);expect(d?.range).toEqual(location(input,start,start+highlight!.length));}
+  });
+  it('preserves the complete unit suffix and locates missing fields at their owner',()=>{
+    const bad=corpus.replace('hold: 2f','hold: 2deg'),result=compileSource(bad,shortManifest),start=bad.indexOf('2deg');
+    expect(result.ok).toBe(false);if(!result.ok)expect(result.diagnostics.find(d=>d.code==='UNIT_REQUIRED')?.range).toEqual(location(bad,start,start+4));
+    const missing=corpus.replace('size: 24;',''),parsed=unwrap(parse(missing)),label=parsed.project.children.find(d=>d.keyword==='part'&&d.id==='label')!,text=label.fields.find(f=>f.name==='text')!;
+    const invalid=compileSource(missing,shortManifest);expect(invalid.ok).toBe(false);if(!invalid.ok)expect(invalid.diagnostics.find(d=>d.path==='/parts/1/text/size')?.range).toEqual(text.value.range);
+  });
+  it('treats JavaScript text as data and never executes invalid programs',()=>{
+    const name='__aetherFxExecutionProbe',original=Object.getOwnPropertyDescriptor(globalThis,name);let executions=0;
+    Object.defineProperty(globalThis,name,{configurable:true,set(){executions++;}});
+    try {
+      const statement=`globalThis.${name} = 1`;
+      const text=corpus.replace(/content: "(?:[^"\\]|\\.)*"/,'content: '+JSON.stringify(statement));
+      expect(unwrap(compileSource(text,shortManifest)).document.parts.find(p=>p.id==='label')!.text!.content).toBe(statement);
+      for(const input of [statement,`import x from "module";`, `for(;;){${statement}}`, `Function("${statement}")()`,corpus.replace('x: 200; opacity: 1',`x: ${statement}; opacity: 1`)]){
+        const result=compileSource(input,shortManifest);expect(result.ok).toBe(false);if(!result.ok)expect(result.diagnostics[0]!.range).toBeDefined();
+      }
+      expect(executions).toBe(0);
+    } finally {if(original)Object.defineProperty(globalThis,name,original);else Reflect.deleteProperty(globalThis,name);}
+  });
   it.each([
     ['project x { viewport: (1,1); fps: (24,1); scene s { shot a { duration: 1; } } }','UNIT_REQUIRED'],
     ['project x { viewport: (1,1); viewport: (2,2); }','DUPLICATE_PROPERTY'],
@@ -130,6 +194,34 @@ describe('source diagnostics',()=>{
 });
 
 describe('sequential morph and asset regression gates',()=>{
+  it.each(['contour order','segment order','closure','segment count'])('rejects morph %s changes without geometric remapping',(change)=>{
+    const d=document();
+    for(const shape of d.shapes){const contour=shape.contours[0]!;contour.segments.push({...structuredClone(contour.segments[0]!),id:'second'});shape.contours.push({...structuredClone(contour),id:'other'});}
+    expect(compile(d).ok).toBe(true);
+    const shape=d.shapes[1]!;
+    if(change==='contour order')shape.contours.reverse();
+    else if(change==='segment order')shape.contours[0]!.segments.reverse();
+    else if(change==='closure')shape.contours[0]!.closed=!shape.contours[0]!.closed;
+    else shape.contours[0]!.segments.pop();
+    expect(compile(d)).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({code:'MORPH_TOPOLOGY'})])});
+  });
+  it('advances the illustrated expression six frames within its pose dependencies',()=>{
+    const before=unwrap(compileSource(shortSource,shortManifest)),serialized=serializeDocument(before.document);
+    const shot=before.document.shots.find(s=>s.id==='keep')!,index=shot.morphs.findIndex(m=>m.id==='expression'),expression=shot.morphs[index]!;
+    const patch=unwrap(applyPatch(before.document,{baseRevision:before.document.revision,operations:[{op:'updateProperty',collection:'shots',id:shot.id,path:['morphs',String(index),'start'],value:expression.start-6},{op:'updateProperty',collection:'shots',id:shot.id,path:['morphs',String(index),'end'],value:expression.end-6}]},shortManifest));
+    const after=unwrap(compile(patch.document,shortManifest));expect(serializeDocument(before.document)).toBe(serialized);
+    expect(patch.revision).toBe(before.document.revision+1);expect(patch.affectedIds).toEqual(['keep']);expect(after.duration).toBe(480);
+    const changed:number[]=[];
+    for(let frame=0;frame<480;frame++){
+      const a=evaluate(before,{frame}),b=evaluate(after,{frame});
+      for(let i=0;i<a.commands.length;i++)if(!['hero.mouth','hero.frontArm','hero.hand'].includes(a.commands[i]!.id))expect(b.commands[i]).toEqual(a.commands[i]);
+      if(JSON.stringify(a)!==JSON.stringify(b))changed.push(frame);
+      if(frame<342||frame>=408)expect(b).toEqual(a);
+    }
+    expect(changed.length).toBeGreaterThan(0);expect(changed[0]).toBe(342);expect(changed.at(-1)).toBe(407);
+    expect(unwrap(deserializePlan(serializePlan(after)))).toEqual(after);
+    expect(applyPatch(patch.document,{baseRevision:before.document.revision,operations:[{op:'removeNode',collection:'drawings',id:'eyesClosed'}]},shortManifest)).toMatchObject({ok:false,diagnostics:[{code:'REVISION_CONFLICT'}]});
+  });
   it('orders nonoverlapping morphs by time and retains the last destination',()=>{
     const d=document(),shot=d.shots[1]!;
     shot.morphs.unshift({...shot.morphs[0]!,id:'return',from:'grin',to:'neutral',start:90,end:120});

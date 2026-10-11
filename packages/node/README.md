@@ -22,4 +22,4 @@ console.log(report);
 
 Reports include tool/OS versions, frame count, elapsed export factor, asset hashes, loaded font IDs, denied requests, queue capacity, and `peakRssBytes`. That memory field measures the Node coordinator only; it excludes Chromium and FFmpeg. Full pipeline memory is a separate acceptance measurement. Timeout includes environment checking, but a tool check already in progress completes under its own bounded process timeout before the export returns.
 
-The package is under the repository's existing provisional ISC declaration. Final publication ownership and LICENSE metadata remain pending owner confirmation. Demo assets are not packaged here.
+Original code is licensed under Apache-2.0; see LICENSE and NOTICE. npm scope ownership and publisher settings remain pending. Demo assets are not packaged here.

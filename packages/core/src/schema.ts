@@ -39,8 +39,13 @@ export function checkSchema(value: unknown, kind: 'document' | 'plan' | 'manifes
   if (!safe(value, '', 0)) return errors;
   function matches(v: unknown, rule: Rule, path: string, report = true): boolean {
     if (rule.$ref) return matches(v, definitions[rule.$ref.replace('#/$defs/', '')]!, path, report);
-    const invalid = (message: string) => { if (report && errors.length < 100) errors.push(diagnostic('SCHEMA_INVALID', message, { path })); return false; };
-    if (rule.anyOf) return rule.anyOf.some(r => matches(v,r,path,false)) || invalid('Value does not match permitted types');
+    const invalid = (message: string, errorPath = path) => { if (report && errors.length < 100) errors.push(diagnostic('SCHEMA_INVALID', message, { path: errorPath })); return false; };
+    if (rule.anyOf) {
+      if (rule.anyOf.some(r => matches(v,r,path,false))) return true;
+      const type = v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v;
+      const branch = rule.anyOf.find(r => (r.$ref ? definitions[r.$ref.replace('#/$defs/', '')] : r)?.type === type);
+      return branch ? matches(v,branch,path,report) : invalid('Value does not match permitted types');
+    }
     if ('const' in rule && v !== rule.const) return invalid(`Expected ${String(rule.const)}`);
     if (rule.enum && !rule.enum.includes(v)) return invalid('Value is not in the allowed enum');
     const type = rule.type;
@@ -62,11 +67,11 @@ export function checkSchema(value: unknown, kind: 'document' | 'plan' | 'manifes
       if (!v || typeof v !== 'object' || Array.isArray(v)) return invalid('Expected object');
       const o = v as Record<string, unknown>;
       let valid = true;
-      for (const key of rule.required ?? []) if (!Object.hasOwn(o,key)) { invalid(`Missing ${key}`); valid = false; }
+      for (const key of rule.required ?? []) if (!Object.hasOwn(o,key)) { invalid(`Missing ${key}`,`${path}/${key}`); valid = false; }
       for (const [key, child] of Object.entries(o)) {
         if (rule.propertyNames && !matches(key,rule.propertyNames,`${path}/${key}`,report)) valid = false;
         const r = Object.hasOwn(rule.properties ?? {},key) ? rule.properties![key] : rule.additionalProperties;
-        if (r === false) { invalid(`Unknown property ${key}`); valid = false; }
+        if (r === false) { invalid(`Unknown property ${key}`,`${path}/${key}`); valid = false; }
         else if (r && typeof r === 'object' && !matches(child,r,`${path}/${key}`,report)) valid = false;
       }
       return valid;

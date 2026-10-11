@@ -25,4 +25,4 @@ Define the resolver in the client component; pass only a serializable plan acros
 
 Resources finish loading before `onReady`. No AudioContext starts until a gesture calls `play`. The component observes its width and resizes the canvas at the device pixel ratio while preserving project aspect ratio; window resize also handles display/DPR changes. CSS class/style apply to the container, and `ariaLabel` labels the canvas. Effects handle StrictMode setup/cleanup replay and asynchronous load cancellation; no frame updates enter React state. Unmount releases RAF, audio, font/image maps, observers and listeners.
 
-The package follows the repository's provisional ISC declaration; final publishing LICENSE/ownership metadata is pending. The real tarball and production Next checks are recorded in the repository release-readiness report.
+Original code is licensed under Apache-2.0; see LICENSE and NOTICE. The real tarball and production Next checks are recorded in the repository release-readiness report.
