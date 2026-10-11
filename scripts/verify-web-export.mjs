@@ -66,6 +66,6 @@ try {
   }
   const files=results.flatMap(r=>r.exports.flatMap(e=>e.file?[e.file]:e.demoDownload?[e.demoDownload]:[]));
   assert(files.length>0,'No browser produced a file for audiovisual verification');
-  run(process.execPath,['scripts/verify-video.mjs','--web',...files]);
+  run(process.execPath,['scripts/verify-video.mjs','--web','--report',join(out,'video-report.json'),...files]);
   await writeFile(join(out,'report.json'),JSON.stringify({node:process.version,numericTolerance:1e-9,archiveChecks:{sevenInstalledArchives:'PASS',...(archiveDirectory?{releaseArchiveHashes:'PASS'}:{})},results,tarballs,limitations:['Local macOS browser builds; physical mobile and CI remain separate','Native counters intentionally retain closed encoder objects and are not memory benchmark evidence','Audiovisual metadata and marker verification is recorded in video-report.json']},null,2)+'\n');await writeFile(join(out,'SHA256SUMS'),tarballs.map(t=>`${t.sha256}  ${t.path.split('/').at(-1)}`).join('\n')+'\n');console.log(JSON.stringify({report:join(out,'report.json'),results:results.map(r=>({name:r.name,version:r.version,capability:r.capability,checks:r.checks,exports:r.exports.map(e=>e.file??e.demoDownload??e.failures?.map(f=>f.kind)??e.refused)}))},null,2));
 }finally{await browser?.close();if(server)await new Promise(r=>server.close(r));await rm(consumer,{recursive:true,force:true});}

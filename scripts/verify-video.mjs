@@ -1,10 +1,14 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 const run=(command,args)=>{const r=spawnSync(command,args,{maxBuffer:16_000_000});assert.equal(r.status,0,`${command} failed: ${r.stderr}`);return {stdout:r.stdout,stderr:r.stderr.toString()};};
 const wav=await readFile('fixtures/short/assets/score.wav'),markers=JSON.parse(await readFile('fixtures/short/sync-markers.json','utf8')).markers;
-const web = process.argv.includes('--web'), files = process.argv.slice(2).filter(a => a !== '--web'); if (!files.length) files.push('artifacts/short/little-light-720.webm', 'artifacts/short/little-light-1080.webm');
+const args = process.argv.slice(2), reportIndex = args.indexOf('--report');
+let reportPath;
+if (reportIndex >= 0) { reportPath = args[reportIndex + 1]; assert(reportPath && !reportPath.startsWith('--'), '--report requires an output path'); args.splice(reportIndex, 2); }
+const web = args.includes('--web'), files = args.filter(a => a !== '--web'); if (!files.length) files.push('artifacts/short/little-light-720.webm', 'artifacts/short/little-light-1080.webm');
 const results=[];
 for(const file of files){
   const probe = run('ffprobe', ['-v', 'error', '-count_frames', '-show_streams', '-show_data', '-show_format', '-of', 'json', file]), metadata = JSON.parse(probe.stdout.toString()), video = metadata.streams.find(s => s.codec_type === 'video'), audio = metadata.streams.find(s => s.codec_type === 'audio');
@@ -29,5 +33,7 @@ for(const file of files){
   const warnings = parserWarning ? [{ message: 'FFmpeg 8.0.1 emits an Opus parser message on the empty EOF flush; the independently checked packet/sample counts decode with zero errors.', basis: 'Debug log places the message at EOF; n8.0 set_frame_duration runs for zero bytes under PARSER_FLAG_COMPLETE_FRAMES, while upstream master guards buf_size.', source: 'https://raw.githubusercontent.com/FFmpeg/FFmpeg/n8.0/libavcodec/opus/parser.c' }] : [];
   const bytes = await readFile(file); results.push({ file, sha256: createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length, checks: { vp9Opus: 'PASS', resolution: 'PASS', decoded480Frames: 'PASS', video20Seconds: 'PASS', audioContentAndPadding: 'PASS', visualPulses: 'PASS', syncWithinOneFrame: 'PASS', zeroDecodeErrors: 'PASS' }, width: video.width, height: video.height, videoDuration: 20, decodedSamples, paddingSamples, paddingMs: paddingSamples / 48, containerDuration: Number(metadata.format.duration), codecPadding: { opusHeaderPreSkipSamples, initialSamples: audio.initial_padding, audioStartSeconds: Number(audio.start_time), containerTailSeconds: Number(metadata.format.duration) - 20 }, sync, warnings, probeStderr: probe.stderr, decodeLog: decoding.stderr.slice(-14000) });
 }
-await writeFile(web ? 'artifacts/web-export/video-report.json' : 'artifacts/short/video-report.json', JSON.stringify({ referenceDate: '2026-10-10', ffmpeg: run('ffmpeg', ['-version']).stdout.toString().split('\n')[0], results }, null, 2) + '\n');
+reportPath ??= web ? 'artifacts/web-export/video-report.json' : 'artifacts/short/video-report.json';
+await mkdir(dirname(reportPath), { recursive: true });
+await writeFile(reportPath, JSON.stringify({ referenceDate: '2026-10-10', ffmpeg: run('ffmpeg', ['-version']).stdout.toString().split('\n')[0], results }, null, 2) + '\n');
 console.log(JSON.stringify(results.map(({decodeLog,...r})=>r),null,2));

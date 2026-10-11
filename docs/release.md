@@ -34,10 +34,12 @@ This verification uses an isolated temporary copy, selects an unpublished test s
 npm run check
 node scripts/verify-package-metadata.mjs
 node scripts/verify-node-packages.mjs artifacts/metadata-packages
+node scripts/verify-react-next.mjs artifacts/seven-package-next artifacts/metadata-packages
+node scripts/verify-web-export.mjs artifacts/metadata-packages artifacts/seven-package-web
 npm exec --yes --package=node@22.12.0 -- node scripts/verify-node-packages.mjs artifacts/metadata-packages artifacts/seven-package-consumer-node22
 ```
 
-The metadata check produces seven real tarballs, SHA-256 checksums and a report. It compares archive LICENSE/NOTICE bytes against the root files, checks public access/registry, real remote metadata, dependency protocols and exported files, and preserves the font's third-party notice. The consumer command verifies those archive hashes before installing them without workspace links. It checks strict public declarations, all seven Node imports without DOM globals, all 480 evaluated states and the packaged CLI. Browser/Next consumers must still verify this exact archive set before these artifacts can be called the final release set.
+The metadata check produces seven real tarballs, SHA-256 checksums and a report. It compares archive LICENSE/NOTICE bytes against the root files, checks public access/registry, real remote metadata, dependency protocols and exported files, and preserves the font's third-party notice. The consumer command verifies those archive hashes before installing them without workspace links. It checks strict public declarations, all seven Node imports without DOM globals, all 480 evaluated states and the packaged CLI. The shared loader also verifies complete set membership and refuses missing/duplicate packages, failed metadata gates and altered archive bytes. The same seven archive hashes now pass local Node 24/22, production Next/StrictMode, and three-engine browser preview/export consumers. The latter two reports preserve the complete archive set and its checksums. The API reference and quickstart snippets now execute and typecheck in the isolated seven-archive consumer. Remaining CI and release manifest gates prevent declaring the release ready.
 
 ## Publication prerequisites and recovery
 
@@ -47,4 +49,4 @@ External gates remain pending: authenticated scope authority, repository visibil
 
 According to [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/), OIDC requires npm ≥11.5.1 and Node ≥22.14.0. The locally verified Node 22.12 consumer minimum is therefore insufficient for OIDC publishing. GitHub configuration must match the actual owner/repository and exact workflow filename, with `id-token: write`. Automatic provenance also requires a public repository and public package. Saving publisher settings does not verify them; the first successful publish validates the connection, and a new connection expires if unused for two days. Recheck those external settings at release time.
 
-Acceptance/release workflows, the final release manifest/changelog/checklist and shared-set browser/Next verification are still being prepared. No workflow or registry success is claimed by this document.
+Acceptance/release workflows and the final release manifest/changelog/checklist are still being prepared. No workflow or registry success is claimed by this document.

@@ -36,6 +36,14 @@ npx playwright install chromium firefox webkit
 npm run verify:web
 ```
 
-The verifier packs four real tarballs (core/compiler/canvas/export), installs them without symlinks in a temporary consumer, checks public types and Node imports, and audits the browser dependency graph. It uses actual assets/encoders and random-access file writes, then invokes `verify-video.mjs --web` on every successful output, including the demo download. `artifacts/web-export/report.json`, `video-report.json`, `SHA256SUMS`, browser bundle inputs, screenshots and WebM files contain the evidence. These milestone tarballs do not replace the final seven-package release consumer gate. The native counters retain closed encoder references intentionally and must not be used for heap benchmarking.
+The current standalone verifier packs all seven real tarballs, installs them without symlinks in a temporary consumer, checks public types and Node imports, and audits the browser dependency graph. It uses actual assets/encoders and random-access file writes, then invokes `verify-video.mjs --web` on every successful output, including the demo download. `artifacts/web-export/report.json`, `video-report.json`, `SHA256SUMS`, browser bundle inputs, screenshots and WebM files contain the evidence. The earlier four-package reports remain historical milestone evidence. The native counters retain closed encoder references intentionally and must not be used for heap benchmarking.
+
+## Shared release archive set
+
+```sh
+node scripts/verify-web-export.mjs artifacts/metadata-packages artifacts/seven-package-web
+```
+
+This mode verifies the complete metadata-checked seven-package set and each SHA-256 before installation, then runs the same real preview/export/lifetime checks without repacking. The current shared-set run passes Chromium 156.0.8078.4, Firefox 157.0 and WebKit 27.2, including all 480 shuffled states per engine, complete 720p exports, Chromium 1080p/demo download and cancellation/write-failure cleanup. The separate `artifacts/seven-package-web/video-report.json` verifies all five outputs with 480 frames, 648-sample Opus tail, largest absolute audio-marker error 0.08333 ms and zero decode errors; the known EOF diagnostic is retained. Reports, WebM files, screenshots, dependency graph and archive checksums stay together in that directory. Physical mobile, CI and publication remain separate.
 
 Implementation decisions follow [WebCodecs](https://www.w3.org/TR/webcodecs/), [Mediabunny output](https://mediabunny.dev/guide/writing-media-files), [media sources](https://mediabunny.dev/guide/media-sources) and [codec/container support](https://mediabunny.dev/guide/supported-formats-and-codecs). During integration, the installed SDK's video sample queue admitted more than four pending samples after a dequeue wakeup, and its Firefox video capability probe retained an open encoder. Owned native probes and explicit native queue control address those observed lifetime/bound failures while retaining Mediabunny's encoded-packet muxer; no SDK source patch or second export implementation is kept.

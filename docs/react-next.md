@@ -47,19 +47,27 @@ npm run build
 npm start
 ```
 
-Preparation packs six current packages, installs their real tarballs and copies the licensed project and declared asset bytes into the private example. The example lockfile records local artifact paths for this checkout; preparation is required before its build. It does not put file/workspace dependency protocols in any distributed package. The Next build uses default Turbopack and contains no source aliases, transpilePackages setting, or ssr:false workaround. The project directory must remain available to the server; this example does not claim standalone deployment packaging.
+Preparation packs all seven current packages, installs their real tarballs and copies the licensed project and declared asset bytes into the private example. The example lockfile records local artifact paths for this checkout; preparation is required before its build. It does not put file/workspace dependency protocols in any distributed package. The Next build uses default Turbopack and contains no source aliases, transpilePackages setting, or ssr:false workaround. The project directory must remain available to the server; this example does not claim standalone deployment packaging.
 
 Use Play/Pause, seek frame 97, scrub, change speed, restart and navigate to About/back. Restart resets frame and displayed/actual playback rate to one.
 
 ## Executed proof
 
-`node scripts/verify-react-next.mjs` creates a separate temporary consumer and installs six real tarballs. It checks the client directive and external React import, loads the package in Node with throwing DOM globals, and renders valid SSR HTML without asset resolution. It then builds and starts a real Next production server, verifies its SSR canvas, hydrates in Chromium and compares frame 97's PNG exactly with the offline renderer at matching dimensions.
+`node scripts/verify-react-next.mjs` creates a separate temporary consumer and installs seven real tarballs. It checks the client directive and external React import, loads the package in Node with throwing DOM globals, and renders valid SSR HTML without asset resolution. It then builds and starts a real Next production server, verifies its SSR canvas, hydrates in Chromium and compares frame 97's PNG exactly with the offline renderer at matching dimensions.
 
 Gesture play/pause, direct seek, actual AudioBufferSourceNode playback rate and restart are checked. Ten real App Router navigation cycles leave zero declared fonts, open bitmaps, open AudioContexts, observers, resize listeners and scheduled animation callbacks. The production page emits no browser errors during the test.
 
 A separate browser bundle uses development React and StrictMode. It proves the extra effect replay occurred through resolver invocation/cancellation counts, exercises plan and resolver replacement, current callbacks during loading, partial-load unmount, integrity failure and ref disposal. Fifty additional mount/play/unmount cycles use the actual font, PNG, WAV and AudioContext; they finish with no owned open resources, observers/listeners or RAF callbacks. Instrumentation wraps native APIs and counts their real lifetimes; it does not supply mock assets, decoders or audio clocks. These counters intentionally retain closed AudioContext objects for inspection, so this verifier is not a memory benchmark.
 
-The same production and StrictMode checks also pass under Node 22.12.0 via `npm exec --yes --package=node@22.12.0 -- node scripts/verify-react-next.mjs artifacts/next-packages-node22`. Evidence: `artifacts/next-packages/react-next-report.json`, the separate Node 22 report, build/start logs, six tarballs and SHA256SUMS. React Doctor 0.9.17 full-project scans of the package and Next example found no diagnostics; score/network reporting was disabled. This establishes the local Chromium/macOS reference, not Firefox/WebKit, physical mobile, full pipeline memory or final publication readiness.
+The earlier six-package production and StrictMode checks passed under Node 22.12.0 via `npm exec --yes --package=node@22.12.0 -- node scripts/verify-react-next.mjs artifacts/next-packages-node22`. Evidence: `artifacts/next-packages/react-next-report.json`, the separate Node 22 report, build/start logs, six tarballs and SHA256SUMS. React Doctor 0.9.17 full-project scans of the package and Next example found no diagnostics; score/network reporting was disabled. This establishes the local Chromium/macOS reference, not Firefox/WebKit, physical mobile, full pipeline memory or final publication readiness.
+
+## Shared release archive set
+
+```sh
+node scripts/verify-react-next.mjs artifacts/seven-package-next artifacts/metadata-packages
+```
+
+This mode loads the complete seven-package metadata report, rejects failed gates or SHA-256 mismatches before installation, and installs those exact archives without repacking. It passes all 17 current production/SSR/hydration/pixel/control/StrictMode checks on Node 24.21. The report and SHA256SUMS under `artifacts/seven-package-next` identify the same archive hashes as the Node consumers; the earlier six-package reports remain historical evidence. No publication or CI success is implied.
 
 ## Primary lifecycle references
 
