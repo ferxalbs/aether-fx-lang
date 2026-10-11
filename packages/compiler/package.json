@@ -1,0 +1,31 @@
+{
+  "name": "@aether-fx/compiler",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Safe declarative AETHER Fx lexer, parser and normalizer",
+  "license": "ISC",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@aether-fx/core": "0.1.0",
+    "chevrotain": "13.2.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
