@@ -2,7 +2,7 @@ import { checkSchema } from './schema.js';
 import { DEFAULT_LIMITS, diagnostic, IDENTITY } from './types.js';
 import type { AssetManifest, Diagnostic, FxDocument, Limits, Property, Value } from './types.js';
 import { topologyMatches } from './geometry.js';
-import { frameSeconds } from './time.js';
+import { frameSeconds, mayOvershoot } from './time.js';
 
 export function validProperty(property: Property, value: Value, kind: 'actor' | 'part' | 'camera'): boolean {
   if (property === 'shape') return kind === 'part' && typeof value === 'string';
@@ -128,7 +128,7 @@ export function validate(input: unknown, manifestInput: unknown = [], options: P
       if (frames.has(token)) fail('PROPERTY_CONFLICT', 'Multiple keys write the same property at the same frame', key);
       frames.add(token);
       if (typeof key.value !== 'number' && (key.easing !== 'linear' || key.rotation !== 'direct')) fail('DISCRETE_INTERPOLATION', 'Discrete properties cannot use easing/rotation interpolation', key);
-      if (key.target === 'camera' && (key.property === 'scaleX' || key.property === 'scaleY') && key.easing !== 'linear' && (key.easing[1] < 0 || key.easing[1] > 1 || key.easing[3] < 0 || key.easing[3] > 1)) fail('CAMERA_SCALE', 'Camera scale easing must not overshoot', key);
+      if (key.target === 'camera' && (key.property === 'scaleX' || key.property === 'scaleY') && mayOvershoot(key.easing)) fail('CAMERA_SCALE', 'Camera scale easing must not overshoot', key);
     }
     const writes: { target: string; property: string; start: number; end: number; owner:{id:string} }[] = [];
     for (const morph of shot.morphs) {

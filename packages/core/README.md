@@ -4,4 +4,4 @@ Experimental AETHER Fx schema 1 and universal ESM runtime. Pure document validat
 
 `compile(document, manifest, limits?)` returns a discriminated Result. Compiled plans are deeply frozen. `evaluate(plan, { frame })` accepts integer frames in `[0,duration)` and returns independently owned numeric drawing commands. `deserializePlan` verifies supplied snapshots by recompilation. Assets must be resolved explicitly by the host.
 
-Node 24.21 and Node 22.12 have passed foundation tests and isolated consumers locally. Full v0 CI verification is pending. Package API is experimental; schemaVersion is independent of package version. Original code is licensed under Apache-2.0; see LICENSE and NOTICE. npm scope ownership remains unverified.
+Node 24.21 and Node 22.12 have passed foundation tests and isolated consumers locally. Full v0 CI verification is pending. Package API is experimental; schemaVersion is independent of package version. Original code is licensed under Apache-2.0; see LICENSE and NOTICE.

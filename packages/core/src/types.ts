@@ -31,7 +31,7 @@ export interface Actor { id: string; parts: string[]; transform: Transform; pare
 export interface Background { id: string; actor: string; parallax: number }
 export type Property = keyof Transform | 'layer' | 'parent' | 'shape';
 export type Value = number | boolean | string | null;
-export type Easing = 'linear' | [number, number, number, number];
+export type Easing = 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'back-in' | 'back-out' | 'back-in-out' | 'bounce-out' | { type: 'spring'; frequency: number; damping: number; velocity: number } | [number, number, number, number];
 export interface Key { id: string; target: string; property: Property; frame: number; value: Value; easing: Easing; rotation: 'direct' | 'shortest'; hold: number }
 export interface Initial { target: string; values: Partial<Record<Property, Value>> }
 export interface Morph { id: string; actor: string; from: string; to: string; start: number; end: number; easing: Easing }

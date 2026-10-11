@@ -1,5 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { readFile, mkdtemp, writeFile, symlink, rm } from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import { spawnSync } from 'node:child_process';
+import { queryWebExport } from '@aether-fx/export';
+import { describe, it, expect, vi } from 'vitest';
+import { readFile, mkdtemp, writeFile, symlink, rm, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { loadProject, resolveAssets, wavMetadata, imageMetadata, doctor } from '@aether-fx/node';
@@ -49,5 +52,40 @@ describe('explicit local asset resolver',()=>{
   });
   it('diagnoses missing tools without downloading or replacing tools',async()=>{
     const result=await doctor({ffmpegPath:'/nonexistent/afx-ffmpeg',chromiumExecutable:'/nonexistent/afx-chromium'});expect(result.ok).toBe(false);if(!result.ok)expect(result.diagnostics.every(d=>d.code==='DEPENDENCY_MISSING')).toBe(true);
+  });
+});
+
+describe('native renderer ownership',()=>{
+ it('renders real assets with repeatable pixels and rejects altered asset bytes',async()=>{const {createNativeRenderer}=await import('@aether-fx/node');const project=unwrap(await loadProject('fixtures/short/little-light.afx'));const a=await createNativeRenderer(project.plan,project.assets,{width:320,height:180}),b=await createNativeRenderer(project.plan,project.assets,{width:320,height:180});try{const before=await b.captureFrame(97);const pixels=b.pixels(),view=Buffer.from(pixels.buffer,pixels.byteOffset,pixels.byteLength),owned=Buffer.from(view);b.render(479);expect(view).toEqual(owned);expect(b.pixels().buffer).not.toBe(pixels.buffer);a.dispose();a.dispose();expect(await b.captureFrame(97)).toEqual(before);await expect(a.captureFrame(0)).rejects.toMatchObject({code:'RENDERER_DISPOSED'});}finally{a.dispose();b.dispose();}const files=new Map(project.assets.files),font=files.get('nunito')!;files.set('nunito',{...font,bytes:Buffer.from(font.bytes)});files.get('nunito')!.bytes[100]=files.get('nunito')!.bytes[100]!^1;await expect(createNativeRenderer(project.plan,{...project.assets,files})).rejects.toMatchObject({code:'ASSET_INTEGRITY'});});
+});
+
+describe('distributed export backend',()=>{
+ it('loads optional MP4 separately and keeps it outside the default exports',async()=>{const web=await import('@aether-fx/export'),mp4=await import('@aether-fx/export/mp4');expect('exportMP4' in web).toBe(false);expect(typeof mp4.exportMP4).toBe('function');});
+ it('diagnoses missing external encoder for native rendering',async()=>{const {exportVideo}=await import('@aether-fx/node');const project=unwrap(await loadProject('fixtures/short/little-light.afx'));await expect(exportVideo(project,{backend:'native',ffmpegPath:'/nonexistent/afx-ffmpeg',output:'/nonexistent/excluded.webm'})).rejects.toMatchObject({code:'ENVIRONMENT_UNSUPPORTED'});});
+});
+
+describe('CI functional regressions',()=>{
+  it('rejects Opus encoders that omit delayed content on flush, despite plausible chunk durations',async()=>{
+    const {plan}=unwrap(await loadProject('fixtures/short/little-light.afx'));let packets=1,closed=0;
+    class Frame {close(){}}
+    class Video {state='configured';constructor(private init:{output:()=>void}){}static async isConfigSupported(config:unknown){return {supported:true,config};}configure(){}encode(){this.init.output();}async flush(){}close(){this.state='closed';}}
+    class Audio {state='configured';constructor(private init:{output:(chunk:EncodedAudioChunk,metadata:EncodedAudioChunkMetadata)=>void}){}static async isConfigSupported(config:unknown){return {supported:true,config};}configure(){}encode(){}async flush(){
+      const header=new Uint8Array(19);header.set(new TextEncoder().encode('OpusHead'));header[8]=1;header[9]=2;header[10]=56;header[11]=1;
+      for(let i=0;i<packets;i++)this.init.output({byteLength:2,timestamp:i*20000,duration:1000000,copyTo(target:Uint8Array){target.set([0xf8,0]);}} as unknown as EncodedAudioChunk,{decoderConfig:{codec:'opus',sampleRate:48000,numberOfChannels:2,description:header}});
+    }close(){this.state='closed';closed++;}}
+    vi.stubGlobal('isSecureContext',true);vi.stubGlobal('VideoFrame',Frame);vi.stubGlobal('AudioData',Frame);vi.stubGlobal('VideoEncoder',Video);vi.stubGlobal('AudioEncoder',Audio);
+    try{const rejected=await queryWebExport(plan);expect(rejected.ok).toBe(false);if(!rejected.ok){expect(rejected.diagnostics[0]!.code).toBe('EXPORT_UNSUPPORTED');expect(rejected.diagnostics[0]!.message).toContain('lost input samples after pre-skip');}packets=2;expect((await queryWebExport(plan)).ok).toBe(true);expect(closed).toBe(2);}finally{vi.unstubAllGlobals();}
+  });
+  it('distinguishes absent reports, failed reports and failed acceptance without creating a candidate',async()=>{
+    const directory=await mkdtemp(join(tmpdir(),'afx assembly rejection ')),script=fileURLToPath(new URL('../scripts/prepare-candidate.mjs',import.meta.url));
+    try{
+      await writeFile(join(directory,'release.config.json'),await readFile('release.config.json'));
+      const execute=()=>spawnSync(process.execPath,[script,'--out','candidate'],{cwd:directory,encoding:'utf8',timeout:10000});
+      expect(execute().status).toBe(1);
+      let report=JSON.parse(await readFile(join(directory,'artifacts/assembly/diagnostic.json'),'utf8'));expect(report.status).toBe('FAIL');expect(report.blockers.every((b:{code:string})=>b.code==='REPORT_MISSING')).toBe(true);
+      await mkdir(join(directory,'artifacts/ci'),{recursive:true});await writeFile(join(directory,'artifacts/ci/acceptance-report.json'),JSON.stringify({complete:false,ranAll:true,results:[{status:'FAIL',category:'budget'}]}));
+      await mkdir(join(directory,'artifacts/ci-next'),{recursive:true});await writeFile(join(directory,'artifacts/ci-next/react-next-report.json'),JSON.stringify({status:'FAIL',complete:false}));
+      expect(execute().status).toBe(1);report=JSON.parse(await readFile(join(directory,'artifacts/assembly/diagnostic.json'),'utf8'));expect(report.blockers.map((b:{code:string})=>b.code)).toContain('ACCEPTANCE_FAILED');expect(report.blockers.map((b:{code:string})=>b.code)).toContain('REPORT_FAILED');expect(report.candidateCreated).toBe(false);await expect(readFile(join(directory,'candidate/manifest.json'))).rejects.toMatchObject({code:'ENOENT'});
+    }finally{await rm(directory,{recursive:true,force:true});}
   });
 });

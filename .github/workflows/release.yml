@@ -1,46 +1,8 @@
 name: AETHER Fx release preparation
 on:
   workflow_dispatch:
-    inputs:
-      publish:
-        description: "Future owner-authorized publication; manifest authority gates must also pass"
-        type: boolean
-        default: false
 permissions:
   contents: read
 jobs:
   acceptance:
     uses: ./.github/workflows/ci.yml
-  publish:
-    # Publication is outside the authorized goal. A later explicit instruction must enable this job.
-    if: ${{ inputs.publish }}
-    needs: acceptance
-    runs-on: ubuntu-24.04
-    environment: npm-publication
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: "24.21.0"
-          package-manager-cache: false
-      - run: npm install --global npm@11.19.0
-      - run: npm ci
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: acceptance-node-24.21.0
-          path: artifacts
-      - name: Publish each verified archive in dependency order
-        run: |
-          node --input-type=module <<'JS'
-          import { readFile } from 'node:fs/promises';
-          import { spawnSync } from 'node:child_process';
-          const manifest = JSON.parse(await readFile('artifacts/release/manifest.json', 'utf8'));
-          if (!manifest.publicationReady) throw new Error('Owner/external publication gates have not passed');
-          for (const archive of manifest.archives) {
-            const result = spawnSync('npm', ['publish', 'artifacts/release/' + archive.filename, '--access', 'public', '--registry', 'https://registry.npmjs.org/'], { stdio: 'inherit' });
-            if (result.status !== 0) throw new Error('Publication stopped; inspect existing name/version and archive integrity before resuming');
-          }
-          JS

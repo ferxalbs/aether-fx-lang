@@ -78,3 +78,14 @@ This mode loads the complete seven-package metadata report, rejects failed gates
 - [React useEffectEvent](https://react.dev/reference/react/useEffectEvent): current callbacks for effect events without making them effect dependencies.
 - [React useImperativeHandle](https://react.dev/reference/react/useImperativeHandle): expose controls through the component ref.
 - [Next server/client components](https://nextjs.org/docs/app/getting-started/server-and-client-components): client entry directives and serializable boundary data.
+
+For the Node still-renderer dependency graph, keep native addons outside the server JavaScript bundle:
+
+```js
+export default {
+  reactStrictMode: true,
+  serverExternalPackages: ['@napi-rs/canvas'],
+};
+```
+
+This follows [Next's serverExternalPackages contract](https://nextjs.org/docs/app/api-reference/config/next-config-js/serverExternalPackages): Node loads those dependencies at runtime. The isolated production consumer validates this exact configuration. A native `.node` addon cannot be emitted as a JavaScript chunk; Edge runtimes cannot host this Node exporter.

@@ -7,7 +7,7 @@ export async function readReleaseConfig(root = process.cwd()) {
   const config = JSON.parse(await readFile(join(root, 'release.config.json'), 'utf8'));
   assert.deepEqual(Object.keys(config).sort(), ['scope', 'version']);
   assert.match(config.scope, /^@[a-z0-9][a-z0-9._-]*$/, 'Invalid npm scope');
-  assert.match(config.version, /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/, 'Use a stable joint package version');
+  assert.match(config.version, /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-rc\.[1-9]\d*)?$/, 'Use a stable joint package version or rc.N prerelease');
   return config;
 }
 export async function checkReleaseManifests(root = process.cwd()) {

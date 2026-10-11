@@ -535,7 +535,16 @@
     "easing": {
       "anyOf": [
         {
-          "const": "linear"
+          "enum": [
+            "linear",
+            "ease-in",
+            "ease-out",
+            "ease-in-out",
+            "back-in",
+            "back-out",
+            "back-in-out",
+            "bounce-out"
+          ]
         },
         {
           "type": "array",
@@ -559,6 +568,36 @@
           ],
           "minItems": 4,
           "maxItems": 4
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "spring"
+            },
+            "frequency": {
+              "type": "number",
+              "minimum": 6,
+              "maximum": 50
+            },
+            "damping": {
+              "type": "number",
+              "minimum": 0.1,
+              "maximum": 1
+            },
+            "velocity": {
+              "type": "number",
+              "minimum": -2,
+              "maximum": 2
+            }
+          },
+          "required": [
+            "type",
+            "frequency",
+            "damping",
+            "velocity"
+          ],
+          "additionalProperties": false
         }
       ]
     },

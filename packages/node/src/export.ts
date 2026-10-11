@@ -5,23 +5,25 @@ import { platform, release } from 'node:os';
 import { frameSeconds, frameTimestamp } from '@aether-fx/core';
 import type { LoadedProject } from './assets.js';
 import { createOfflineRenderer } from './renderer.js';
-import type { OfflineRenderer } from './renderer.js';
+import { createNativeRenderer } from './native.js';
 import { doctor } from './doctor.js';
 import { FxEnvironmentError } from './errors.js';
 export interface ExportOptions {
-  output: string; width?: number; height?: number; format?: 'webm' | 'mp4'; signal?: AbortSignal; timeoutMs?: number;
+  backend?: 'native' | 'chromium'; output: string; width?: number; height?: number; format?: 'webm' | 'mp4'; signal?: AbortSignal; timeoutMs?: number;
   ffmpegPath?: string; chromiumExecutable?: string; onProgress?: (progress: { frame: number; total: number }) => void;
 }
 export interface ExportReport {
   output: string; frames: number; width: number; height: number; duration: number; seconds: number; exportFactor: number;
-  chromium: string; ffmpeg: string; os: string; assetHashes: Record<string, string>; fonts: string[];
+  backend?: string; chromium: string; ffmpeg: string; os: string; assetHashes: Record<string, string>; fonts: string[];
   queueCapacity: 1; peakRssBytes: number; blockedRequests: string[];
 }
 export async function exportVideo(project: LoadedProject, options: ExportOptions): Promise<ExportReport> {
+  const backend = options.backend ?? 'native';
+  if (!['native', 'chromium'].includes(backend)) throw new FxEnvironmentError('BACKEND_UNSUPPORTED', 'Backend must be native or chromium');
   const timeout = AbortSignal.timeout(options.timeoutMs ?? 300_000), signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
   const checkCancellation = () => { if (signal.aborted) throw new FxEnvironmentError(timeout.aborted ? 'EXPORT_TIMEOUT' : 'EXPORT_ABORTED', 'Export was cancelled or exceeded its timeout', { cause: signal.reason }); };
   checkCancellation();
-  const report = await doctor(options); if (!report.ok) throw new FxEnvironmentError('ENVIRONMENT_UNSUPPORTED', JSON.stringify(report.diagnostics));
+  const report = await doctor({ ...options, backend }); if (!report.ok) throw new FxEnvironmentError('ENVIRONMENT_UNSUPPORTED', JSON.stringify(report.diagnostics));
   checkCancellation();
   const format = options.format ?? 'webm'; if (format === 'mp4' && (!report.value.encoders.h264 || !report.value.encoders.aac)) throw new FxEnvironmentError('ENCODER_MISSING', 'MP4 additionally requires libx264 and aac');
   if (format !== 'webm' && format !== 'mp4') throw new FxEnvironmentError('EXPORT_FORMAT', 'Format must be webm or mp4');
@@ -30,14 +32,20 @@ export async function exportVideo(project: LoadedProject, options: ExportOptions
   const output = resolve(options.output);
   // Temp output shares the destination filesystem; hard-link publication never overwrites user data.
   const directory = await mkdtemp(join(dirname(output), '.afx-export-')), temporary = join(directory, 'video.' + format);
-  let renderer: OfflineRenderer | undefined, process: ReturnType<typeof spawn> | undefined, stderr = '', processError: Error | undefined;
+  let renderer: { captureFrame(frame: number): Promise<Buffer>; dispose(): void | Promise<void>; browserVersion?: string; blockedRequests?: string[] } | undefined, process: ReturnType<typeof spawn> | undefined, stderr = '', processError: Error | undefined;
   let peakRssBytes = globalThis.process.memoryUsage().rss, finished = false, killTimer: ReturnType<typeof setTimeout> | undefined;
   const start = performance.now();
-  const abort = () => { if (process && !finished) { process.kill('SIGTERM'); killTimer = setTimeout(() => process?.kill('SIGKILL'), 2000); } void renderer?.dispose().catch(() => { }); };
+  const abort = () => { if (process && !finished) { process.kill('SIGTERM'); killTimer = setTimeout(() => process?.kill('SIGKILL'), 2000); } void Promise.resolve(renderer?.dispose()).catch(() => { }); };
   signal.addEventListener('abort', abort, { once: true });
   try {
-    renderer = await createOfflineRenderer(plan, assets, { width, height, signal, ...(options.chromiumExecutable ? { chromiumExecutable: options.chromiumExecutable } : {}) });
-    const args = ['-hide_banner', '-loglevel', 'error', '-nostdin', '-f', 'image2pipe', '-vcodec', 'png', '-framerate', `${plan.document.fps.numerator}/${plan.document.fps.denominator}`, '-i', 'pipe:0'];
+    if (backend === 'native') {
+      const native = await createNativeRenderer(plan, assets, { width, height });
+      renderer = { async captureFrame(frame) { native.render(frame); const pixels = native.pixels(); return Buffer.from(pixels.buffer, pixels.byteOffset, pixels.byteLength); }, dispose() { native.dispose(); } };
+    } else renderer = await createOfflineRenderer(plan, assets, { width, height, signal, ...(options.chromiumExecutable ? { chromiumExecutable: options.chromiumExecutable } : {}) });
+    // getImageData owns a fresh allocation. The Buffer view retains it until the
+    // pipe callback completes; rendering the next frame cannot mutate its bytes.
+    const input = backend === 'native' ? ['-f', 'rawvideo', '-pixel_format', 'rgba', '-video_size', `${width}x${height}`] : ['-f', 'image2pipe', '-vcodec', 'png'];
+    const args = ['-hide_banner', '-loglevel', 'error', '-nostdin', ...input, '-framerate', `${plan.document.fps.numerator}/${plan.document.fps.denominator}`, '-i', 'pipe:0'];
     const audio = plan.document.audio;
     if (audio) { const file = assets.files.get(audio.asset)!; const path = join(directory, 'audio.wav'); await writeFile(path, file.bytes); args.push('-i', path); }
     args.push('-map', '0:v:0');
@@ -54,7 +62,7 @@ export async function exportVideo(project: LoadedProject, options: ExportOptions
       process!.stdin!.on('error', cause => { processError ??= cause; });
       process!.on('close', code => { finished = true; if (code !== 0) { processError ??= new FxEnvironmentError('ENCODE_FAILED', `FFmpeg exited ${code}: ${stderr}`); reject(processError); } else resolve(); });
     });
-    // Attach a rejection observer immediately; the sequential loop may still be in Chromium.
+    // Attach a rejection observer immediately; the sequential loop may still be capturing a frame.
     void completion.catch(() => { });
     for (let frame = 0; frame < plan.duration; frame++) {
       signal.throwIfAborted(); if (processError) throw processError;
@@ -65,7 +73,7 @@ export async function exportVideo(project: LoadedProject, options: ExportOptions
     process.stdin!.end(); await completion; signal.throwIfAborted();
     await link(temporary, output); // EEXIST is a failure, never an implicit overwrite.
     const seconds = (performance.now() - start) / 1000, duration = frameSeconds(plan.duration, plan.document.fps);
-    return { output, frames: plan.duration, width, height, duration, seconds, exportFactor: seconds / duration, chromium: renderer.browserVersion, ffmpeg: report.value.ffmpeg, os: `${platform()} ${release()}`, assetHashes: Object.fromEntries(assets.manifest.map(a => [a.id, a.hash])), fonts: plan.document.assets.filter(a => a.kind === 'font').map(a => a.id), queueCapacity: 1, peakRssBytes, blockedRequests: renderer.blockedRequests };
+    return { output, frames: plan.duration, width, height, duration, seconds, exportFactor: seconds / duration, backend, chromium: renderer.browserVersion ?? 'none', ffmpeg: report.value.ffmpeg, os: `${platform()} ${release()}`, assetHashes: Object.fromEntries(assets.manifest.map(a => [a.id, a.hash])), fonts: plan.document.assets.filter(a => a.kind === 'font').map(a => a.id), queueCapacity: 1, peakRssBytes, blockedRequests: renderer.blockedRequests ?? [] };
   } catch (cause) {
     if (process && !finished) { process.kill('SIGKILL'); await new Promise<void>(resolve => process!.once('close', () => resolve())); }
     if (signal.aborted) throw new FxEnvironmentError(timeout.aborted ? 'EXPORT_TIMEOUT' : 'EXPORT_ABORTED', 'Export was cancelled or exceeded its timeout', { cause: signal.reason });

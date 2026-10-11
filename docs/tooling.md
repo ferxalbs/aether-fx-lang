@@ -1,0 +1,7 @@
+# Local authoring tooling
+
+`afx lsp` uses Content-Length framed JSON-RPC 2.0 over stdio. Supports initialize/shutdown/exit, full text didOpen/didChange/didClose, publishDiagnostics and documentFormatting. It declares full document sync (1), UTF-16 positions and a 2 MB document/message limit. Only declared local assets for file URIs are resolved. Incremental sync, completion, rename and code actions are not implemented. [LSP 3.17 specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/) is the protocol reference. The smoke consumer exercises real framed requests and validates silent stdout framing, diagnostics, formatting and exit.
+
+Import editors/afx.tmLanguage.json into an editor supporting TextMate grammars, associate `.afx` with source.afx, and configure its language-server client to run the installed `afx lsp`. The grammar and stdio server are supplied without an editor extension package.
+
+`npm run playground:build` produces artifacts/playground. Serve it over localhost (for secure-context WebCodecs) using `python3 -m http.server 3010 --directory artifacts/playground`. It includes keyboard controls/names, live diagnostics, source highlighting, source formatting, examples and browser export probes. Static UI inspection covers desktop/mobile layout and available names, not full screen-reader certification. The downloadable in-memory sink caps output at 64 MB. It previews asset-free sources only; use the Node API/CLI for verified local file assets.

@@ -47,7 +47,7 @@ try {
   sample(); timer = setInterval(sample, 250);
   for (const [seconds, project] of [[20, original], [60, repeatProject]]) {
     phase = 'export-' + seconds; progress = 0; console.log(`Measuring full Chromium/FFmpeg ${seconds}s export at 720p`);
-    const report = await exportVideo(project, { output: join(directory, seconds + 's.webm'), width: 1280, height: 720, timeoutMs: 180000, onProgress: p => { progress = p.frame; if (p.frame % 120 === 0) console.log(`${seconds}s export: ${p.frame}/${p.total} frames`); } });
+    const report = await exportVideo(project, { backend:'chromium', output: join(directory, seconds + 's.webm'), width: 1280, height: 720, timeoutMs: 180000, onProgress: p => { progress = p.frame; if (p.frame % 120 === 0) console.log(`${seconds}s export: ${p.frame}/${p.total} frames`); } });
     sample(); assert.equal(report.frames, seconds * 24); assert.equal(report.queueCapacity, 1); assert.deepEqual(report.blockedRequests, []);
     const memory = samples.filter(s => s.phase === phase), totals = memory.map(s => s.totalRssBytes);
     assert(memory.some(s => s.processes.some(p => p.role === 'ffmpeg') && s.processes.some(p => p.role === 'chromium')), 'Full pipeline was not observed');

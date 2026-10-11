@@ -1,6 +1,6 @@
 {
   "name": "aether-fx-lang",
-  "version": "0.1.0",
+  "version": "0.2.0-rc.3",
   "description": "AetherFX Language",
   "license": "Apache-2.0",
   "private": true,
@@ -13,7 +13,7 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --dir tests",
     "typecheck": "tsc --noEmit",
     "build": "node scripts/build.mjs",
     "check": "npm run release:check && npm run build && npm run typecheck && npm test",
@@ -25,7 +25,10 @@
     "release:sync": "node scripts/sync-release.mjs --write",
     "release:check": "node scripts/sync-release.mjs --check",
     "lint": "node scripts/lint.mjs",
-    "verify:ci": "node scripts/verify-ci.mjs"
+    "verify:ci": "node scripts/verify-ci.mjs",
+    "verify:authoring": "node scripts/verify-authoring.mjs",
+    "fuzz": "node scripts/fuzz.mjs",
+    "playground:build": "node scripts/build-playground.mjs"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
@@ -34,7 +37,8 @@
     "playwright": "1.64.0",
     "react": "19.3.0",
     "typescript": "7.0.2",
-    "vitest": "5.0.3"
+    "vitest": "5.0.3",
+    "@mediabunny/aac-encoder": "1.61.3"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 {
   "name": "@aether-fx/compiler",
-  "version": "0.1.0",
+  "version": "0.2.0-rc.3",
   "type": "module",
   "description": "Safe declarative AETHER Fx lexer, parser and normalizer",
   "license": "Apache-2.0",
@@ -22,7 +22,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@aether-fx/core": "0.1.0",
+    "@aether-fx/core": "0.2.0-rc.3",
     "chevrotain": "13.2.0"
   },
   "publishConfig": {

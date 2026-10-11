@@ -1,6 +1,6 @@
 {
   "name": "@aether-fx/cli",
-  "version": "0.1.0",
+  "version": "0.2.0-rc.3",
   "type": "module",
   "description": "The afx check, compile, render and doctor command-line interface",
   "license": "Apache-2.0",
@@ -25,9 +25,9 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@aether-fx/node": "0.1.0",
-    "@aether-fx/compiler": "0.1.0",
-    "@aether-fx/core": "0.1.0"
+    "@aether-fx/node": "0.2.0-rc.3",
+    "@aether-fx/compiler": "0.2.0-rc.3",
+    "@aether-fx/core": "0.2.0-rc.3"
   },
   "publishConfig": {
     "access": "public",

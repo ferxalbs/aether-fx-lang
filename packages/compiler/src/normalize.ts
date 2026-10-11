@@ -2,6 +2,9 @@ import { checkSchema, compile, DEFAULT_LIMITS, diagnostic, failure, IDENTITY, su
 import type { AssetManifest, Diagnostic, FxDocument, Limits, PlaybackPlan, Result, SourceRange } from '@aether-fx/core';
 import type { AstField, AstValue, Declaration, DocumentAST } from './parser.js';
 import { parse } from './parser.js';
+import { expand, timeFrames } from './expand.js';
+import { resolveAnchors } from './anchors.js';
+import { primitive } from './primitives.js';
 
 const frameFields=new Set(['frame','duration','start','end','offset','trimStart','hold']);
 const badKeys=new Set(['__proto__','prototype','constructor']);
@@ -35,7 +38,10 @@ function sourceRangeForPath(root:Declaration,path=''):SourceRange {
   }
   return node.range;
 }
-export function normalize(ast:DocumentAST):Result<FxDocument> {
+export function normalize(ast:DocumentAST):Result<FxDocument> {const expanded=expand(ast);return expanded.ok?normalizeExpanded(expanded.value):expanded;}
+function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
+  const fpsValue=ast.project.fields.find(f=>f.name==='fps')?.value;
+  const rationalFps:[number,number]=fpsValue?.kind==='array'&&fpsValue.items.length===2&&fpsValue.items.every(v=>v.kind==='scalar'&&typeof v.value==='number'&&Number.isSafeInteger(v.value)&&v.value>0)?[Number((fpsValue.items[0] as {value:number}).value),Number((fpsValue.items[1] as {value:number}).value)]:[24,1];
   const errors:Diagnostic[]=[];
   const fail=(code:string,message:string,range:SourceRange,id?:string)=>errors.push(diagnostic(code,message,{range,...(id?{id}:{})}));
   function convert(value:AstValue,property:string):unknown {
@@ -44,7 +50,8 @@ export function normalize(ast:DocumentAST):Result<FxDocument> {
         if (!Number.isFinite(value.value)) fail('NUMBER_INVALID','Number must be finite',value.range);
         const unit=value.unit;
         if (frameFields.has(property)) {
-          if (unit!=='f') fail('UNIT_REQUIRED',`${property} requires frame unit f`,value.range);
+          if (!['f','s','ms'].includes(unit??'')) fail('UNIT_REQUIRED',`${property} requires f, s or ms`,value.range);
+          if(unit==='s'||unit==='ms'){try{return timeFrames(value,rationalFps);}catch(cause){fail('TIME_INVALID',String(cause),value.range);}}
         } else if (property==='rotation') {
           if (unit!=='deg'&&unit!=='rad') fail('UNIT_REQUIRED','Rotation requires deg or rad',value.range);
         } else if (unit) fail('UNIT_INVALID',`Unexpected unit ${unit} for ${property}`,value.range);
@@ -84,11 +91,12 @@ export function normalize(ast:DocumentAST):Result<FxDocument> {
     if (d.keyword==='asset') {
       const f=allowed(d,['version','kind','src','locked']); append('assets',{id:d.id,version:1,locked:false,...f});
     } else if (d.keyword==='shape') {
-      allowed(d,[],['contour']);
+      const primitiveFields=allowed(d,['primitive','size','radius','from','to','points','innerRadius','count','data'],['contour']);
       const contours=d.children.filter(c=>c.keyword==='contour').map(c=>{
         const f=allowed(c,['start','closed'],['cubic']);
         return {id:c.id,closed:true,...f,segments:c.children.filter(s=>s.keyword==='cubic').map(s=>({id:s.id,...allowed(s,['control1','control2','end'])}))};
       });
+      if(primitiveFields.primitive!==undefined){if(contours.length)fail('PRIMITIVE_INVALID','Cannot mix primitive and contours',d.range);const {primitive:kind,...props}=primitiveFields;try{contours.push(...primitive(String(kind),props) as typeof contours);}catch(cause){fail('PRIMITIVE_INVALID',String(cause),d.range,d.id);}}else if(Object.keys(primitiveFields).length)fail('PRIMITIVE_INVALID','Primitive kind required',d.range);
       append('shapes',{id:d.id,contours});
     } else if (d.keyword==='part') {
       const f=allowed(d,['parent','pivot','transform','layer','shape','material','text','image']);
@@ -105,7 +113,8 @@ export function normalize(ast:DocumentAST):Result<FxDocument> {
       result.audio={offset:0,trimStart:0,gain:1,...allowed(d,['asset','offset','trimStart','duration','gain'])};
     } else if (d.keyword==='scene') {
       allowed(d,[],['shot']);
-      for (const s of d.children.filter(c=>c.keyword==='shot')) {
+      for (const originalShot of d.children.filter(c=>c.keyword==='shot')) {
+        const anchored=resolveAnchors(originalShot,rationalFps);if(!anchored.ok){errors.push(...anchored.diagnostics);continue;}const s=anchored.value;
         const f=allowed(s,['duration'],['initial','key','morph','expose','camera']);
         const shot:Record<string,unknown>={id:s.id,...f,initial:[],keys:[],morphs:[],exposures:[],camera:{x:0,y:0,scaleX:1,scaleY:1,rotation:0}};
         let cameraSeen=false;
@@ -133,10 +142,11 @@ export function normalize(ast:DocumentAST):Result<FxDocument> {
 }
 export function compileSource(source:string,manifest:AssetManifest=[],options:Partial<Limits>={}):Result<PlaybackPlan> {
   const ast=parse(source,{sourceBytes:options.sourceBytes??DEFAULT_LIMITS.sourceBytes,depth:options.depth??DEFAULT_LIMITS.depth});if (!ast.ok) return ast;
-  const document=normalize(ast.value);if (!document.ok) return document;
+  const expanded=expand(ast.value);if(!expanded.ok)return expanded;
+  const document=normalizeExpanded(expanded.value);if (!document.ok) return document;
   const plan=compile(document.value,manifest,options);
   if (!plan.ok) {
-    return failure(plan.diagnostics.map(e=>e.path==='/manifest'||e.path?.startsWith('/manifest/')?e:{...e,range:sourceRangeForPath(ast.value.project,e.path)}));
+    return failure(plan.diagnostics.map(e=>e.path==='/manifest'||e.path?.startsWith('/manifest/')?e:{...e,range:sourceRangeForPath(expanded.value.project,e.path)}));
   }
   return plan;
 }

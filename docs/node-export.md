@@ -1,14 +1,17 @@
 # Node rendering and diagnosis
 
+This page describes the current Node frame/encoder boundary. For the 0.2.0-rc.2 capabilities and retained failures, see [export-v0.1](export-v0.1.md).
+
 For the latest recorded acceptance status and unresolved failures, see [release readiness](../RELEASE-READINESS.md) and [known issues](../KNOW-ISSUES.md). Local results below do not establish hosted CI success.
 
-The reference export runs the same numeric Canvas renderer in Playwright Chromium, captures exact-sized PNG frames, and streams them sequentially to external FFmpeg. It uses neither screen recording nor MediaRecorder. Node does not import the browser renderer into its own execution context.
+The default export runs the numeric Canvas renderer on Skia (@napi-rs/canvas), streams exact-sized RGBA frames sequentially to external FFmpeg with write backpressure. `backend: chromium` explicitly selects Playwright Chromium for compatibility. It uses neither screen recording nor MediaRecorder. Node does not import the browser renderer into its own execution context.
 
 ## Deliberate setup
 
 ```sh
 npm ci
 npm run build
+# Only for backend: chromium
 npx playwright install chromium
 node packages/cli/dist/afx.js doctor
 ```
@@ -34,7 +37,7 @@ The ephemeral HTTP server serves only the source plan, built renderer, and decla
 
 Every output frame uses an absolute integer frame index. FFmpeg receives the rational frame rate, exact frame count and duration. Audio trimming/delay/padding uses rational frame-to-sample conversion. One PNG write must complete before the next capture; the coordinator never accumulates all output frames. Codec-internal buffers and fixed assets still consume memory.
 
-Temporary files share the destination filesystem. A final hard link publishes the completed file atomically while refusing an existing destination. Failure, timeout and cancellation close Chromium, kill FFmpeg if necessary and remove the temporary directory. Calling renderer disposal more than once returns the same cleanup promise. If a filesystem cannot support the final hard link, export fails explicitly. `peakRssBytes` is the Node coordinator measurement; it is not total Chromium/FFmpeg memory and does not satisfy the full pipeline memory gate.
+Temporary files share the destination filesystem. A final hard link publishes the completed file atomically while refusing an existing destination. Failure, timeout and cancellation dispose the renderer (and close Chromium when selected), kill FFmpeg if necessary and remove the temporary directory. Calling renderer disposal more than once returns the same cleanup promise. If a filesystem cannot support the final hard link, export fails explicitly. `peakRssBytes` is the Node coordinator measurement; it is not total Chromium/FFmpeg memory and does not satisfy the full pipeline memory gate.
 
 ## Observed reference results
 

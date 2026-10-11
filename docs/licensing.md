@@ -1,38 +1,28 @@
-# Licensing and publication identity
+# Licenses and dependencies
 
-Original AETHER Fx code, documentation and original fixture assets use Apache-2.0, as explicitly authorized by the owner on 2026-10-10. The complete official Apache License is preserved in LICENSE. NOTICE records the supplied attribution verbatim:
+Original AETHER Fx code, documentation and original fixture artwork/audio are Apache-2.0. [LICENSE](../LICENSE) contains the full license and [NOTICE](../NOTICE) preserves attribution. Builds include both files unchanged in all seven packages. Third-party software retains its own license.
 
-> Copyright 2026  Fer's
-
-The build copies the same LICENSE and NOTICE into all seven packages, and each package includes them in its npm file allowlist. This choice replaces the initial provisional ISC declaration for original work. It does not relicense third-party dependencies, fonts or external binaries.
-
-The actual configured Git remote is https://github.com/ferxalbs/aether-fx-lang.git. Package repository metadata uses that URL with the correct workspace directory; homepage and issues links are derived from it. The intended npm scope is @aether-fx. Public registry probes for all seven package names returned 404 on 2026-10-10. That does not establish scope availability or ownership. The initial `npm whoami --registry=https://registry.npmjs.org/` probe returned ENEEDAUTH. A later read-only probe now authenticates as `ferxalb`, but `npm org ls aether-fx --json` returned E404. That response does not prove scope availability or control; organization authority and trusted-publisher configuration remain unverified. The current report is in artifacts/publication-identity/report.json. No account registration, permission change or publication was performed.
-
-## Runtime dependency inventory
-
-This table records the resolved root lockfile's runtime/peer dependency metadata, including transitive dependencies. Public package builds keep third-party imports external; the dependencies' own npm packages retain their complete LICENSE/NOTICE files. Those files are not replaced by the AETHER Fx license. Mediabunny remains MPL-2.0 software; its installed source is unchanged. The original project's package artifacts contain no third-party binary or demonstration font.
-
-| Dependency | Version | Declared license |
+| Dependency | Version | License / role |
 | --- | --- | --- |
-| @chevrotain/cst-dts-gen | 13.2.0 | Apache-2.0 |
-| @chevrotain/gast | 13.2.0 | Apache-2.0 |
-| @chevrotain/regexp-to-ast | 13.2.0 | Apache-2.0 |
-| @chevrotain/types | 13.2.0 | Apache-2.0 |
-| @chevrotain/utils | 13.2.0 | Apache-2.0 |
-| @types/dom-mediacapture-transform | 0.1.12 | MIT |
-| @types/dom-webcodecs | 0.1.13 | MIT |
-| chevrotain | 13.2.0 | Apache-2.0 |
-| mediabunny | 1.61.3 | MPL-2.0 |
-| playwright | 1.64.0 | Apache-2.0 |
-| playwright-core | 1.64.0 | Apache-2.0 |
-| react | 19.3.0 | MIT |
+| Chevrotain and its packages | 13.2.0 | Apache-2.0; compiler parser |
+| Mediabunny | 1.61.3 | MPL-2.0; browser muxing; unmodified |
+| Playwright / playwright-core | 1.64.0 | Apache-2.0; Node browser adapter |
+| @napi-rs/canvas | 1.0.11 | MIT; Skia frame renderer |
+| @mediabunny/server (optional peer) | 1.61.3 | MPL-2.0; explicit integrated encoder adapter |
+| node-av (optional peer) | 6.1.1 | MIT wrapper; FFmpeg binaries have separate, unresolved terms |
+| React (peer) | 19.3.0 reference | MIT; React player |
+| @mediabunny/aac-encoder (optional peer) | 1.61.3 | MPL-2.0 wrapper with FFmpeg AAC WASM; separate upstream terms |
 
-Development dependencies and platform-specific optional tools remain recorded separately in package-lock.json; they are not included as binaries in the public tarballs. The private Next example uses Next 16.4.0 and ReactDOM 19.3.0, both MIT, with its resolved dependency inventory in examples/next-app/package-lock.json. Their installed licenses are preserved.
+The lockfile records exact transitive and platform dependencies. Package builds leave third-party imports external; their installed packages retain license/source files. No Mediabunny source is modified. The optional AAC encoder is not installed by the default public dependency graph; install it explicitly for `@aether-fx/export/aac`. Its [upstream build instructions](https://mediabunny.dev/guide/extensions/aac-encoder) describe FFmpeg WASM; bundling it requires preserving applicable notices, corresponding source and build/relinking requirements. No codec patent clearance is asserted.
 
-## Reference assets and external tools
+The CLI contains the unmodified Nunito TTF, Copyright 2014 The Nunito Project Authors, under SIL Open Font License 1.1, with its complete OFL text beside it. See [asset provenance](../fixtures/short/ASSETS.md). Fixture hashes identify exact bytes.
 
-Nunito is Copyright 2014 The Nunito Project Authors and uses SIL Open Font License 1.1. The original, complete assets/Nunito-OFL.txt is preserved alongside the unmodified TTF; fixture manifest hashes continue to identify the exact font/image/WAV bytes. See fixtures/short/ASSETS.md for sources and provenance. The original PNG, score and geometry now follow Apache-2.0 and the supplied notice.
+Node video export renders with Skia and starts a separately installed FFmpeg executable; the explicit Chromium renderer additionally starts Playwright Chromium. They are not redistributed in AETHER tarballs. Their respective upstream licenses apply to their distributions; FFmpeg's license depends on build configuration. WebM requires libvpx-vp9/libopus; MP4 requires libx264/aac. See [FFmpeg licensing](https://ffmpeg.org/legal.html) and [installation](node-export.md).
 
-Chromium/Firefox/WebKit and FFmpeg are deliberate local tooling requirements, not redistributed in npm tarballs. Their independent licenses and upstream notices remain applicable to their distributions. This inventory records attribution and packaging facts; npm scope authority and OIDC publisher settings must be confirmed separately before a future authorized publication.
+`@mediabunny/server` 1.61.3 uses NodeAV; the inspected NodeAV 6.1.1 binary reported statically linked FFmpeg 8.1-Jellyfin with GPL/version3 flags and x264/x265/fdk-aac. MIT metadata for the bindings does not license that binary. The integrated encoder is retained in an isolated opt-in entry with exact optional peers; no NodeAV binary is included or installed by default. GPL permits redistribution subject to its terms. Qualification remains blocked by the missing verified correspondence between this binary and its complete source, patches, build inputs and third-party licensing. Optional dependencies and external processes do not automatically exempt distributors from applicable obligations. `SKIP_FFMPEG=true` skips only the additional CLI downloader, not the addon libraries.
 
-Sources: [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt), installed package manifests/licenses and the committed lockfiles; [npm whoami](https://docs.npmjs.com/cli/v11/commands/npm-whoami/) explains the authenticated account check.
+Primary references: [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0), [MPL-2.0](https://www.mozilla.org/en-US/MPL/2.0/), [FFmpeg](https://ffmpeg.org/legal.html), [Mediabunny server](https://mediabunny.dev/guide/extensions/server), upstream package licenses and the lockfile. AETHER's Apache-2.0 license does not replace those terms.
+
+For NodeAV 6.1.1, the inspected npm platform archive `@seydx/node-av-darwin-x64` contains only `package.json`, `README.md` and `node-av.node`, with no FFmpeg license text or corresponding source. The wrapper archive contains its MIT license. The [tagged build workflow](https://github.com/seydx/node-av/blob/v6.1.1/.github/workflows/build-prebuilds.yaml) builds static Jellyfin libraries and records a submodule; the tag pins `externals/jellyfin-ffmpeg` to `5cd65f8388fbcd2f87088d3b10fe53fc5ea81ed5`. This is useful source provenance, but does not establish all binary build inputs or satisfy source/notice obligations for a redistributed binary. macOS `otool -L` shows system/framework dependencies, no dynamic libav libraries, consistent with the runtime's static configuration. Other platform binaries were not inspected. See [tagged installer](https://github.com/seydx/node-av/blob/v6.1.1/src/ffmpeg/install.ts) and [FFmpeg license details](https://ffmpeg.org/doxygen/trunk/md_LICENSE.html).
+
+A concrete compatibility question remains for GPL/version3 plus `libfdk-aac`: the pinned Jellyfin build applies [patch 0029](https://github.com/seydx/jellyfin-ffmpeg/blob/5cd65f8388fbcd2f87088d3b10fe53fc5ea81ed5/debian/patches/0029-remove-fdk-aac-from-nonfree.patch), which removes FDK AAC from configure's nonfree classification. This explains how the reported flags can coexist without `--enable-nonfree`; changing configure classification does not itself demonstrate redistribution rights. FFmpeg's official license document identifies FDK AAC as incompatible with GPL. Exact third-party rights/source/notice correspondence remain unestablished. OpenSSL requires checking its actual version: the pinned configure allows OpenSSL >=3 with GPLv3, while older OpenSSL differs; its enabled flag alone is insufficient to decide. This is a binary-specific blocker, not a statement that GPL prohibits publication. An alternative LGPL build would need actual codec capability, source/build correspondence and license verification before replacing the measured implementation; none is qualified here.

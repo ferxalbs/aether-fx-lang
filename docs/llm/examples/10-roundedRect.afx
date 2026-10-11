@@ -1,0 +1,9 @@
+project example10 {
+ viewport:(640,360);fps:(24,1);
+ 
+ component tile {params:{x:120;};shape g {primitive:circle;radius:40;}part p {shape:@g;}actor a {parts:[@p];transform:{x:@x;y:180;};}} instance item {component:@tile;}
+ scene movie {shot intro {duration:2s;
+ key start {target:@item_a;property:x;frame:0f;value:120;easing:back-out;}
+ key finish {target:@item_a;property:x;frame:47f;value:480;}
+ }}
+}

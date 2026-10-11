@@ -41,7 +41,7 @@ npm --prefix examples/next-app run dev
 
 ### Acceptance checks
 
-Compilation and unit tests do not require Chromium or FFmpeg. Node rendering requires Playwright Chromium and an external FFmpeg installation with `libvpx-vp9` and `libopus`. Full browser acceptance needs all three Playwright engines:
+Compilation and unit tests do not require Chromium or FFmpeg. Default Node rendering uses Skia and requires an external FFmpeg installation with `libvpx-vp9` and `libopus`. Full browser acceptance needs all three Playwright engines:
 
 ```sh
 npx --no-install playwright install --with-deps chromium firefox webkit
@@ -50,11 +50,11 @@ npm run verify:ci
 # Linux CI runs: xvfb-run -a npm run verify:ci
 ```
 
-`verify:ci` runs lint/check followed by sequential, fail-fast rendering, resource, package-consumer, release-migration, memory, and preview gates. It writes `artifacts/ci/acceptance-report.json`; gates after a failure are not executed. Targeted commands are `npm run verify:foundation`, `npm run verify:node`, `npm run verify:react`, and `npm run verify:web` (each starts with `check`). `npm run verify:resources` does not build/check first.
+`verify:ci` runs lint/check followed by sequential independent rendering, resource, package-consumer, release-migration, memory, and preview gates. It writes `artifacts/ci/acceptance-report.json`; independent gates continue after a failure. Targeted commands are `npm run verify:foundation`, `npm run verify:node`, `npm run verify:react`, and `npm run verify:web` (each starts with `check`). `npm run verify:resources` does not build/check first.
 
 ## Architecture and contracts
 
-AETHER Fx is an experimental declarative 2D animation language and universal TypeScript runtime. `GOAL.md` is the active acceptance specification. The main data flow is:
+AETHER Fx is an experimental declarative 2D animation language and universal TypeScript runtime. The public language/API documentation defines supported behavior. The main data flow is:
 
 `.afx source → compiler AST → normalized FxDocument → core compile → immutable PlaybackPlan → evaluate({ frame }) → owned DrawList → Canvas renderer`
 
@@ -65,7 +65,7 @@ The seven packages split platform-independent semantics from adapters:
 - **`canvas`** renders numeric DrawLists and provides browser resources, player, and audio lifecycle. Assets resolve through an explicit host adapter, not implicit network access.
 - **`react`** is a thin client wrapper around Canvas sessions. Create one player/resource session per plan/resolver identity in an effect; playback stays outside React state. Only serializable plans cross the server/client boundary.
 - **`export`** reuses evaluation/rendering for native WebCodecs VP9/Opus and Mediabunny WebM muxing, with bounded queues and a host-provided random-access sink. Probe actual codec configurations; return `EXPORT_UNSUPPORTED` rather than adding a MediaRecorder fallback.
-- **`node`** loads local projects/assets and renders through isolated Playwright Chromium, streaming frames to external FFmpeg. Deny external requests, allowlist local resources, and pass FFmpeg separate arguments, including paths with spaces.
+- **`node`** loads local projects/assets and renders with Skia by default, streaming frames to external FFmpeg. Chromium is an explicit compatibility path; the optional integrated encoder is isolated from default imports. Deny external requests, allowlist local resources, and pass FFmpeg separate arguments, including paths with spaces.
 - **`cli`** exposes Node diagnosis/loading/export and core plan serialization as `afx doctor`, `check`, `compile`, and `render`. Compile/render output paths must be new; existing files are rejected.
 
 Preserve these cross-package invariants:
@@ -86,5 +86,5 @@ For detailed contracts, use `docs/architecture.md` and `docs/language-v0.md`; pu
 - `release.config.json` is the source of truth for the joint npm scope/version. After changing it, run `npm run release:sync`, then `npm ci` and rebuild/reprepare the Next example; `npm run release:check` and the build reject inconsistent package manifests or internal dependency versions.
 - Browser bundle checks (`scripts/verify-bundle-budgets.mjs`, `bundle-budgets.json`) prohibit Node/Playwright tooling in browser bundles and compiler/parser dependencies in the core/player bundles.
 - Package-consumer verification installs all seven real, hash-verified archives into isolated consumers. Workspace success or `npm link` is not release evidence. `node scripts/verify-package-metadata.mjs` produces archives under `artifacts/metadata-packages`.
-- `node scripts/prepare-release.mjs` prepares release artifacts, not publication. Public npm publication requires a separate explicit instruction; consult `docs/release.md` and `RELEASE-READINESS.md` before release work.
+- `node scripts/prepare-release.mjs` prepares release artifacts, not publication. Consult `docs/release.md` and `RELEASE-READINESS.md` before release work.
 - Read `RELEASE-READINESS.md` and `KNOW-ISSUES.md` for current evidence and blockers. Local acceptance does not imply hosted acceptance. Preserve failed-run diagnostics and do not relax exact pixel, decoded media, preview-drop, or bundle-budget gates to claim success.

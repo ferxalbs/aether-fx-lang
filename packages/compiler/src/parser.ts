@@ -3,7 +3,7 @@ import type { IToken } from 'chevrotain';
 import { DEFAULT_LIMITS, diagnostic, failure, success } from '@aether-fx/core';
 import type { Result, SourceRange } from '@aether-fx/core';
 export type AstValue =
-  | { kind: 'scalar'; value: string | number | boolean | null; unit?: string; range: SourceRange }
+  | { kind: 'scalar'; value: string | number | boolean | null; unit?: string; raw?: string; range: SourceRange }
   | { kind: 'reference'; value: string; range: SourceRange }
   | { kind: 'array'; items: AstValue[]; range: SourceRange }
   | { kind: 'object'; fields: AstField[]; range: SourceRange };
@@ -32,7 +32,7 @@ class Parser extends EmbeddedActionsParser {
   });
   value = this.RULE('value', (): AstValue => this.OR([
     { ALT: () => { const token = this.CONSUME(StringToken); return this.ACTION(() => ({ kind: 'scalar' as const, value: JSON.parse(token.image) as string, range: range(token) })); } },
-    { ALT: () => { const token = this.CONSUME(NumberToken); let unit: string | undefined, end = token; this.OPTION(() => { const u = this.CONSUME(Identifier); this.ACTION(() => { unit = u.image; end = u; }); }); return this.ACTION(() => ({ kind: 'scalar' as const, value: Number(token.image), ...(unit ? { unit } : {}), range: range(token, end) })); } },
+    { ALT: () => { const token = this.CONSUME(NumberToken); let unit: string | undefined, end = token; this.OPTION(() => { const u = this.CONSUME(Identifier); this.ACTION(() => { unit = u.image; end = u; }); }); return this.ACTION(() => ({ kind: 'scalar' as const, value: Number(token.image), raw: token.image, ...(unit ? { unit } : {}), range: range(token, end) })); } },
     { ALT: () => { const token = this.CONSUME2(Identifier); return this.ACTION(() => ({ kind: 'scalar' as const, value: token.image === 'true' ? true : token.image === 'false' ? false : token.image === 'null' ? null : token.image, range: range(token) })); } },
     { ALT: () => { const token = this.CONSUME(At); const value = this.SUBRULE(this.path); return this.ACTION(() => ({ kind: 'reference' as const, value, range: range(token, this.LA(0)) })); } },
     { ALT: () => { const token = this.CONSUME(LBracket); const items: AstValue[] = []; this.MANY_SEP({ SEP: Comma, DEF: () => { const item = this.SUBRULE(this.value); this.ACTION(() => items.push(item)); } }); const end = this.CONSUME(RBracket); return this.ACTION(() => ({ kind: 'array' as const, items, range: range(token, end) })); } },

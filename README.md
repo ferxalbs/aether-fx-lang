@@ -1,18 +1,18 @@
 # AETHER Fx
 
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/ferxalbs/aether-fx-lang?utm_source=oss&utm_medium=github&utm_campaign=ferxalbs%2Faether-fx-lang&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+
 **Write 2D animation as `.afx` source, play it on Canvas, and export it to video.**
 
 AETHER Fx is an experimental declarative animation language with a TypeScript runtime. Define cubic shapes, character parts, poses and shots, then animate them with keyframes, morphs and drawing changes. The same compiled plan supports browser playback, React integration and offline rendering in Node.js.
 
-![Frames from The Little Light, the included illustrated animation](assets/first-preview.png)
+![The Little Light reference animation](assets/first-preview.png)
 
-[*The Little Light*](fixtures/short/little-light.afx) is the included 20-second example: a character notices, reaches for and lifts a lantern. It combines layered backgrounds, hand/object parenting, facial animation, text and stereo audio. The image above is an earlier render; see [the example's history](docs/history-of-lang.md).
+[*The Little Light*](fixtures/short/little-light.afx) is a 20-second character animation with layered backgrounds, hand/object parenting, expressions, typography and stereo audio. The image above is historical; current reference renders and continuity checks are included in the candidate evidence.
 
-> Version 0.1.0 is experimental and unpublished. Use this checkout or local package archives. Local acceptance has passed, but the latest recorded hosted acceptance failed in Next playback; see [known issues](KNOW-ISSUES.md). The project is not release-ready.
+## Quickstart
 
-## Try the animation
-
-Use Node.js **22.12 or newer** and npm. From a cloned checkout:
+Use Node 22.12 or newer. From a clean checkout, these three commands start the demo:
 
 ```sh
 npm ci
@@ -20,115 +20,67 @@ npm run build
 node examples/browser/serve.mjs
 ```
 
-Open **http://127.0.0.1:3000**. Click **Play** for sound, scrub the timeline or change playback speed. **Download WebM** becomes available when the browser passes the native codec probes. Stop the server with Ctrl-C.
+Open http://127.0.0.1:3000, click Play for audio and scrub the timeline. Browser export is enabled by actual capability probes. No external FFmpeg is needed for preview.
 
-Browser preview needs no FFmpeg or Playwright browser installation. For a complete walkthrough, including Node export and local archive installation, read the [quickstart](docs/quickstart.md).
-
-## What the language looks like
-
-This complete, asset-free project moves a stroked cubic curve from left to right over two seconds:
+A complete ten-line, asset-free example:
 
 ```afx
 project hello {
-  viewport: (640, 360);
-  fps: (24, 1);
-
-  shape curve {
-    contour outline {
-      start: (0, 0);
-      closed: false;
-      cubic arc { control1: (25, 40); control2: (75, 40); end: (100, 0); }
-    }
-  }
-  part line {
-    shape: @curve;
-    material: { fill: null; stroke: "#2463eb"; strokeWidth: 6; };
-  }
-  actor mark { parts: [@line]; transform: { x: 100; y: 150; }; }
-  scene movie {
-    shot move {
-      duration: 48f;
-      key start { target: @mark; property: x; frame: 0f; value: 100; }
-      key finish { target: @mark; property: x; frame: 47f; value: 400; }
-    }
-  }
+ viewport:(640,360); fps:(24,1);
+ shape dot {primitive:circle; radius:30;}
+ part dot {shape:@dot; material:{fill:"#2563eb";};}
+ actor dot {parts:[@dot]; transform:{x:80;y:180;};}
+ scene movie {shot move {duration:2s;
+  key a {target:@dot;property:x;frame:0f;value:80;easing:ease-in-out;}
+  key b {target:@dot;property:x;frame:47f;value:560;}
+ }}
 }
 ```
 
-Save it as `hello.afx` in the repository root, then validate it:
+Save as `hello.afx`, then run `node packages/cli/dist/afx.js check hello.afx --json`. Times support `f`, `s` and `ms`; rational conversion avoids accumulated decimal drift. Source contains data, not executable JavaScript.
+
+## Export and tools
+
+Node video export renders with Skia and streams frames to separately installed FFmpeg. Chromium is an explicit compatibility renderer (`--backend chromium`), installed with `npx --no-install playwright install chromium`. Install FFmpeg with libvpx-vp9/libopus for WebM and libx264/aac for MP4. Run `afx doctor` to diagnose installation. The integrated NodeAV encoder is isolated at `@aether-fx/node/integrated`, with optional peers and binary-distribution qualification pending; it is absent from the default install.
 
 ```sh
-node packages/cli/dist/afx.js check hello.afx
+node packages/cli/dist/afx.js probe mp4
+node packages/cli/dist/afx.js render hello.afx --out hello.webm
+node packages/cli/dist/afx.js render hello.afx --out hello.mp4 --format mp4
 ```
 
-Frames use the `f` suffix, references use `@`, and property values end with semicolons. Source describes animation data; it does not execute JavaScript. Continue with the [language guide](docs/language-v0.md) for poses, morphs, cameras and assets.
+Output paths must be new. WebM remains the default. Browser MP4 depends on AVC support; the optional `@aether-fx/export/aac` entry supplies measured AAC WASM encoding when native AAC is unsuitable. Read [export capabilities and limits](docs/export-v0.1.md).
 
-## Compile and inspect a frame
+`afx` also provides `fmt`, `expand`, `fix --safe`, `scene`, `hash`, `bench` and `lsp`. [Tooling](docs/tooling.md) explains the static playground, TextMate grammar and LSP. The playground builds with `npm run playground:build`; serve `artifacts/playground/` through a local static server.
 
-After building, save this as `inspect.mjs` in the repository root and run `node inspect.mjs`:
+## Packages and API
 
-```js
-import { readFile } from 'node:fs/promises';
-import { compileSource } from '@aether-fx/compiler';
-import { evaluate } from '@aether-fx/core';
+Seven ESM packages are prepared as local archives, with no npm publication. See [local archive installation](docs/quickstart.md#install-local-packages-in-another-project), the [API reference](docs/api.md) and the release manifest/checksums.
 
-const result = compileSource(await readFile('fixtures/curve.afx', 'utf8'));
-if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
-
-const frame = evaluate(result.value, { frame: 97 });
-console.log({ duration: result.value.duration, frame: frame.frame, shot: frame.shot });
-// { duration: 480, frame: 97, shot: 'first' }
-```
-
-Evaluation uses an absolute frame index, so you can inspect frame 97 directly without playing the preceding frames. Projects with font, image or audio assets use `loadProject` from `@aether-fx/node` to resolve their manifest; see [Node rendering](docs/node-export.md).
-
-## Export to video
-
-Node export requires the matching Playwright Chromium and an external FFmpeg installation with `libvpx-vp9` and `libopus`. Install FFmpeg through your platform's package manager, then run:
-
-```sh
-npx playwright install chromium
-node packages/cli/dist/afx.js doctor
-node packages/cli/dist/afx.js render fixtures/short/little-light.afx --out short.webm --width 1280 --height 720
-```
-
-Use a new output path: the CLI refuses to overwrite an existing file. The reference output is WebM with VP9 video and Opus audio, 480 frames at 24 fps. See [Node export and troubleshooting](docs/node-export.md) or [browser export](docs/browser-export.md).
-
-## Use the packages
-
-The repository contains seven ESM packages. They are not yet available through a public npm release; [install local archives](docs/quickstart.md#install-local-packages-in-another-project) to use them outside this checkout.
-
-| Package | Use it for |
+| Package | Purpose |
 | --- | --- |
-| `@aether-fx/compiler` | Parse and compile `.afx` source with diagnostics |
-| `@aether-fx/core` | Validate documents, evaluate frames, serialize plans and apply structured edits |
-| `@aether-fx/canvas` | Render and play a plan in a browser |
-| `@aether-fx/react` | Embed `FxPlayer` in React or Next.js |
-| `@aether-fx/export` | Export WebM with native browser WebCodecs |
-| `@aether-fx/node` | Load local assets and export through Chromium/FFmpeg |
-| `@aether-fx/cli` | Run `afx doctor`, `check`, `compile` and `render` |
+| `@aether-fx/core` | Pure frame evaluation, documents, serialization and structured edits |
+| `@aether-fx/compiler` | Bounded `.afx` parsing, expansion and diagnostics |
+| `@aether-fx/canvas` | Browser rendering and playback |
+| `@aether-fx/react` | React/Next integration |
+| `@aether-fx/export` | Browser WebM/MP4 and optional AAC encoding |
+| `@aether-fx/node` | Verified local assets, Skia rendering and external FFmpeg video export |
+| `@aether-fx/cli` | Authoring, validation, scene generation and export commands |
 
-AETHER Fx fits projects that need text-authored 2D shapes, explicit morph correspondence and direct frame evaluation. Authoring happens in source files; the current demo previews those files. There is no visual editor or live source playground. General 3D, physics, arbitrary SVG import and Lottie interchange are outside v0. Browser export depends on actual codec support; physical mobile and optional MP4 acceptance remain unverified.
+`evaluate(plan, {frame:97})` derives state without wall time, implicit randomness or previous frames. State determinism does not imply identical pixels across platforms. Backends declare their measured raster tolerances.
 
-## Documentation
+## Learn and develop
 
-Start with the [documentation index](docs/README.md), or go directly to:
-
-- [Quickstart](docs/quickstart.md): preview, inspect a frame and export.
-- [Language guide](docs/language-v0.md): syntax and animation semantics.
-- [API reference](docs/api.md): public exports and ownership contracts.
-- [React and Next.js](docs/react-next.md): server compilation and client playback.
-- [Known issues](KNOW-ISSUES.md): current failures and limitations.
-
-## Develop
+- [Language v0.1](docs/language-v0.1.md) and [compatible v0](docs/language-v0.md).
+- [Model authoring pack](docs/llm/reference.md): twelve complete examples and constrained decoding grammar.
+- [Architecture](docs/architecture.md), [React/Next](docs/react-next.md), [performance](docs/performance-v0.1.md).
+- [Known issues](KNOW-ISSUES.md), [release readiness](RELEASE-READINESS.md).
 
 ```sh
-npm run check  # Release metadata consistency, build, typecheck and unit tests
-npm run lint   # JS/TS syntax and JSON checks
+npm run check       # Metadata, build, types and current tests
+npm run verify:ci   # Every acceptance gate; preserves failures
 ```
 
-Rendering and full acceptance checks have additional browser/FFmpeg requirements. See [architecture](docs/architecture.md), [performance measurements](docs/performance.md) and [release preparation](docs/release.md). Current release evidence lives in [RELEASE-READINESS.md](RELEASE-READINESS.md).
+Full acceptance additionally requires Playwright browser builds and external FFmpeg for independent decode and the retained oracle. Local macOS results do not establish Linux or physical-device compatibility. The single register of current defects, unsupported scope and pending qualification is [KNOW-ISSUES.md](KNOW-ISSUES.md); recording a limitation does not approve a release.
 
-## License
-
-Original code is licensed under [Apache-2.0](LICENSE). See [NOTICE](NOTICE), [asset provenance](fixtures/short/ASSETS.md) and [licensing details](docs/licensing.md) for attribution and third-party licenses.
+Original code remains [Apache-2.0](LICENSE). [NOTICE](NOTICE), [asset provenance](fixtures/short/ASSETS.md) and [dependency licensing](docs/licensing.md) preserve third-party obligations. Dependency terms remain separate from the project license.

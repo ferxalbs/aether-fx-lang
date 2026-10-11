@@ -3,7 +3,7 @@ import { dirname, isAbsolute, resolve, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { compile, failure } from '@aether-fx/core';
 import type { AssetManifest, FxDocument, PlaybackPlan, Result } from '@aether-fx/core';
-import { normalize, parse } from '@aether-fx/compiler';
+import { normalize, parse, compileSource } from '@aether-fx/compiler';
 import { FxEnvironmentError } from './errors.js';
 export interface ResolvedAssets { manifest:AssetManifest; files:Map<string,{path:string;bytes:Buffer}> }
 export interface LoadedProject { plan:PlaybackPlan; assets:ResolvedAssets }
@@ -55,6 +55,6 @@ export async function loadProject(path:string,options:{signal?:AbortSignal}={}):
   const ast=parse(source);if(!ast.ok)return failure(ast.diagnostics);
   const document=normalize(ast.value);if(!document.ok)return failure(document.diagnostics);
   const assets=await resolveAssets(document.value,{root:dirname(absolute),...(options.signal?{signal:options.signal}:{})});
-  const compiled=compile(document.value,assets.manifest);if(!compiled.ok)return failure(compiled.diagnostics);
+  const compiled=compile(document.value,assets.manifest);if(!compiled.ok){const located=compileSource(source,assets.manifest);return failure(located.ok?compiled.diagnostics:located.diagnostics);}
   return {ok:true,value:{plan:compiled.value,assets}};
 }

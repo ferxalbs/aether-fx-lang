@@ -1,57 +1,76 @@
-# Known issues — AETHER Fx v0
+# Known issues and qualification limits
 
-Recorded closure status: **implementation corrected and packages prepared; hosted acceptance FAIL; publication pending**. The previous acceptance work stopped at the user's request. No additional suite or implementation changes were performed for that closure.
+This is the single register of current defects, mitigations and pending validations. Recording an issue does not resolve it or approve a release. Historical FAIL results remain valid for the sources and platforms they tested. [Readiness](RELEASE-READINESS.md) records candidate evidence; technical guides retain reproduction methods.
 
-Commit executed in CI: `3c589a9aa3777d3fadc831ed7c2e34cd26016876`.
-Run: [hosted acceptance 38110114744](https://github.com/ferxalbs/aether-fx-lang/actions/runs/38110114744).
+## KI-01 — Linux WebKit Opus content loss
 
-## Current technical blockers
+**Status:** confirmed defect, guarded; encoder not repaired. **Scope:** native browser Opus on the Linux WebKit configuration in [run 38168445048](https://github.com/ferxalbs/aether-fx-lang/actions/runs/38168445048). A 960000-sample input produced 1000 packets of 960 samples with 312 pre-skip samples; independent decode returned 959688 samples. The missing 312 samples contain content, not acceptable tail padding.
 
-### 1. Next: Play does not advance beyond frame 97 before Pause — OPEN
+**Impact:** incomplete audio cannot be accepted. The probe and final coverage guard detect/reject insufficient output; the corrected guard is not yet hosted-Linux qualified. **Alternative:** Skia + external FFmpeg in Node. **Resolution:** the affected encoder must preserve submitted content after priming, with independent decode proving sample coverage, duration and audiovisual synchronization under the original criteria; then verify probe/export behavior on Linux. No appended silence or relaxed equality. See [browser export](docs/browser-export.md).
 
-The `acceptance (22.12.0)` and `acceptance (24.21.0)` jobs ended in FAILURE. Each completed nine commands with PASS, then failed the tenth; five subsequent commands did not run.
+## KI-02 — Post-fbe8745 Linux qualification
 
-Failed command: `node scripts/verify-react-next.mjs artifacts/ci-next artifacts/metadata-packages`.
-Assertion: `scripts/verify-react-next.mjs:56`, Play → fixed 180 ms wait → Pause → selected frame must be greater than 97. That condition was not met. The exact frame-97 PNG comparison passed. Diagnostics contain no console errors or failed requests.
+**Status:** validation pending. **Scope:** corrections in `b5243ce` and subsequent changes; hosted Node 22/24 acceptance and assembly. The first run tested `fbe8745` and failed; it does not qualify later code.
 
-**The cause is not established.** This Next run did not capture clock state or `AudioContext.resume()` latency. The audio startup delay observed in Firefox suggests an environment hypothesis, but does not establish the Next cause or rule out a product bug. For a future investigation, reproduce only this consumer and capture the clock, resume, Play/Pause and frame; fix according to the evidence without changing the wait or criterion merely to force PASS.
+**Impact:** local macOS checks do not establish Linux compatibility or a complete candidate. **Alternative:** use the locally verified platform with its documented limits. **Resolution:** an authorized reviewed ref must execute the existing Ubuntu workflow, preserving every gate outcome and diagnostic artifact; mandatory FAILs still block release. See [Linux validation](docs/linux-validation.md) for workflow, encoder provisioning and permissions.
 
-Evidence: `artifacts/ci/hosted-audio-diagnosis/failed-jobs.log` and `download/acceptance-node-{22.12.0,24.21.0}/ci-next/next-run-diagnostic.json`; command matrices through the failure are in their `ci/acceptance-report.json` directories.
+## KI-03 — Next Play/Pause historical failure
 
-### 2. Hosted acceptance is incomplete — OPEN
+**Status:** test mitigation verified locally; historical cause pending. **Scope:** Next integration test in the first Linux run. The test now waits for observable drawn-frame advancement with a bounded timeout and verifies that Pause stops frame/draw advancement and audio. A controlled pending audio resume demonstrates that the previous fixed 180 ms wait can fail with correct cancellation. No runtime defect is demonstrated.
 
-This run did not reach the complete Chromium/Firefox/WebKit matrix, scope migration, Node export memory, native export memory or visible preview benchmark. Hosted release preparation was also skipped. The isolated Firefox diagnosis PASS is not equivalent to the complete matrix.
+**Impact:** the historical failure cannot yet be attributed to the runner's exact startup behavior. **Alternative:** the observable-condition test with player, clock, audio, visibility and frame diagnostics. **Resolution:** run the instrumented check on Linux, inspect failures if any, and establish Play/Pause behavior without weakening either assertion.
 
-The earlier local acceptance after the neck correction completed all fifteen commands with PASS (`artifacts/final-acceptance/local/acceptance-report.json`, commit `1baab1c`). Targeted local metadata, Next and Firefox checks followed. No new complete local suite ran on `3c589a9`; local reports do not replace CI on that commit.
+## KI-04 — Standalone bundle budgets
 
-### 3. Historical preview intermittency on macOS — OPEN
+**Status:** mandatory budget FAIL; import isolation passes. **Scope:** current standalone gzip measurement, unchanged accounting and caps.
 
-One attempt dropped three frames with a 160.2 ms RAF interval; another reached a 30-second timeout during the third Play. The old timeout did not preserve enough state to establish the cause. Subsequent local runs passed three Plays of 480 draws with zero drops and 1.9 ms p95. Those results **do not explain** the intermittency. It is not attributed to Linux audio.
+| Bundle | Measured B | Cap B | Status |
+| --- | ---: | ---: | --- |
+| Core | 10455 | 10163 | FAIL |
+| Player | 4339 | 5758 | PASS |
+| Compiler | 46534 | 40920 | FAIL |
+| Export | 36222 | 35351 | FAIL |
 
-Retained evidence: `artifacts/ci/failed-preview`, `artifacts/ci/timeout-preview`, `artifacts/ci/preview-diagnosis.json`, plus current clock/audio/RAF/control/visibility instrumentation and timeout snapshots. If it recurs, retain state and reproduce only the affected benchmark. No criteria were relaxed.
+**Impact:** size gates block release; this is distinct from functional test failures. **Alternative:** current functionality is usable within its platform limits, but packaging is not approval. **Resolution:** `node scripts/verify-bundle-budgets.mjs` must pass unchanged caps/accounting, or an explicit reviewed product-budget decision must establish new requirements. The [v0.2 proposal](docs/performance-v0.1.md#proposed-v02-bundle-policy--not-applied) is unapplied and predates the Opus guard's additional 458 gzip bytes; its export measurement is historical. No further tree-shaking saving sufficient for the compiler cap has been demonstrated through supported Chevrotain interfaces.
 
-## Confirmed causes and verified corrections
+## KI-05 — Reference-host export speed
 
-- **Head–torso connection:** a neck bridge was added to the generator and fixture, and both WebM outputs were regenerated. Frames 0/97/144/174/204/274/384/479 are connected; the 198-pixel check per frame passes and the negative control without the neck is detected. Images extracted from the corrected WebM: `artifacts/short/video-contact-sheet.png`; report: `artifacts/short/head-torso-report.json`.
-- **Firefox runner without audio output:** the baseline captured frame 97, a zero clock and unresolved resume. After PulseAudio was configured with a virtual sink, the same isolated verifier advanced, exported and decoded the real short: PASS in both jobs. Before/after evidence: `ci-firefox-baseline`, `ci-audio`, `ci-firefox-audio` inside the current run download. This confirms the environment cause for that Firefox incident; it does not establish the Next or historical preview cause.
-- **Different Next PNG:** A/B comparison confirmed that full Chromium matches the offline renderer exactly, while headless shell differs by 3041 pixels on Linux. The verifier uses the same full Chromium and preserves exact PNG equality. Evidence: `artifacts/ci/hosted-browser-diagnosis` and `artifacts/final-acceptance/hosted-next-cause.json`.
-- **Checkout URL:** the verifier accepts equivalent forms of the actual remote with or without `.git` and rejects another repository. Evidence: `artifacts/final-acceptance/repository-regression.json`.
+**Status:** mandatory performance FAIL; measured memory PASS. **Scope:** 20 s, 720p, 24 fps reference workload with unchanged codec/quality on the documented i5-10400F / 24 GiB macOS host. Three RC.3 runs took 11.2267, 11.2630 and 11.5177 s (factors 0.56134, 0.56315 and 0.57588); all exceed 10 s / factor 0.5. Aggregate RSS remained below 700 MiB. Profiling identifies external FFmpeg encoding as the remaining bottleneck.
 
-## Prepared packages and pending publication
+**Impact:** the throughput target is not met. **Alternative:** use the measured slower export path; browser export is separately capability-dependent. **Resolution:** three comparable runs and independent decode must meet the original speed/memory criteria, or a separate explicit requirements decision is needed. Earlier Linux timings remain observations on another host and cannot qualify this target. Methods and all historical results remain in [performance](docs/performance-v0.1.md).
 
-The seven `@aether-fx/{core,compiler,canvas,react,export,node,cli}` packages at version 0.1.0 were rebuilt and packed on `3c589a9`. They are under `artifacts/release`, with `SHA256SUMS` and `manifest.json`. Library bytes did not change: the correction is in the generator/fixture, outside the tarballs. Identical hashes do not mean rebuilding was skipped.
+## KI-06 — Integrated encoder distribution
 
-Original work: Apache-2.0, exact NOTICE `Copyright 2026  Fer's`; third-party licenses and notices are preserved. Actual remote: [aether-fx-lang](https://github.com/ferxalbs/aether-fx-lang).
+**Status:** distribution qualification pending, not a prohibition on GPL distribution. **Scope:** opt-in `@aether-fx/node/integrated`, @mediabunny/server 1.61.3, node-av 6.1.1 and their exact FFmpeg binaries. A local smoke test establishes operation, not redistribution compliance.
 
-**Publication is blocked and intentionally pending:** authenticated identity `ferxalb` does not establish control of `@aether-fx`; an organization E404 establishes neither availability nor ownership. Scope/package permissions, bootstrap and trusted publisher/OIDC configuration remain unverified. `publicationReady=false`. Nothing was published to npm.
+**Impact:** the integrated encoder cannot be presented as a qualified default distribution. **Alternative:** default Skia renderer streaming RGBA with backpressure to separately installed FFmpeg; Chromium remains explicit compatibility rendering. Separate installation does not waive third-party obligations. **Resolution:** verify shipped binary/source correspondence, linked libraries, build flags, install downloads, licenses, notices and applicable source provision for the exact distribution. See [licensing](docs/licensing.md) and [Node export](docs/node-export.md).
 
-## Coverage limits
+## KI-07 — Browser codec and AAC conformance
 
-- Physical mobile devices, physical displays/speakers and their latency: unverified. CI's virtual sink covers automated execution only.
-- Optional MP4: unverified; the locally accepted outputs are WebM VP9/Opus at 720p and 1080p, 480 frames/20 seconds, 960000 audio samples and maximum alignment error 0.0834 ms.
-- Native browser exports retain the measured 648-sample Opus tail. FFmpeg's EOF diagnostic is retained alongside zero decoding errors; it was not used to modify criteria.
-- The closure reports were left uncommitted to avoid triggering another CI run. The manifest identifies the base commit and local tree with closure documentation. Pre-existing unrelated files were not modified by that closure.
+**Status:** capability limitation and observed native AAC onset/metadata failures. **Scope:** device/configuration-specific WebCodecs, including headless environments; browser name alone is insufficient.
 
-## What prevents v0 completion
+**Impact:** browser export can be unsupported despite nominal codec availability. **Alternative:** actual probes, optional explicit AAC WASM entry where verified, or Node export. **Resolution:** independent decode must verify frames, audio coverage, metadata, duration and onset below one frame on each claimed setup. See [export capabilities](docs/export-v0.1.md); retain AAC WASM's separate licensing obligations.
 
-The Next failure must be resolved or attributed with evidence, and hosted acceptance must complete on the corrected version. Historical intermittency remains an open risk. npm configuration is separately pending; preparing packages does not establish authorization or complete readiness to publish them.
+## KI-08 — Raster and platform qualification
+
+**Status:** documented rendering limit; validation pending outside measured setups. **Scope:** fonts, shaping and antialiasing across renderers/platforms; physical devices and full Bun lifecycle/platform acceptance. Bun 1.4.2 has only a native/external 12-frame smoke test.
+
+**Impact:** deterministic evaluated state does not guarantee identical cross-platform pixels or universal runtime compatibility. **Alternative:** use a verified backend/font/platform combination; Chromium is an explicit visual compatibility option, Node the reference runtime. **Resolution:** qualify each claimed platform with applicable fidelity, font, lifecycle and audiovisual checks under declared tolerances. See [architecture](docs/architecture.md) and [export capabilities](docs/export-v0.1.md).
+
+## KI-09 — Preview intermittent failures
+
+**Status:** historical defect reports unresolved. **Scope:** preview dropped-frame/timeout observations, separate from the Next fixed-wait test.
+
+**Impact:** isolated instrumented passes do not establish a repair. **Alternative:** absolute-frame seeking and offline export for reproducible output. **Resolution:** retain a failing reproduction with clock/audio/visibility/frame diagnostics, identify its cause and verify the correction under the affected conditions. See [performance methods](docs/performance.md).
+
+## KI-10 — Features outside the implemented candidate
+
+**Status:** not delivered. **Scope:** full gradient/shadow parity, complete text layout/reveal, multiple audio tracks, shape clipping and blend modes.
+
+**Impact:** users cannot rely on these features in the current candidate. **Alternative:** the documented primitives, supported text and single-track audio contracts. **Resolution:** a separately scoped implementation must specify semantics and verify applicable backend parity; this closure adds no features. See [language](docs/language-v0.1.md).
+
+## KI-11 — Live model-generation metrics
+
+**Status:** not measured. **Scope:** real-provider first-attempt/repair success, scene quality, token reduction and usage/cost claims.
+
+**Impact:** authored examples, tests and recorded replay do not demonstrate live generation rates. **Alternative:** use the documented authoring pack and recorded harness as reproducible tooling checks only. **Resolution:** separately authorized live evaluation must record provider/model/configuration, frozen split, responses, diagnostics and actual usage under the [evaluation protocol](docs/llm/evaluation.md).

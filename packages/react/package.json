@@ -1,6 +1,6 @@
 {
   "name": "@aether-fx/react",
-  "version": "0.1.0",
+  "version": "0.2.0-rc.3",
   "type": "module",
   "description": "React client component for the AETHER Fx imperative Canvas player",
   "license": "Apache-2.0",
@@ -22,8 +22,8 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "@aether-fx/core": "0.1.0",
-    "@aether-fx/canvas": "0.1.0"
+    "@aether-fx/core": "0.2.0-rc.3",
+    "@aether-fx/canvas": "0.2.0-rc.3"
   },
   "peerDependencies": {
     "react": "^19.3.0"
