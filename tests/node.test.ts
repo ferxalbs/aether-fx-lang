@@ -9,10 +9,10 @@ import type { Result } from '@aether-fx/core';
 const unwrap=<T>(result:Result<T>):T=>{if(!result.ok)throw new Error(JSON.stringify(result.diagnostics));return result.value;};
 
 describe('illustrated acceptance semantics',()=>{
-  it('has real declared assets, twelve character parts, four poses and exact shot lengths',async()=>{
+  it('has real declared assets, thirteen character parts including a neck bridge, four poses and exact shot lengths',async()=>{
     const {plan,assets}=unwrap(await loadProject('fixtures/short/little-light.afx'));
     expect(plan.duration).toBe(480);expect(plan.document.viewport).toEqual([1280,720]);expect(plan.document.fps).toEqual({numerator:24,denominator:1});
-    expect(plan.document.shots.map(s=>s.duration)).toEqual([144,192,144]);expect(plan.document.actors.find(a=>a.id==='hero')!.parts).toHaveLength(12);
+    expect(plan.document.shots.map(s=>s.duration)).toEqual([144,192,144]);expect(plan.document.actors.find(a=>a.id==='hero')!.parts).toHaveLength(13);expect(plan.document.actors.find(a=>a.id==='hero')!.parts).toContain('neck');
     expect(plan.document.poses).toHaveLength(4);expect(plan.document.drawings).toHaveLength(2);expect(plan.document.backgrounds).toHaveLength(3);
     expect(assets.manifest.map(a=>a.kind)).toEqual(['font','image','audio']);expect(assets.manifest.find(a=>a.kind==='audio')).toMatchObject({duration:20,sampleRate:48000,channels:2});
     expect(unwrap(deserializePlan(serializePlan(plan)))).toEqual(plan);

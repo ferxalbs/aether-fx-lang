@@ -27,7 +27,7 @@ function sample(){
   const rows=result.stdout.split('\n').flatMap(line=>{const m=line.match(/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(.+)$/);return m?[{pid:Number(m[1]),parent:Number(m[2]),rssBytes:Number(m[3])*1024,command:m[4]}]:[];});
   const owned=new Set([process.pid]);let added=true;
   while(added){added=false;for(const p of rows)if(owned.has(p.parent)&&!owned.has(p.pid)){owned.add(p.pid);added=true;}}
-  const processes=rows.filter(p=>owned.has(p.pid)&&p.pid!==result.pid).map(p=>({...p,role:p.pid===process.pid?'coordinator':/Google Chrome/.test(p.command)?'chromium':'helper'}));
+  const processes=rows.filter(p=>owned.has(p.pid)&&p.pid!==result.pid).map(p=>({...p,role:p.pid===process.pid?'coordinator':/Google Chrome|(?:^|\/)chrome(?:-headless(?:-shell)?)?$/i.test(p.command)?'chromium':'helper'}));
   for(const p of processes)if(p.role==='chromium')observedPids.add(p.pid);
   samples.push({timeSeconds:performance.now()/1000,phase,frame:progress,totalRssBytes:processes.reduce((sum,p)=>sum+p.rssBytes,0),processes});
 }

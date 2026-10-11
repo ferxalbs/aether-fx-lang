@@ -17,7 +17,7 @@ function value(v,key=''){
   if(v&&typeof v==='object')return '{ '+Object.entries(v).map(([k,x])=>`${k}: ${value(x,k)};`).join(' ')+' }';
   return JSON.stringify(v);
 }
-function declaration(keyword,id,fields={},children=[]){return `${keyword} ${id} {\n${Object.entries(fields).map(([k,v])=>`  ${k}: ${value(v,k)};`).join('\n')}\n${children.map(c=>c.split('\n').map(l=>'  '+l).join('\n')).join('\n')}\n}`;}
+function declaration(keyword,id,fields={},children=[]){return `${keyword} ${id} {\n${Object.entries(fields).map(([k,v])=>`  ${k}: ${value(v,k)};`).join('\n')}\n${children.map(c=>c.split('\n').map(l=>l.trim()?'  '+l:'').join('\n')).join('\n')}\n}`;}
 function contour(id,points,closed=true,tension=0.75){
   const children=[];
   for(let i=0;i<(closed?points.length:points.length-1);i++){
@@ -70,12 +70,14 @@ part('tableOtherLeg',polygon('tableOtherLegShape',[[907,502],[927,502],[939,646]
 part('tableTop',polygon('tableTopShape',[[607,468],[973,468],[1000,491],[585,491]],0.1),'#b68169',1);
 part('tableEdge',rectangle('tableEdgeShape',585,491,415,17),'#8e5d5c',2);
 actor('table',['tableLegs','tableOtherLeg','tableTop','tableEdge'],0,0,40);
-// A twelve-part character, with hand parented to the front arm.
+// A thirteen-part character, with a neck bridge and hand parented to the front arm.
 part('backArm',polygon('backArmShape',[[-52,18],[-92,33],[-103,86],[-75,116],[-51,100],[-62,78],[-59,54]],0.7),colors.deep,1);
 part('legs',polygon('legsShape',[[-44,122],[42,122],[48,229],[15,236],[2,166],[-7,238],[-41,234]],0.45),colors.ink,2);
 part('shoes',polygon('shoesShape',[[-43,224],[-11,225],[-6,246],[-58,246],[-58,236],[-43,231]],0.35),colors.deep,3);
 // Both shoes are contours in the same semantic part.
 declarations[declarations.length-2]=declaration('shape','shoesShape',{},[contour('outline',[[-43,224],[-11,225],[-6,246],[-58,246],[-58,236],[-43,231]],true,0.35),contour('right',[[13,225],[43,222],[52,232],[68,236],[68,246],[10,246]],true,0.35)]);
+// Overlap the chin and shoulders; the collar covers the bottom of the skin bridge.
+part('neck',rectangle('neckShape',-16,-82,32,90),colors.skin,4);
 part('body',polygon('bodyShape',[[-30,-13],[29,-13],[62,22],[65,91],[50,145],[-54,145],[-63,80],[-59,27]],0.9),colors.teal,4);
 part('collar',polygon('collarShape',[[-34,-14],[32,-14],[35,11],[3,31],[-34,11]],0.5),colors.gold,5);
 part('head',polygon('headShape',[[-44,-175],[-5,-191],[41,-168],[54,-122],[41,-76],[10,-60],[-30,-72],[-54,-112]],1),colors.skin,6);
@@ -92,7 +94,7 @@ const armPoints={armRest:[[0,-16],[32,-2],[61,54],[111,66],[128,85],[114,103],[5
 for(const [id,points] of Object.entries(armPoints))polygon(id,points,0.7);
 part('frontArm','armRest',colors.teal,11,{x:45,y:10});
 part('hand',polygon('handShape',[[-15,-10],[-5,-18],[4,-11],[12,-15],[17,-3],[13,11],[-1,17],[-14,8]],0.75),colors.skin,12,{x:115,y:85},{parent:ref('frontArm')});
-actor('hero',['backArm','legs','shoes','body','collar','head','hair','eyes','nose','mouth','frontArm','hand'],420,380,20);
+actor('hero',['backArm','legs','shoes','neck','body','collar','head','hair','eyes','nose','mouth','frontArm','hand'],420,380,20);
 // Lantern has a hollow cubic handle, glass, base and amber light.
 part('lanternBody',polygon('lanternShape',[[-25,2],[25,2],[31,58],[19,72],[-20,72],[-32,58]],0.55),colors.gold);
 part('lanternGlass',polygon('lanternGlassShape',[[-16,12],[16,12],[19,54],[-19,54]],0.3),colors.cream,1);
@@ -153,4 +155,4 @@ for(const [id,kind,filename,metadata] of [['nunito','font','Nunito.ttf',{}],['pa
 }
 await writeFile(`${directory}/manifest.json`,JSON.stringify(manifest,null,2)+'\n');
 await writeFile(`${directory}/sync-markers.json`,JSON.stringify({fps:{numerator:24,denominator:1},sampleRate,markers,visual:{target:'sync.syncPulse',projectPixels:{wide:[1184,86],second:[1180.8,86],close:[1184,86]}},audioPadding:'Opus decoder must honor pre-skip; report measured padding explicitly.'},null,2)+'\n');
-console.log(`Created ${source.length} source characters, 12 character parts, 480 frames and ${pcm.length} PCM bytes`);
+console.log(`Created ${source.length} source characters, 13 character parts, 480 frames and ${pcm.length} PCM bytes`);
