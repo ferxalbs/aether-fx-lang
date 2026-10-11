@@ -16,12 +16,14 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build": "node scripts/build.mjs",
-    "check": "npm run build && npm run typecheck && npm test",
+    "check": "npm run release:check && npm run build && npm run typecheck && npm test",
     "verify:foundation": "npm run check && node scripts/verify-foundation.mjs",
     "verify:resources": "node scripts/verify-resources.mjs",
     "verify:node": "npm run check && node scripts/verify-node-lifecycle.mjs && node scripts/verify-node-packages.mjs",
     "verify:react": "npm run check && node scripts/verify-react-next.mjs",
-    "verify:web": "npm run check && node scripts/verify-web-export.mjs"
+    "verify:web": "npm run check && node scripts/verify-web-export.mjs",
+    "release:sync": "node scripts/sync-release.mjs --write",
+    "release:check": "node scripts/sync-release.mjs --check"
   },
   "devDependencies": {
     "@types/node": "26.6.5",

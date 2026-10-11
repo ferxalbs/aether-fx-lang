@@ -1,6 +1,6 @@
 # The Little Light — asset provenance
 
-Original fixture created for AETHER Fx on 2026-10-10. The twelve-part character, cubic backgrounds, table, lantern, woven-paper PNG and stereo score were authored specifically for this project by `scripts/create-short.mjs`. They contain no reused illustration or sampled music. Original fixture assets are licensed under Apache-2.0. Copyright 2026  Fer's under licence exclusive Enosis Labs, Inc. The repository LICENSE and NOTICE record the license and supplied attribution; third-party font licensing below is unchanged.
+Original fixture created for AETHER Fx on 2026-10-10. The twelve-part character, cubic backgrounds, table, lantern, woven-paper PNG and stereo score were authored specifically for this project by `scripts/create-short.mjs`. They contain no reused illustration or sampled music. Original fixture assets are licensed under Apache-2.0. Copyright 2026  Fer's. The repository LICENSE and NOTICE record the license and supplied attribution; third-party font licensing below is unchanged.
 
 Nunito is third-party font software, not original project artwork. Source: https://github.com/google/fonts/tree/main/ofl/nunito . The exact downloaded variable TTF is stored in assets/Nunito.ttf and its SHA-256 is in manifest.json. Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito). License: SIL Open Font License 1.1; the complete text is preserved in assets/Nunito-OFL.txt. The font has not been renamed or modified. No system font is used as an implicit substitute.
 

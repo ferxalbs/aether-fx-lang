@@ -1,7 +1,8 @@
 import { build } from 'esbuild';
 import { readdir, readFile, mkdir, writeFile, copyFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-const order = ['core', 'compiler', 'canvas', 'react', 'export', 'node', 'cli'];
+import { checkReleaseManifests, packageOrder as order } from './release-config.mjs';
+await checkReleaseManifests();
 for (const name of (await readdir('packages')).sort((a, b) => order.indexOf(a) - order.indexOf(b))) {
   const root = `packages/${name}`;
   const pkg = JSON.parse(await readFile(`${root}/package.json`, 'utf8'));
