@@ -57,3 +57,9 @@ The 480-frame curve fixture is a deterministic semantic regression fixture. It i
 - [Mediabunny formats and codecs](https://mediabunny.dev/guide/supported-formats-and-codecs): container support differs from actual device encodability; query real configurations.
 - [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/): npm >=11.5.1 and Node >=22.14.0; configuration belongs to an existing package's settings. Release workflow tools must satisfy this floor separately from runtime engines.
 - [Canvas cubic curves](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/bezierCurveTo) and [FontFace construction](https://developer.mozilla.org/en-US/docs/Web/API/FontFace/FontFace): numeric rendering and explicit font preparation.
+
+## React/Next integration verified (2026-10-10)
+
+React 19.3.0 and Next 16.4.0 are pinned. FxPlayer owns one player/resources session per plan/resolver identity, creates it in an effect, and retains its client directive in the built package. Current callback delivery uses useEffectEvent; controls delegate through a stable imperative ref. The existing Canvas/audio code handles frames outside React state.
+
+A six-tarball isolated consumer passes plain Node import/SSR, default Turbopack production Next build, server compilation, hydration, exact frame 97 pixels against offline Chromium, gesture controls and ten App Router navigation cleanup cycles. A separate development StrictMode harness proves effect replay and fifty real font/image/WAV/audio cleanup cycles plus replacement/cancellation/error paths. See docs/react-next.md for scope, commands and evidence. These tests do not prove the cross-browser or full pipeline memory gates.

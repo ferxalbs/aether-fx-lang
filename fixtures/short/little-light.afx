@@ -1,0 +1,2335 @@
+// Original illustrated acceptance short. Rebuild: node scripts/create-short.mjs
+project littleLight {
+  version: 1;
+  viewport: (1280, 720);
+  fps: (24, 1);
+  asset nunito {
+    kind: "font";
+    src: "assets/Nunito.ttf";
+    version: 1;
+    locked: true;
+  
+  }
+  asset paper {
+    kind: "image";
+    src: "assets/paper.png";
+    version: 1;
+    locked: true;
+  
+  }
+  asset score {
+    kind: "audio";
+    src: "assets/score.wav";
+    version: 1;
+    locked: true;
+  
+  }
+  shape wallShape {
+  
+    contour outline {
+      start: (-150, -150);
+      closed: true;
+      cubic s0 {
+        control1: (400, -150);
+        control2: (950, -150);
+        end: (1500, -150);
+      
+      }
+      cubic s1 {
+        control1: (1500, 183.333);
+        control2: (1500, 516.667);
+        end: (1500, 850);
+      
+      }
+      cubic s2 {
+        control1: (950, 850);
+        control2: (400, 850);
+        end: (-150, 850);
+      
+      }
+      cubic s3 {
+        control1: (-150, 516.667);
+        control2: (-150, 183.333);
+        end: (-150, -150);
+      
+      }
+    }
+  }
+  part wall {
+    shape: @wallShape;
+    material: { fill: "#efe5d3"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: {  };
+  
+  }
+  shape floorShape {
+  
+    contour outline {
+      start: (-150, 605);
+      closed: true;
+      cubic s0 {
+        control1: (400, 605);
+        control2: (950, 605);
+        end: (1500, 605);
+      
+      }
+      cubic s1 {
+        control1: (1500, 705);
+        control2: (1500, 805);
+        end: (1500, 905);
+      
+      }
+      cubic s2 {
+        control1: (950, 905);
+        control2: (400, 905);
+        end: (-150, 905);
+      
+      }
+      cubic s3 {
+        control1: (-150, 805);
+        control2: (-150, 705);
+        end: (-150, 605);
+      
+      }
+    }
+  }
+  part floor {
+    shape: @floorShape;
+    material: { fill: "#d2bda9"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: {  };
+  
+  }
+  shape baseboardShape {
+  
+    contour outline {
+      start: (-150, 594);
+      closed: true;
+      cubic s0 {
+        control1: (400, 594);
+        control2: (950, 594);
+        end: (1500, 594);
+      
+      }
+      cubic s1 {
+        control1: (1500, 598);
+        control2: (1500, 602);
+        end: (1500, 606);
+      
+      }
+      cubic s2 {
+        control1: (950, 606);
+        control2: (400, 606);
+        end: (-150, 606);
+      
+      }
+      cubic s3 {
+        control1: (-150, 602);
+        control2: (-150, 598);
+        end: (-150, 594);
+      
+      }
+    }
+  }
+  part baseboard {
+    shape: @baseboardShape;
+    material: { fill: "#ae8e80"; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: {  };
+  
+  }
+  actor room {
+    parts: (@wall, @floor, @baseboard);
+    transform: { x: 0; y: 0; };
+    layer: 0;
+  
+  }
+  background wallDepth {
+    actor: @room;
+    parallax: 0;
+  
+  }
+  shape windowFrameShape {
+  
+    contour outline {
+      start: (112, 184);
+      closed: true;
+      cubic s0 {
+        control1: (115.583, 160.583);
+        control2: (135, 139.083);
+        end: (155, 135);
+      
+      }
+      cubic s1 {
+        control1: (175, 130.917);
+        control2: (331.917, 130.917);
+        end: (352, 135);
+      
+      }
+      cubic s2 {
+        control1: (372.083, 139.083);
+        control2: (392.333, 160.583);
+        end: (396, 184);
+      
+      }
+      cubic s3 {
+        control1: (399.667, 207.417);
+        control2: (419.667, 396.667);
+        end: (396, 416);
+      
+      }
+      cubic s4 {
+        control1: (372.333, 435.333);
+        control2: (135.667, 435.333);
+        end: (112, 416);
+      
+      }
+      cubic s5 {
+        control1: (88.333, 396.667);
+        control2: (108.417, 207.417);
+        end: (112, 184);
+      
+      }
+    }
+  }
+  part windowFrame {
+    shape: @windowFrameShape;
+    material: { fill: "#aa8271"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: {  };
+  
+  }
+  shape windowGlassShape {
+  
+    contour outline {
+      start: (130, 190);
+      closed: true;
+      cubic s0 {
+        control1: (132.667, 174);
+        control2: (156.333, 157.333);
+        end: (170, 155);
+      
+      }
+      cubic s1 {
+        control1: (183.667, 152.667);
+        control2: (321.2, 152.667);
+        end: (335, 155);
+      
+      }
+      cubic s2 {
+        control1: (348.8, 157.333);
+        control2: (374.2, 174);
+        end: (377, 190);
+      
+      }
+      cubic s3 {
+        control1: (379.8, 206);
+        control2: (393.467, 381.333);
+        end: (377, 395);
+      
+      }
+      cubic s4 {
+        control1: (360.533, 408.667);
+        control2: (146.467, 408.667);
+        end: (130, 395);
+      
+      }
+      cubic s5 {
+        control1: (113.533, 381.333);
+        control2: (127.333, 206);
+        end: (130, 190);
+      
+      }
+    }
+  }
+  part windowGlass {
+    shape: @windowGlassShape;
+    material: { fill: "#acd0c8"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: {  };
+  
+  }
+  shape hillsShape {
+  
+    contour outline {
+      start: (130, 345);
+      closed: true;
+      cubic s0 {
+        control1: (133.4, 340.1);
+        control2: (191.55, 297.9);
+        end: (198, 297);
+      
+      }
+      cubic s1 {
+        control1: (204.45, 296.1);
+        control2: (253.35, 328.25);
+        end: (259, 327);
+      
+      }
+      cubic s2 {
+        control1: (264.65, 325.75);
+        control2: (305.1, 272.85);
+        end: (311, 272);
+      
+      }
+      cubic s3 {
+        control1: (316.9, 271.15);
+        control2: (373.7, 303.85);
+        end: (377, 310);
+      
+      }
+      cubic s4 {
+        control1: (380.3, 316.15);
+        control2: (389.35, 390.75);
+        end: (377, 395);
+      
+      }
+      cubic s5 {
+        control1: (364.65, 399.25);
+        control2: (142.35, 397.5);
+        end: (130, 395);
+      
+      }
+      cubic s6 {
+        control1: (117.65, 392.5);
+        control2: (126.6, 349.9);
+        end: (130, 345);
+      
+      }
+    }
+  }
+  part hills {
+    shape: @hillsShape;
+    material: { fill: "#81aaa5"; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: {  };
+  
+  }
+  shape windowDividerShape {
+  
+    contour outline {
+      start: (245, 155);
+      closed: true;
+      cubic s0 {
+        control1: (249.333, 155);
+        control2: (253.667, 155);
+        end: (258, 155);
+      
+      }
+      cubic s1 {
+        control1: (258, 238.333);
+        control2: (258, 321.667);
+        end: (258, 405);
+      
+      }
+      cubic s2 {
+        control1: (253.667, 405);
+        control2: (249.333, 405);
+        end: (245, 405);
+      
+      }
+      cubic s3 {
+        control1: (245, 321.667);
+        control2: (245, 238.333);
+        end: (245, 155);
+      
+      }
+    }
+  }
+  part windowDivider {
+    shape: @windowDividerShape;
+    material: { fill: "#cda68d"; stroke: null; strokeWidth: 0; };
+    layer: 3;
+    transform: {  };
+  
+  }
+  shape windowRailShape {
+  
+    contour outline {
+      start: (128, 276);
+      closed: true;
+      cubic s0 {
+        control1: (211.333, 276);
+        control2: (294.667, 276);
+        end: (378, 276);
+      
+      }
+      cubic s1 {
+        control1: (378, 279.333);
+        control2: (378, 282.667);
+        end: (378, 286);
+      
+      }
+      cubic s2 {
+        control1: (294.667, 286);
+        control2: (211.333, 286);
+        end: (128, 286);
+      
+      }
+      cubic s3 {
+        control1: (128, 282.667);
+        control2: (128, 279.333);
+        end: (128, 276);
+      
+      }
+    }
+  }
+  part windowRail {
+    shape: @windowRailShape;
+    material: { fill: "#cda68d"; stroke: null; strokeWidth: 0; };
+    layer: 3;
+    transform: {  };
+  
+  }
+  actor window {
+    parts: (@windowFrame, @windowGlass, @hills, @windowDivider, @windowRail);
+    transform: { x: 0; y: 0; };
+    layer: 0;
+  
+  }
+  background windowDepth {
+    actor: @window;
+    parallax: 0.25;
+  
+  }
+  shape shelfShape {
+  
+    contour outline {
+      start: (840, 294);
+      closed: true;
+      cubic s0 {
+        control1: (929.333, 294);
+        control2: (1018.667, 294);
+        end: (1108, 294);
+      
+      }
+      cubic s1 {
+        control1: (1108, 298.667);
+        control2: (1108, 303.333);
+        end: (1108, 308);
+      
+      }
+      cubic s2 {
+        control1: (1018.667, 308);
+        control2: (929.333, 308);
+        end: (840, 308);
+      
+      }
+      cubic s3 {
+        control1: (840, 303.333);
+        control2: (840, 298.667);
+        end: (840, 294);
+      
+      }
+    }
+  }
+  part shelf {
+    shape: @shelfShape;
+    material: { fill: "#86655f"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: {  };
+  
+  }
+  shape pictureFrameShape {
+  
+    contour outline {
+      start: (885, 177);
+      closed: true;
+      cubic s0 {
+        control1: (922.333, 177);
+        control2: (959.667, 177);
+        end: (997, 177);
+      
+      }
+      cubic s1 {
+        control1: (997, 210.333);
+        control2: (997, 243.667);
+        end: (997, 277);
+      
+      }
+      cubic s2 {
+        control1: (959.667, 277);
+        control2: (922.333, 277);
+        end: (885, 277);
+      
+      }
+      cubic s3 {
+        control1: (885, 243.667);
+        control2: (885, 210.333);
+        end: (885, 177);
+      
+      }
+    }
+  }
+  part pictureFrame {
+    shape: @pictureFrameShape;
+    material: { fill: "#9b7366"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: {  };
+  
+  }
+  part picture {
+    material: { fill: null; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: { x: 892; y: 184; };
+    image: { asset: @paper; width: 98; height: 86; };
+  
+  }
+  shape potShape {
+  
+    contour outline {
+      start: (1022, 251);
+      closed: true;
+      cubic s0 {
+        control1: (1023.75, 249.25);
+        control2: (1070.208, 249.25);
+        end: (1072, 251);
+      
+      }
+      cubic s1 {
+        control1: (1073.792, 252.75);
+        control2: (1066.75, 291.25);
+        end: (1065, 293);
+      
+      }
+      cubic s2 {
+        control1: (1063.25, 294.75);
+        control2: (1031.792, 294.75);
+        end: (1030, 293);
+      
+      }
+      cubic s3 {
+        control1: (1028.208, 291.25);
+        control2: (1020.25, 252.75);
+        end: (1022, 251);
+      
+      }
+    }
+  }
+  part pot {
+    shape: @potShape;
+    material: { fill: "#be7a64"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: {  };
+  
+  }
+  shape leavesShape {
+  
+    contour outline {
+      start: (1047, 253);
+      closed: true;
+      cubic s0 {
+        control1: (1043.9, 249.7);
+        control2: (1026.4, 226.2);
+        end: (1023, 220);
+      
+      }
+      cubic s1 {
+        control1: (1019.6, 213.8);
+        control2: (1011.2, 191.8);
+        end: (1013, 191);
+      
+      }
+      cubic s2 {
+        control1: (1014.8, 190.2);
+        control2: (1037.6, 206.9);
+        end: (1041, 212);
+      
+      }
+      cubic s3 {
+        control1: (1044.4, 217.1);
+        control2: (1045.1, 243.1);
+        end: (1047, 242);
+      
+      }
+      cubic s4 {
+        control1: (1048.9, 240.9);
+        control2: (1056.3, 207.3);
+        end: (1060, 201);
+      
+      }
+      cubic s5 {
+        control1: (1063.7, 194.7);
+        control2: (1082.6, 176.6);
+        end: (1084, 179);
+      
+      }
+      cubic s6 {
+        control1: (1085.4, 181.4);
+        control2: (1077, 217.6);
+        end: (1074, 225);
+      
+      }
+      cubic s7 {
+        control1: (1071, 232.4);
+        control2: (1056.7, 250.2);
+        end: (1054, 253);
+      
+      }
+      cubic s8 {
+        control1: (1051.3, 255.8);
+        control2: (1050.1, 256.3);
+        end: (1047, 253);
+      
+      }
+    }
+  }
+  part leaves {
+    shape: @leavesShape;
+    material: { fill: "#315f68"; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: {  };
+  
+  }
+  actor shelf {
+    parts: (@shelf, @pictureFrame, @picture, @pot, @leaves);
+    transform: { x: 0; y: 0; };
+    layer: 0;
+  
+  }
+  background shelfDepth {
+    actor: @shelf;
+    parallax: 0.5;
+  
+  }
+  shape shadowShape {
+  
+    contour outline {
+      start: (580, 626);
+      closed: true;
+      cubic s0 {
+        control1: (580, 630.337);
+        control2: (566.739, 634.247);
+        end: (541.631, 637.314);
+      
+      }
+      cubic s1 {
+        control1: (516.523, 640.38);
+        control2: (484.509, 642);
+        end: (449, 642);
+      
+      }
+      cubic s2 {
+        control1: (413.491, 642);
+        control2: (381.477, 640.38);
+        end: (356.369, 637.314);
+      
+      }
+      cubic s3 {
+        control1: (331.261, 634.247);
+        control2: (318, 630.337);
+        end: (318, 626);
+      
+      }
+      cubic s4 {
+        control1: (318, 621.663);
+        control2: (331.261, 617.753);
+        end: (356.369, 614.686);
+      
+      }
+      cubic s5 {
+        control1: (381.477, 611.62);
+        control2: (413.491, 610);
+        end: (449, 610);
+      
+      }
+      cubic s6 {
+        control1: (484.509, 610);
+        control2: (516.523, 611.62);
+        end: (541.631, 614.686);
+      
+      }
+      cubic s7 {
+        control1: (566.739, 617.753);
+        control2: (580, 621.663);
+        end: (580, 626);
+      
+      }
+    }
+  }
+  part shadow {
+    shape: @shadowShape;
+    material: { fill: "#b59687"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: {  };
+  
+  }
+  actor shadow {
+    parts: (@shadow);
+    transform: { x: 0; y: 0; };
+    layer: 10;
+  
+  }
+  shape tableLegShape {
+  
+    contour outline {
+      start: (660, 502);
+      closed: true;
+      cubic s0 {
+        control1: (666.667, 502);
+        control2: (673.333, 502);
+        end: (680, 502);
+      
+      }
+      cubic s1 {
+        control1: (678.333, 550);
+        control2: (676.667, 598);
+        end: (675, 646);
+      
+      }
+      cubic s2 {
+        control1: (668.333, 646);
+        control2: (661.667, 646);
+        end: (655, 646);
+      
+      }
+      cubic s3 {
+        control1: (656.667, 598);
+        control2: (658.333, 550);
+        end: (660, 502);
+      
+      }
+    }
+  }
+  part tableLegs {
+    shape: @tableLegShape;
+    material: { fill: "#7b5860"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: {  };
+  
+  }
+  shape tableOtherLegShape {
+  
+    contour outline {
+      start: (907, 502);
+      closed: true;
+      cubic s0 {
+        control1: (913.667, 502);
+        control2: (920.333, 502);
+        end: (927, 502);
+      
+      }
+      cubic s1 {
+        control1: (931, 550);
+        control2: (935, 598);
+        end: (939, 646);
+      
+      }
+      cubic s2 {
+        control1: (932.333, 646);
+        control2: (925.667, 646);
+        end: (919, 646);
+      
+      }
+      cubic s3 {
+        control1: (915, 598);
+        control2: (911, 550);
+        end: (907, 502);
+      
+      }
+    }
+  }
+  part tableOtherLeg {
+    shape: @tableOtherLegShape;
+    material: { fill: "#7b5860"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: {  };
+  
+  }
+  shape tableTopShape {
+  
+    contour outline {
+      start: (607, 468);
+      closed: true;
+      cubic s0 {
+        control1: (613.467, 467.617);
+        control2: (966.45, 467.617);
+        end: (973, 468);
+      
+      }
+      cubic s1 {
+        control1: (979.55, 468.383);
+        control2: (1006.467, 490.617);
+        end: (1000, 491);
+      
+      }
+      cubic s2 {
+        control1: (993.533, 491.383);
+        control2: (591.55, 491.383);
+        end: (585, 491);
+      
+      }
+      cubic s3 {
+        control1: (578.45, 490.617);
+        control2: (600.533, 468.383);
+        end: (607, 468);
+      
+      }
+    }
+  }
+  part tableTop {
+    shape: @tableTopShape;
+    material: { fill: "#b68169"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: {  };
+  
+  }
+  shape tableEdgeShape {
+  
+    contour outline {
+      start: (585, 491);
+      closed: true;
+      cubic s0 {
+        control1: (723.333, 491);
+        control2: (861.667, 491);
+        end: (1000, 491);
+      
+      }
+      cubic s1 {
+        control1: (1000, 496.667);
+        control2: (1000, 502.333);
+        end: (1000, 508);
+      
+      }
+      cubic s2 {
+        control1: (861.667, 508);
+        control2: (723.333, 508);
+        end: (585, 508);
+      
+      }
+      cubic s3 {
+        control1: (585, 502.333);
+        control2: (585, 496.667);
+        end: (585, 491);
+      
+      }
+    }
+  }
+  part tableEdge {
+    shape: @tableEdgeShape;
+    material: { fill: "#8e5d5c"; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: {  };
+  
+  }
+  actor table {
+    parts: (@tableLegs, @tableOtherLeg, @tableTop, @tableEdge);
+    transform: { x: 0; y: 0; };
+    layer: 40;
+  
+  }
+  shape backArmShape {
+  
+    contour outline {
+      start: (-52, 18);
+      closed: true;
+      cubic s0 {
+        control1: (-55.85, 15.55);
+        control2: (-86.05, 25.067);
+        end: (-92, 33);
+      
+      }
+      cubic s1 {
+        control1: (-97.95, 40.933);
+        control2: (-104.983, 76.317);
+        end: (-103, 86);
+      
+      }
+      cubic s2 {
+        control1: (-101.017, 95.683);
+        control2: (-81.067, 114.367);
+        end: (-75, 116);
+      
+      }
+      cubic s3 {
+        control1: (-68.933, 117.633);
+        control2: (-52.517, 104.433);
+        end: (-51, 100);
+      
+      }
+      cubic s4 {
+        control1: (-49.483, 95.567);
+        control2: (-61.067, 83.367);
+        end: (-62, 78);
+      
+      }
+      cubic s5 {
+        control1: (-62.933, 72.633);
+        control2: (-60.167, 61);
+        end: (-59, 54);
+      
+      }
+      cubic s6 {
+        control1: (-57.833, 47);
+        control2: (-48.15, 20.45);
+        end: (-52, 18);
+      
+      }
+    }
+  }
+  part backArm {
+    shape: @backArmShape;
+    material: { fill: "#315f68"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: {  };
+  
+  }
+  shape legsShape {
+  
+    contour outline {
+      start: (-44, 122);
+      closed: true;
+      cubic s0 {
+        control1: (-37.775, 113.6);
+        control2: (35.1, 113.975);
+        end: (42, 122);
+      
+      }
+      cubic s1 {
+        control1: (48.9, 130.025);
+        control2: (50.025, 220.45);
+        end: (48, 229);
+      
+      }
+      cubic s2 {
+        control1: (45.975, 237.55);
+        control2: (18.45, 240.725);
+        end: (15, 236);
+      
+      }
+      cubic s3 {
+        control1: (11.55, 231.275);
+        control2: (3.65, 165.85);
+        end: (2, 166);
+      
+      }
+      cubic s4 {
+        control1: (0.35, 166.15);
+        control2: (-3.775, 232.9);
+        end: (-7, 238);
+      
+      }
+      cubic s5 {
+        control1: (-10.225, 243.1);
+        control2: (-38.225, 242.7);
+        end: (-41, 234);
+      
+      }
+      cubic s6 {
+        control1: (-43.775, 225.3);
+        control2: (-50.225, 130.4);
+        end: (-44, 122);
+      
+      }
+    }
+  }
+  part legs {
+    shape: @legsShape;
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: {  };
+  
+  }
+  shape shoesShape {
+  
+    contour outline {
+      start: (-43, 224);
+      closed: true;
+      cubic s0 {
+        control1: (-41.133, 223.65);
+        control2: (-13.158, 223.717);
+        end: (-11, 225);
+      
+      }
+      cubic s1 {
+        control1: (-8.842, 226.283);
+        control2: (-3.258, 244.775);
+        end: (-6, 246);
+      
+      }
+      cubic s2 {
+        control1: (-8.742, 247.225);
+        control2: (-54.967, 246.583);
+        end: (-58, 246);
+      
+      }
+      cubic s3 {
+        control1: (-61.033, 245.417);
+        control2: (-58.875, 236.875);
+        end: (-58, 236);
+      
+      }
+      cubic s4 {
+        control1: (-57.125, 235.125);
+        control2: (-43.875, 231.7);
+        end: (-43, 231);
+      
+      }
+      cubic s5 {
+        control1: (-42.125, 230.3);
+        control2: (-44.867, 224.35);
+        end: (-43, 224);
+      
+      }
+    }
+    contour right {
+      start: (13, 225);
+      closed: true;
+      cubic s0 {
+        control1: (14.925, 223.6);
+        control2: (40.725, 221.592);
+        end: (43, 222);
+      
+      }
+      cubic s1 {
+        control1: (45.275, 222.408);
+        control2: (50.542, 231.183);
+        end: (52, 232);
+      
+      }
+      cubic s2 {
+        control1: (53.458, 232.817);
+        control2: (67.067, 235.183);
+        end: (68, 236);
+      
+      }
+      cubic s3 {
+        control1: (68.933, 236.817);
+        control2: (71.383, 245.417);
+        end: (68, 246);
+      
+      }
+      cubic s4 {
+        control1: (64.617, 246.583);
+        control2: (13.208, 247.225);
+        end: (10, 246);
+      
+      }
+      cubic s5 {
+        control1: (6.792, 244.775);
+        control2: (11.075, 226.4);
+        end: (13, 225);
+      
+      }
+    }
+  }
+  part shoes {
+    shape: @shoesShape;
+    material: { fill: "#315f68"; stroke: null; strokeWidth: 0; };
+    layer: 3;
+    transform: {  };
+  
+  }
+  shape bodyShape {
+  
+    contour outline {
+      start: (-30, -13);
+      closed: true;
+      cubic s0 {
+        control1: (-16.8, -19);
+        control2: (15.2, -18.25);
+        end: (29, -13);
+      
+      }
+      cubic s1 {
+        control1: (42.8, -7.75);
+        control2: (56.6, 6.4);
+        end: (62, 22);
+      
+      }
+      cubic s2 {
+        control1: (67.4, 37.6);
+        control2: (66.8, 72.55);
+        end: (65, 91);
+      
+      }
+      cubic s3 {
+        control1: (63.2, 109.45);
+        control2: (67.85, 136.9);
+        end: (50, 145);
+      
+      }
+      cubic s4 {
+        control1: (32.15, 153.1);
+        control2: (-37.05, 154.75);
+        end: (-54, 145);
+      
+      }
+      cubic s5 {
+        control1: (-70.95, 135.25);
+        control2: (-62.25, 97.7);
+        end: (-63, 80);
+      
+      }
+      cubic s6 {
+        control1: (-63.75, 62.3);
+        control2: (-63.95, 40.95);
+        end: (-59, 27);
+      
+      }
+      cubic s7 {
+        control1: (-54.05, 13.05);
+        control2: (-43.2, -7);
+        end: (-30, -13);
+      
+      }
+    }
+  }
+  part body {
+    shape: @bodyShape;
+    material: { fill: "#588f91"; stroke: null; strokeWidth: 0; };
+    layer: 4;
+    transform: {  };
+  
+  }
+  shape collarShape {
+  
+    contour outline {
+      start: (-34, -14);
+      closed: true;
+      cubic s0 {
+        control1: (-28.5, -16.083);
+        control2: (26.25, -16.083);
+        end: (32, -14);
+      
+      }
+      cubic s1 {
+        control1: (37.75, -11.917);
+        control2: (37.417, 7.25);
+        end: (35, 11);
+      
+      }
+      cubic s2 {
+        control1: (32.583, 14.75);
+        control2: (8.75, 31);
+        end: (3, 31);
+      
+      }
+      cubic s3 {
+        control1: (-2.75, 31);
+        control2: (-30.917, 14.75);
+        end: (-34, 11);
+      
+      }
+      cubic s4 {
+        control1: (-37.083, 7.25);
+        control2: (-39.5, -11.917);
+        end: (-34, -14);
+      
+      }
+    }
+  }
+  part collar {
+    shape: @collarShape;
+    material: { fill: "#f1b955"; stroke: null; strokeWidth: 0; };
+    layer: 5;
+    transform: {  };
+  
+  }
+  shape headShape {
+  
+    contour outline {
+      start: (-44, -175);
+      closed: true;
+      cubic s0 {
+        control1: (-35.833, -188.167);
+        control2: (-19.167, -192.167);
+        end: (-5, -191);
+      
+      }
+      cubic s1 {
+        control1: (9.167, -189.833);
+        control2: (31.167, -179.5);
+        end: (41, -168);
+      
+      }
+      cubic s2 {
+        control1: (50.833, -156.5);
+        control2: (54, -137.333);
+        end: (54, -122);
+      
+      }
+      cubic s3 {
+        control1: (54, -106.667);
+        control2: (48.333, -86.333);
+        end: (41, -76);
+      
+      }
+      cubic s4 {
+        control1: (33.667, -65.667);
+        control2: (21.833, -60.667);
+        end: (10, -60);
+      
+      }
+      cubic s5 {
+        control1: (-1.833, -59.333);
+        control2: (-19.333, -63.333);
+        end: (-30, -72);
+      
+      }
+      cubic s6 {
+        control1: (-40.667, -80.667);
+        control2: (-51.667, -94.833);
+        end: (-54, -112);
+      
+      }
+      cubic s7 {
+        control1: (-56.333, -129.167);
+        control2: (-52.167, -161.833);
+        end: (-44, -175);
+      
+      }
+    }
+  }
+  part head {
+    shape: @headShape;
+    material: { fill: "#edb68e"; stroke: null; strokeWidth: 0; };
+    layer: 6;
+    transform: {  };
+  
+  }
+  shape hairShape {
+  
+    contour outline {
+      start: (-54, -124);
+      closed: true;
+      cubic s0 {
+        control1: (-57.542, -127.117);
+        control2: (-66.558, -154.375);
+        end: (-65, -165);
+      
+      }
+      cubic s1 {
+        control1: (-63.442, -175.625);
+        control2: (-53.058, -192.908);
+        end: (-43, -199);
+      
+      }
+      cubic s2 {
+        control1: (-32.942, -205.092);
+        control2: (-6.183, -209.983);
+        end: (6, -208);
+      
+      }
+      cubic s3 {
+        control1: (18.183, -206.017);
+        control2: (35.633, -193.925);
+        end: (43, -185);
+      
+      }
+      cubic s4 {
+        control1: (50.367, -176.075);
+        control2: (60.408, -149.108);
+        end: (58, -145);
+      
+      }
+      cubic s5 {
+        control1: (55.592, -140.892);
+        control2: (33.65, -151.608);
+        end: (26, -156);
+      
+      }
+      cubic s6 {
+        control1: (18.35, -160.392);
+        control2: (10.092, -177.275);
+        end: (4, -176);
+      
+      }
+      cubic s7 {
+        control1: (-2.092, -174.725);
+        control2: (-10.767, -151.675);
+        end: (-17, -147);
+      
+      }
+      cubic s8 {
+        control1: (-23.233, -142.325);
+        control2: (-34.758, -146.258);
+        end: (-40, -143);
+      
+      }
+      cubic s9 {
+        control1: (-45.242, -139.742);
+        control2: (-50.458, -120.883);
+        end: (-54, -124);
+      
+      }
+    }
+  }
+  part hair {
+    shape: @hairShape;
+    material: { fill: "#49354d"; stroke: null; strokeWidth: 0; };
+    layer: 7;
+    transform: {  };
+  
+  }
+  shape eyeOpen {
+  
+    contour left {
+      start: (-32, -126);
+      closed: true;
+      cubic s0 {
+        control1: (-32.3, -129.6);
+        control2: (-25.7, -136.7);
+        end: (-23, -137);
+      
+      }
+      cubic s1 {
+        control1: (-20.3, -137.3);
+        control2: (-14.3, -131.6);
+        end: (-14, -128);
+      
+      }
+      cubic s2 {
+        control1: (-13.7, -124.4);
+        control2: (-18.3, -113.3);
+        end: (-21, -113);
+      
+      }
+      cubic s3 {
+        control1: (-23.7, -112.7);
+        control2: (-31.7, -122.4);
+        end: (-32, -126);
+      
+      }
+    }
+    contour right {
+      start: (8, -129);
+      closed: true;
+      cubic s0 {
+        control1: (7.55, -132.6);
+        control2: (15, -139.85);
+        end: (18, -140);
+      
+      }
+      cubic s1 {
+        control1: (21, -140.15);
+        control2: (27.55, -133.6);
+        end: (28, -130);
+      
+      }
+      cubic s2 {
+        control1: (28.45, -126.4);
+        control2: (24, -116.15);
+        end: (21, -116);
+      
+      }
+      cubic s3 {
+        control1: (18, -115.85);
+        control2: (8.45, -125.4);
+        end: (8, -129);
+      
+      }
+    }
+  }
+  shape eyeClosed {
+  
+    contour left {
+      start: (-32, -126);
+      closed: true;
+      cubic s0 {
+        control1: (-32.233, -125.767);
+        control2: (-25.1, -124.767);
+        end: (-23, -125);
+      
+      }
+      cubic s1 {
+        control1: (-20.9, -125.233);
+        control2: (-14.233, -127.767);
+        end: (-14, -128);
+      
+      }
+      cubic s2 {
+        control1: (-13.767, -128.233);
+        control2: (-18.9, -127.233);
+        end: (-21, -127);
+      
+      }
+      cubic s3 {
+        control1: (-23.1, -126.767);
+        control2: (-31.767, -126.233);
+        end: (-32, -126);
+      
+      }
+    }
+    contour right {
+      start: (8, -129);
+      closed: true;
+      cubic s0 {
+        control1: (7.65, -128.883);
+        control2: (15.667, -127.883);
+        end: (18, -128);
+      
+      }
+      cubic s1 {
+        control1: (20.333, -128.117);
+        control2: (27.65, -129.883);
+        end: (28, -130);
+      
+      }
+      cubic s2 {
+        control1: (28.35, -130.117);
+        control2: (23.333, -129.117);
+        end: (21, -129);
+      
+      }
+      cubic s3 {
+        control1: (18.667, -128.883);
+        control2: (8.35, -129.117);
+        end: (8, -129);
+      
+      }
+    }
+  }
+  part eyes {
+    shape: @eyeOpen;
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 8;
+    transform: {  };
+  
+  }
+  shape noseShape {
+  
+    contour outline {
+      start: (0, -126);
+      closed: true;
+      cubic s0 {
+        control1: (0.458, -126.208);
+        control2: (9.083, -107.042);
+        end: (9, -106);
+      
+      }
+      cubic s1 {
+        control1: (8.917, -104.958);
+        control2: (-1.625, -100.167);
+        end: (-2, -101);
+      
+      }
+      cubic s2 {
+        control1: (-2.375, -101.833);
+        control2: (-0.458, -125.792);
+        end: (0, -126);
+      
+      }
+    }
+  }
+  part nose {
+    shape: @noseShape;
+    material: { fill: "#c98675"; stroke: null; strokeWidth: 0; };
+    layer: 9;
+    transform: {  };
+  
+  }
+  shape mouthNeutral {
+  
+    contour mouth {
+      start: (-13, -88);
+      closed: false;
+      cubic smile {
+        control1: (-7, -86);
+        control2: (11, -88);
+        end: (17, -91);
+      
+      }
+    }
+  }
+  shape mouthSmile {
+  
+    contour mouth {
+      start: (-13, -88);
+      closed: false;
+      cubic smile {
+        control1: (-7, -73);
+        control2: (11, -75);
+        end: (17, -91);
+      
+      }
+    }
+  }
+  part mouth {
+    shape: @mouthNeutral;
+    material: { fill: null; stroke: "#3f354d"; strokeWidth: 3; };
+    layer: 10;
+    transform: {  };
+  
+  }
+  shape armRest {
+  
+    contour outline {
+      start: (0, -16);
+      closed: true;
+      cubic s0 {
+        control1: (4.2, -20.433);
+        control2: (24.883, -10.167);
+        end: (32, -2);
+      
+      }
+      cubic s1 {
+        control1: (39.117, 6.167);
+        control2: (51.783, 46.067);
+        end: (61, 54);
+      
+      }
+      cubic s2 {
+        control1: (70.217, 61.933);
+        control2: (103.183, 62.383);
+        end: (111, 66);
+      
+      }
+      cubic s3 {
+        control1: (118.817, 69.617);
+        control2: (127.65, 80.683);
+        end: (128, 85);
+      
+      }
+      cubic s4 {
+        control1: (128.35, 89.317);
+        control2: (122.4, 100.55);
+        end: (114, 103);
+      
+      }
+      cubic s5 {
+        control1: (105.6, 105.45);
+        control2: (69.767, 113.817);
+        end: (56, 106);
+      
+      }
+      cubic s6 {
+        control1: (42.233, 98.183);
+        control2: (2.533, 50.233);
+        end: (-4, 36);
+      
+      }
+      cubic s7 {
+        control1: (-10.533, 21.767);
+        control2: (-4.2, -11.567);
+        end: (0, -16);
+      
+      }
+    }
+  }
+  shape armReach {
+  
+    contour outline {
+      start: (0, -16);
+      closed: true;
+      cubic s0 {
+        control1: (6.533, -21.6);
+        control2: (39.633, -12.7);
+        end: (52, -12);
+      
+      }
+      cubic s1 {
+        control1: (64.367, -11.3);
+        control2: (86.75, -7.317);
+        end: (106, -10);
+      
+      }
+      cubic s2 {
+        control1: (125.25, -12.683);
+        control2: (201.6, -34.067);
+        end: (217, -35);
+      
+      }
+      cubic s3 {
+        control1: (232.4, -35.933);
+        control2: (237.3, -21.967);
+        end: (238, -18);
+      
+      }
+      cubic s4 {
+        control1: (238.7, -14.033);
+        control2: (237.35, -5.433);
+        end: (223, -1);
+      
+      }
+      cubic s5 {
+        control1: (208.65, 3.433);
+        control2: (141.483, 15.683);
+        end: (115, 20);
+      
+      }
+      cubic s6 {
+        control1: (88.517, 24.317);
+        control2: (9.417, 40.2);
+        end: (-4, 36);
+      
+      }
+      cubic s7 {
+        control1: (-17.417, 31.8);
+        control2: (-6.533, -10.4);
+        end: (0, -16);
+      
+      }
+    }
+  }
+  shape armLift {
+  
+    contour outline {
+      start: (0, -16);
+      closed: true;
+      cubic s0 {
+        control1: (3.967, -23.7);
+        control2: (23.583, -24.633);
+        end: (30, -30);
+      
+      }
+      cubic s1 {
+        control1: (36.417, -35.367);
+        control2: (44.967, -52.433);
+        end: (55, -62);
+      
+      }
+      cubic s2 {
+        control1: (65.033, -71.567);
+        control2: (106.317, -108.267);
+        end: (116, -112);
+      
+      }
+      cubic s3 {
+        control1: (125.683, -115.733);
+        control2: (137.533, -98.317);
+        end: (138, -94);
+      
+      }
+      cubic s4 {
+        control1: (138.467, -89.683);
+        control2: (127.933, -81.883);
+        end: (120, -75);
+      
+      }
+      cubic s5 {
+        control1: (112.067, -68.117);
+        control2: (84.467, -47.95);
+        end: (70, -35);
+      
+      }
+      cubic s6 {
+        control1: (55.533, -22.05);
+        control2: (4.167, 33.783);
+        end: (-4, 36);
+      
+      }
+      cubic s7 {
+        control1: (-12.167, 38.217);
+        control2: (-3.967, -8.3);
+        end: (0, -16);
+      
+      }
+    }
+  }
+  part frontArm {
+    shape: @armRest;
+    material: { fill: "#588f91"; stroke: null; strokeWidth: 0; };
+    layer: 11;
+    transform: { x: 45; y: 10; };
+  
+  }
+  shape handShape {
+  
+    contour outline {
+      start: (-15, -10);
+      closed: true;
+      cubic s0 {
+        control1: (-13.875, -13.25);
+        control2: (-7.375, -17.875);
+        end: (-5, -18);
+      
+      }
+      cubic s1 {
+        control1: (-2.625, -18.125);
+        control2: (1.875, -11.375);
+        end: (4, -11);
+      
+      }
+      cubic s2 {
+        control1: (6.125, -10.625);
+        control2: (10.375, -16);
+        end: (12, -15);
+      
+      }
+      cubic s3 {
+        control1: (13.625, -14);
+        control2: (16.875, -6.25);
+        end: (17, -3);
+      
+      }
+      cubic s4 {
+        control1: (17.125, 0.25);
+        control2: (15.25, 8.5);
+        end: (13, 11);
+      
+      }
+      cubic s5 {
+        control1: (10.75, 13.5);
+        control2: (2.375, 17.375);
+        end: (-1, 17);
+      
+      }
+      cubic s6 {
+        control1: (-4.375, 16.625);
+        control2: (-12.25, 11.375);
+        end: (-14, 8);
+      
+      }
+      cubic s7 {
+        control1: (-15.75, 4.625);
+        control2: (-16.125, -6.75);
+        end: (-15, -10);
+      
+      }
+    }
+  }
+  part hand {
+    shape: @handShape;
+    material: { fill: "#edb68e"; stroke: null; strokeWidth: 0; };
+    layer: 12;
+    transform: { x: 115; y: 85; };
+    parent: @frontArm;
+  
+  }
+  actor hero {
+    parts: (@backArm, @legs, @shoes, @body, @collar, @head, @hair, @eyes, @nose, @mouth, @frontArm, @hand);
+    transform: { x: 420; y: 380; };
+    layer: 20;
+  
+  }
+  shape lanternShape {
+  
+    contour outline {
+      start: (-25, 2);
+      closed: true;
+      cubic s0 {
+        control1: (-19.775, -3.133);
+        control2: (19.867, -3.133);
+        end: (25, 2);
+      
+      }
+      cubic s1 {
+        control1: (30.133, 7.133);
+        control2: (31.55, 51.583);
+        end: (31, 58);
+      
+      }
+      cubic s2 {
+        control1: (30.45, 64.417);
+        control2: (23.675, 70.717);
+        end: (19, 72);
+      
+      }
+      cubic s3 {
+        control1: (14.325, 73.283);
+        control2: (-15.325, 73.283);
+        end: (-20, 72);
+      
+      }
+      cubic s4 {
+        control1: (-24.675, 70.717);
+        control2: (-31.542, 64.417);
+        end: (-32, 58);
+      
+      }
+      cubic s5 {
+        control1: (-32.458, 51.583);
+        control2: (-30.225, 7.133);
+        end: (-25, 2);
+      
+      }
+    }
+  }
+  part lanternBody {
+    shape: @lanternShape;
+    material: { fill: "#f1b955"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: {  };
+  
+  }
+  shape lanternGlassShape {
+  
+    contour outline {
+      start: (-16, 12);
+      closed: true;
+      cubic s0 {
+        control1: (-14.25, 9.9);
+        control2: (14.25, 9.9);
+        end: (16, 12);
+      
+      }
+      cubic s1 {
+        control1: (17.75, 14.1);
+        control2: (20.75, 51.9);
+        end: (19, 54);
+      
+      }
+      cubic s2 {
+        control1: (17.25, 56.1);
+        control2: (-17.25, 56.1);
+        end: (-19, 54);
+      
+      }
+      cubic s3 {
+        control1: (-20.75, 51.9);
+        control2: (-17.75, 14.1);
+        end: (-16, 12);
+      
+      }
+    }
+  }
+  part lanternGlass {
+    shape: @lanternGlassShape;
+    material: { fill: "#fff4cf"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: {  };
+  
+  }
+  shape lanternBaseShape {
+  
+    contour outline {
+      start: (-28, 65);
+      closed: true;
+      cubic s0 {
+        control1: (-9.333, 65);
+        control2: (9.333, 65);
+        end: (28, 65);
+      
+      }
+      cubic s1 {
+        control1: (28, 69);
+        control2: (28, 73);
+        end: (28, 77);
+      
+      }
+      cubic s2 {
+        control1: (9.333, 77);
+        control2: (-9.333, 77);
+        end: (-28, 77);
+      
+      }
+      cubic s3 {
+        control1: (-28, 73);
+        control2: (-28, 69);
+        end: (-28, 65);
+      
+      }
+    }
+  }
+  part lanternBase {
+    shape: @lanternBaseShape;
+    material: { fill: "#94665c"; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: {  };
+  
+  }
+  shape handleShape {
+  
+    contour outline {
+      start: (-15, 1);
+      closed: true;
+      cubic s0 {
+        control1: (-15.417, -0.75);
+        control2: (-15.25, -17.667);
+        end: (-14, -20);
+      
+      }
+      cubic s1 {
+        control1: (-12.75, -22.333);
+        control2: (-2.333, -27);
+        end: (0, -27);
+      
+      }
+      cubic s2 {
+        control1: (2.333, -27);
+        control2: (12.75, -22.333);
+        end: (14, -20);
+      
+      }
+      cubic s3 {
+        control1: (15.25, -17.667);
+        control2: (15.417, -0.75);
+        end: (15, 1);
+      
+      }
+      cubic s4 {
+        control1: (14.583, 2.75);
+        control2: (9.583, 2.333);
+        end: (9, 1);
+      
+      }
+      cubic s5 {
+        control1: (8.417, -0.333);
+        control2: (8.75, -13.25);
+        end: (8, -15);
+      
+      }
+      cubic s6 {
+        control1: (7.25, -16.75);
+        control2: (1.333, -20);
+        end: (0, -20);
+      
+      }
+      cubic s7 {
+        control1: (-1.333, -20);
+        control2: (-7.25, -16.75);
+        end: (-8, -15);
+      
+      }
+      cubic s8 {
+        control1: (-8.75, -13.25);
+        control2: (-8.417, -0.333);
+        end: (-9, 1);
+      
+      }
+      cubic s9 {
+        control1: (-9.583, 2.333);
+        control2: (-14.583, 2.75);
+        end: (-15, 1);
+      
+      }
+    }
+  }
+  part lanternHandle {
+    material: { fill: "#8e655b"; stroke: null; strokeWidth: 0; };
+    layer: 3;
+    transform: {  };
+    shape: @handleShape;
+  
+  }
+  actor lantern {
+    parts: (@lanternBody, @lanternGlass, @lanternBase, @lanternHandle);
+    transform: { x: 690; y: 392; };
+    layer: 60;
+  
+  }
+  part title {
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 78; y: 80; };
+    text: { content: "THE LITTLE LIGHT"; font: @nunito; size: 30; };
+  
+  }
+  actor title {
+    parts: (@title);
+    transform: { x: 0; y: 0; };
+    layer: 100;
+  
+  }
+  part subtitle {
+    material: { fill: "#866c73"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 80; y: 111; };
+    text: { content: "A quiet moment, drawn in curves."; font: @nunito; size: 18; };
+  
+  }
+  actor subtitle {
+    parts: (@subtitle);
+    transform: { x: 0; y: 0; };
+    layer: 100;
+  
+  }
+  part caption {
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 81; y: 680; };
+    text: { content: "Notice."; font: @nunito; size: 25; };
+  
+  }
+  actor caption {
+    parts: (@caption);
+    transform: { x: 0; y: 0; };
+    layer: 100;
+  
+  }
+  part captionReach {
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 81; y: 680; };
+    text: { content: "Reach. Hold."; font: @nunito; size: 25; };
+  
+  }
+  actor captionReach {
+    parts: (@captionReach);
+    transform: { x: 0; y: 0; };
+    layer: 100;
+  
+  }
+  part captionClose {
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 81; y: 680; };
+    text: { content: "Keep a little light."; font: @nunito; size: 25; };
+  
+  }
+  actor captionClose {
+    parts: (@captionClose);
+    transform: { x: 0; y: 0; };
+    layer: 100;
+  
+  }
+  shape pulseShape {
+  
+    contour outline {
+      start: (0, 0);
+      closed: true;
+      cubic s0 {
+        control1: (9.333, 0);
+        control2: (18.667, 0);
+        end: (28, 0);
+      
+      }
+      cubic s1 {
+        control1: (28, 2.667);
+        control2: (28, 5.333);
+        end: (28, 8);
+      
+      }
+      cubic s2 {
+        control1: (18.667, 8);
+        control2: (9.333, 8);
+        end: (0, 8);
+      
+      }
+      cubic s3 {
+        control1: (0, 5.333);
+        control2: (0, 2.667);
+        end: (0, 0);
+      
+      }
+    }
+  }
+  part syncPulse {
+    shape: @pulseShape;
+    material: { fill: "#f1b955"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: {  };
+  
+  }
+  actor sync {
+    parts: (@syncPulse);
+    transform: { x: 1170; y: 82; };
+    layer: 120;
+  
+  }
+  pose idle {
+    parts: { frontArm: { shape: @armRest; }; hand: { transform: { x: 115; y: 85; }; }; mouth: { shape: @mouthNeutral; }; };
+  
+  }
+  pose reach {
+    parts: { frontArm: { shape: @armReach; }; hand: { transform: { x: 225; y: -18; }; }; mouth: { shape: @mouthNeutral; }; };
+  
+  }
+  pose lift {
+    parts: { frontArm: { shape: @armLift; }; hand: { transform: { x: 120; y: -95; }; }; mouth: { shape: @mouthNeutral; }; };
+  
+  }
+  pose smile {
+    parts: { frontArm: { shape: @armLift; }; hand: { transform: { x: 120; y: -95; }; }; mouth: { shape: @mouthSmile; }; };
+  
+  }
+  drawing eyesOpen {
+    parts: { eyes: @eyeOpen; };
+  
+  }
+  drawing eyesClosed {
+    parts: { eyes: @eyeClosed; };
+  
+  }
+  scene moment {
+  
+    shot notice {
+      duration: 144f;
+      initial sync {
+        visible: false;
+      
+      }
+      initial captionReach {
+        visible: false;
+      
+      }
+      initial captionClose {
+        visible: false;
+      
+      }
+      key pulseOn {
+        target: @sync;
+        property: "visible";
+        frame: 24f;
+        value: true;
+      
+      }
+      key pulseOff {
+        target: @sync;
+        property: "visible";
+        frame: 27f;
+        value: false;
+      
+      }
+      key b0 {
+        target: @hero;
+        property: "y";
+        frame: 0f;
+        value: 380;
+        easing: (0.42, 0, 0.58, 1);
+      
+      }
+      key b1 {
+        target: @hero;
+        property: "y";
+        frame: 36f;
+        value: 377;
+        easing: (0.42, 0, 0.58, 1);
+      
+      }
+      key b2 {
+        target: @hero;
+        property: "y";
+        frame: 72f;
+        value: 380;
+        easing: (0.42, 0, 0.58, 1);
+      
+      }
+      key b3 {
+        target: @hero;
+        property: "y";
+        frame: 108f;
+        value: 377;
+        easing: (0.42, 0, 0.58, 1);
+      
+      }
+      key b4 {
+        target: @hero;
+        property: "y";
+        frame: 143f;
+        value: 380;
+        easing: (0.42, 0, 0.58, 1);
+      
+      }
+      key look0 {
+        target: @hero.eyes;
+        property: "x";
+        frame: 0f;
+        value: 0;
+        hold: 2f;
+      
+      }
+      key look1 {
+        target: @hero.eyes;
+        property: "x";
+        frame: 72f;
+        value: 5;
+        hold: 2f;
+      
+      }
+      expose firstBlink {
+        actor: @hero;
+        drawing: @eyesClosed;
+        start: 103f;
+        end: 106f;
+      
+      }
+      camera wide {
+        x: 0;
+        y: 0;
+      
+      }
+    }
+    shot reachAndLift {
+      duration: 192f;
+      initial caption {
+        visible: false;
+      
+      }
+      initial captionReach {
+        visible: true;
+      
+      }
+      initial sync {
+        visible: false;
+      
+      }
+      key pulseOn {
+        target: @sync;
+        property: "visible";
+        frame: 24f;
+        value: true;
+      
+      }
+      key pulseOff {
+        target: @sync;
+        property: "visible";
+        frame: 27f;
+        value: false;
+      
+      }
+      morph reachMotion {
+        actor: @hero;
+        from: @idle;
+        to: @reach;
+        start: 0f;
+        end: 60f;
+        easing: (0.4, 0, 0.2, 1);
+      
+      }
+      morph liftMotion {
+        actor: @hero;
+        from: @reach;
+        to: @lift;
+        start: 72f;
+        end: 130f;
+        easing: (0.4, 0, 0.2, 1);
+      
+      }
+      key armOcclusion {
+        target: @hero.frontArm;
+        property: "layer";
+        frame: 50f;
+        value: 50;
+      
+      }
+      key handOcclusion {
+        target: @hero.hand;
+        property: "layer";
+        frame: 50f;
+        value: 55;
+      
+      }
+      key contact {
+        target: @lantern;
+        property: "parent";
+        frame: 60f;
+        value: @hero.hand;
+      
+      }
+      key anchorX {
+        target: @lantern;
+        property: "x";
+        frame: 60f;
+        value: 0;
+      
+      }
+      key anchorY {
+        target: @lantern;
+        property: "y";
+        frame: 60f;
+        value: 20;
+      
+      }
+      expose reachBlink {
+        actor: @hero;
+        drawing: @eyesClosed;
+        start: 166f;
+        end: 169f;
+      
+      }
+      camera reachCamera {
+        x: 0;
+        y: 0;
+      
+      }
+      key camera0 {
+        target: @camera;
+        property: "x";
+        frame: 0f;
+        value: 0;
+      
+      }
+      key camera1 {
+        target: @camera;
+        property: "x";
+        frame: 150f;
+        value: 20;
+      
+      }
+    }
+    shot keep {
+      duration: 144f;
+      initial captionReach {
+        visible: false;
+      
+      }
+      initial captionClose {
+        visible: true;
+        x: 245;
+        y: 105;
+        scaleX: 0.62;
+        scaleY: 0.62;
+      
+      }
+      initial title {
+        visible: false;
+      
+      }
+      initial subtitle {
+        visible: false;
+      
+      }
+      initial sync {
+        visible: false;
+        x: 970.4;
+        y: 155.84;
+        scaleX: 0.62;
+        scaleY: 0.62;
+      
+      }
+      key pulseOn {
+        target: @sync;
+        property: "visible";
+        frame: 24f;
+        value: true;
+      
+      }
+      key pulseOff {
+        target: @sync;
+        property: "visible";
+        frame: 27f;
+        value: false;
+      
+      }
+      camera close {
+        x: 245;
+        y: 105;
+        scaleX: 0.62;
+        scaleY: 0.62;
+      
+      }
+      morph expression {
+        actor: @hero;
+        from: @lift;
+        to: @smile;
+        start: 12f;
+        end: 72f;
+        easing: (0.4, 0, 0.2, 1);
+      
+      }
+      expose closeBlink {
+        actor: @hero;
+        drawing: @eyesClosed;
+        start: 91f;
+        end: 94f;
+      
+      }
+      key gaze0 {
+        target: @hero.eyes;
+        property: "x";
+        frame: 0f;
+        value: 5;
+        hold: 2f;
+      
+      }
+      key gaze1 {
+        target: @hero.eyes;
+        property: "x";
+        frame: 36f;
+        value: 1;
+        hold: 2f;
+      
+      }
+    }
+  }
+  audio soundtrack {
+    asset: @score;
+    offset: 0f;
+    trimStart: 0f;
+    duration: 480f;
+    gain: 1;
+  
+  }
+}

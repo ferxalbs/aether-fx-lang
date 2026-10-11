@@ -6,8 +6,8 @@ for (const name of (await readdir('packages')).sort((a, b) => order.indexOf(a) -
   const root = `packages/${name}`;
   const pkg = JSON.parse(await readFile(`${root}/package.json`, 'utf8'));
   await build({
-    entryPoints: [`${root}/src/index.ts`], outfile: `${root}/dist/index.js`,
-    bundle: true, packages: 'external', format: 'esm', platform: 'neutral', target: 'es2022',
+    entryPoints: [`${root}/src/index.${name === 'react' ? 'tsx' : 'ts'}`], outfile: `${root}/dist/index.js`,
+    bundle: true, packages: 'external', format: 'esm', platform: ['node','cli'].includes(name)?'node':'neutral', target: 'es2022',
     sourcemap: true, ...(name === 'react' ? { banner: { js: "'use client';" } } : {})
   });
   await mkdir(`${root}/dist`, { recursive: true });
@@ -20,5 +20,7 @@ for (const name of (await readdir('packages')).sort((a, b) => order.indexOf(a) -
   const result = spawnSync('node_modules/.bin/tsc', ['-p', `${root}/tsconfig.build.json`], { stdio: 'inherit' });
   if (result.status !== 0) process.exit(result.status ?? 1);
   if (name === 'core') await copyFile(`${root}/src/document.schema.json`, `${root}/dist/document.schema.json`);
+  if (name === 'node') await build({ entryPoints: [`${root}/src/browser.ts`], outfile: `${root}/dist/renderer.js`, bundle: true, format: 'esm', platform: 'browser', target: 'es2022', sourcemap: true });
+  if (name === 'cli') await build({ entryPoints: [`${root}/src/afx.ts`], outfile: `${root}/dist/afx.js`, bundle: true, packages: 'external', format: 'esm', platform: 'node', target: 'es2022', sourcemap: true });
   console.log(`Built ${pkg.name}`);
 }

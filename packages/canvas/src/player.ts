@@ -8,10 +8,11 @@ export interface Player {
 }
 export function createPlayer(canvas:HTMLCanvasElement,plan:PlaybackPlan,resources:CanvasResources&{audio?:Map<string,AudioBuffer>}={images:new Map(),fonts:new Map()}):Player {
   const renderer=createRenderer(canvas,resources);
-  let frame=0,baseFrame=0,anchor=0,rate=1,playing=false,disposed=false,request=0,epoch=0,droppedFrames=0,renderedFrames=0;
+  let frame=0,baseFrame=0,anchor=0,audioAnchor=0,rate=1,playing=false,disposed=false,request=0,epoch=0,droppedFrames=0,renderedFrames=0;
   let audioContext:AudioContext|undefined,source:AudioBufferSourceNode|undefined,gain:GainNode|undefined;
   const assert=()=>{if(disposed)throw new Error('Player disposed');};
-  const current=()=>Math.min(plan.duration-1,Math.floor(baseFrame+(performance.now()-anchor)/1000*plan.document.fps.numerator/plan.document.fps.denominator*rate));
+  const position=()=>baseFrame+(audioContext?audioContext.currentTime-audioAnchor:(performance.now()-anchor)/1000)*plan.document.fps.numerator/plan.document.fps.denominator*rate;
+  const current=()=>Math.min(plan.duration-1,Math.floor(position()));
   const draw=()=>{renderer.render(evaluate(plan,{frame}));renderedFrames++;};
   const stopAudio=()=>{if(source){source.stop();source.disconnect();source=undefined;}if(gain){gain.disconnect();gain=undefined;}};
   const startAudio=()=>{
@@ -26,13 +27,13 @@ export function createPlayer(canvas:HTMLCanvasElement,plan:PlaybackPlan,resource
   };
   const tick=()=>{
     if(!playing||disposed)return;
-    const position=baseFrame+(performance.now()-anchor)/1000*plan.document.fps.numerator/plan.document.fps.denominator*rate;
-    const next=Math.min(plan.duration-1,Math.floor(position));
+    const absolute=position();
+    const next=Math.min(plan.duration-1,Math.floor(absolute));
     if(next!==frame){droppedFrames+=Math.max(0,next-frame-1);frame=next;draw();}
-    if(position>=plan.duration){playing=false;stopAudio();return;}
+    if(absolute>=plan.duration){playing=false;stopAudio();return;}
     request=requestAnimationFrame(tick);
   };
-  const resetClock=()=>{baseFrame=frame;anchor=performance.now();if(playing)startAudio();};
+  const resetClock=()=>{baseFrame=frame;anchor=performance.now();audioAnchor=audioContext?.currentTime??0;if(playing)startAudio();};
   draw();
   return {
     async play(){
