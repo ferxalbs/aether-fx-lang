@@ -3,7 +3,7 @@ import { mkdtemp, rm, readFile, writeFile, lstat, mkdir } from 'node:fs/promises
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { build } from 'esbuild';
 import { chromium } from 'playwright';
@@ -11,7 +11,7 @@ import { prepareNextExample } from './prepare-next-example.mjs';
 import { createOfflineRenderer } from '@aether-fx/node';
 const destination=await mkdtemp(join(tmpdir(),'afx next consumer ')),out=process.argv[2]??'artifacts/next-packages';
 let next,server,browser,offline;
-const checks={},details={};
+const checks={},details={requestFailures:[],consoleErrors:[]};
 const run=(exe,args,cwd)=>new Promise((resolve,reject)=>{const child=spawn(exe,args,{cwd,env:{...process.env,NEXT_TELEMETRY_DISABLED:'1'},stdio:['ignore','pipe','pipe']});let output='';const timer=setTimeout(()=>{child.kill('SIGKILL');reject(new Error('Command timeout: '+exe));},180000);child.stdout.on('data',b=>output+=b);child.stderr.on('data',b=>output+=b);child.on('error',reject);child.on('close',code=>{clearTimeout(timer);if(code===0)resolve(output);else reject(new Error(`${exe} exited ${code}: ${output}`));});});
 const closeProcess=child=>new Promise(resolve=>{if(!child||child.exitCode!==null){resolve();return;}const timer=setTimeout(()=>child.kill('SIGKILL'),5000);child.once('close',()=>{clearTimeout(timer);resolve();});child.kill('SIGTERM');});
 function instrument(){
@@ -35,12 +35,24 @@ try{
   const probe=createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));const port=probe.address().port;await new Promise(r=>probe.close(r));const origin=`http://127.0.0.1:${port}`;
   let nextLog='';next=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port',String(port)],{cwd:destination,env:{...process.env,NEXT_TELEMETRY_DISABLED:'1'},stdio:['ignore','pipe','pipe']});next.stdout.on('data',b=>nextLog+=b);next.stderr.on('data',b=>nextLog+=b);
   let html;for(let attempt=0;attempt<100;attempt++){if(next.exitCode!==null)throw new Error(nextLog);try{const response=await fetch(origin);if(response.ok){html=await response.text();break;}}catch{}await new Promise(r=>setTimeout(r,100));}assert(html,'Next failed to start: '+nextLog);assert.match(html,/<canvas[^>]*width="1280"[^>]*height="720"/);assert(html.includes('Loading illustrated assets'));checks.nextServerRenderedCanvas='PASS';
-  browser=await chromium.launch();const context=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});await context.addInitScript(instrument);const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+  // Exact reference pixels require the same pinned Chromium binary as the offline renderer.
+  browser=await chromium.launch({executablePath:chromium.executablePath()});const context=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});await context.addInitScript(instrument);const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)details.requestFailures.push({url:r.url(),status:r.status()});});page.on('console',m=>{if(m.type()==='error'){errors.push(m.text());details.consoleErrors.push({message:m.text(),location:m.location()});}});
   await page.goto(origin);await page.getByRole('button',{name:'Play',exact:true}).waitFor();await page.waitForFunction(()=>document.querySelector('[data-fx-state="ready"]'));
   const before=await page.evaluate(()=>audit());assert.equal(before.fonts,1);assert.equal(before.bitmaps,1);assert.equal(before.contexts,0);
   const image=()=>page.locator('canvas').evaluate(c=>({width:c.width,height:c.height,png:c.toDataURL().split(',')[1]}));const zero=await image();
   await page.getByRole('button',{name:'Seek frame 97'}).click();assert.match(await page.getByLabel('Selected frame').textContent(),/Frame 97/);const frame97=await image();assert.notEqual(frame97.png,zero.png);
-  offline=await createOfflineRenderer(prepared.project.plan,prepared.project.assets,{width:frame97.width,height:frame97.height});assert.equal(frame97.png,(await offline.captureFrame(97)).toString('base64'));await offline.dispose();offline=undefined;checks.directFrame97Pixels='PASS';
+  offline=await createOfflineRenderer(prepared.project.plan,prepared.project.assets,{width:frame97.width,height:frame97.height});
+  const reference97=await offline.captureFrame(97),actual97=Buffer.from(frame97.png,'base64');
+  await writeFile(join(out,'next-frame-97.png'),actual97);await writeFile(join(out,'offline-frame-97.png'),reference97);
+  // Preserve an A/B reproduction of the former headless-shell comparison on the same host.
+  const shell=await chromium.launch();let shell97;
+  try{const shellPage=await shell.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});await shellPage.goto(origin);await shellPage.waitForFunction(()=>document.querySelector('[data-fx-state="ready"]'));await shellPage.getByRole('button',{name:'Seek frame 97'}).click();shell97=await shellPage.locator('canvas').evaluate(c=>({width:c.width,height:c.height,png:c.toDataURL().split(',')[1]}));}finally{await shell.close();}
+  const shellBytes=Buffer.from(shell97.png,'base64');await writeFile(join(out,'headless-shell-frame-97.png'),shellBytes);
+  const decode=bytes=>{const r=spawnSync('ffmpeg',['-v','error','-i','pipe:0','-f','rawvideo','-pix_fmt','rgba','pipe:1'],{input:bytes,maxBuffer:16*1024*1024});assert.equal(r.status,0,r.stderr.toString());return r.stdout;};
+  const a=decode(actual97),b=decode(reference97),c=decode(shellBytes);assert.equal(a.length,b.length);assert.equal(c.length,b.length);
+  let fullDifferentPixels=0,shellDifferentPixels=0;for(let at=0;at<b.length;at+=4){if(!a.subarray(at,at+4).equals(b.subarray(at,at+4)))fullDifferentPixels++;if(!c.subarray(at,at+4).equals(b.subarray(at,at+4)))shellDifferentPixels++;}
+  await writeFile(join(out,'browser-variant-diagnosis.json'),JSON.stringify({platform:process.platform,chromium:browser.version(),referenceExecutable:chromium.executablePath(),nextExecutable:chromium.executablePath(),formerNextLaunch:'chromium.launch() defaults to separate headless shell',dimensions:[frame97.width,frame97.height],shellDimensions:[shell97.width,shell97.height],fullPngIdentical:actual97.equals(reference97),shellPngIdentical:shellBytes.equals(reference97),fullDifferentPixels,shellDifferentPixels,criterion:'Exact PNG equality retained; decoded pixels are additional diagnostic evidence only',files:['next-frame-97.png','offline-frame-97.png','headless-shell-frame-97.png']},null,2)+'\n');
+  assert.equal(frame97.png,reference97.toString('base64'),'Next frame 97 must exactly match the pinned offline renderer; images and variant diagnosis preserved');await offline.dispose();offline=undefined;checks.directFrame97Pixels='PASS';
   await page.getByRole('button',{name:'Play',exact:true}).click();await page.waitForTimeout(180);await page.getByRole('button',{name:'Pause',exact:true}).click();const pausedText=await page.getByLabel('Selected frame').textContent();assert(Number(pausedText.match(/Frame (\d+)/)[1])>97);await page.getByRole('button',{name:'Seek frame 97'}).click();assert.equal((await image()).png,frame97.png);checks.gesturePlayPauseAndSeek='PASS';
   await page.getByLabel('Speed').selectOption('2');await page.getByRole('button',{name:'Play',exact:true}).click();await page.waitForFunction(()=>audit().lastRate===2);await page.getByRole('button',{name:'Pause',exact:true}).click();await page.getByRole('button',{name:'Restart preview'}).click();assert.equal(await page.getByLabel('Speed').inputValue(),'1');await page.waitForFunction(()=>document.querySelector('[data-fx-state="ready"]'));assert.equal((await image()).png,zero.png);await page.waitForFunction(()=>audit().openContexts===0);checks.remountAndRate='PASS';
   for(let cycle=0;cycle<10;cycle++){
@@ -64,4 +76,4 @@ try{
   for(let cycle=0;cycle<50;cycle++){await readyMount();await strict.evaluate(()=>harness.seek(97));await strict.getByRole('button',{name:'Play'}).click();await strict.waitForFunction(()=>harness.frame()>97);await unmount();}
   const after=await strict.evaluate(()=>({state:harness.state,audit:audit()}));assert.equal(after.state.errors.length,errorsBefore);assert.deepEqual(strictErrors,[]);details.strictMode={replay,cycles:50,after};checks.fiftyRealResourceAudioCleanupCycles='PASS';
   await writeFile(join(out,'next-start.log'),nextLog);await writeFile(join(out,'react-next-report.json'),JSON.stringify({node:process.version,react:'19.3.0',next:'16.4.0',chromium:browser.version(),checks,details,tarballs:prepared.tarballs,limitations:['Local Chromium/macOS proof; cross-browser and physical mobile remain separate gates','No npm publication performed; scope ownership, trusted-publisher settings and final CI/release remain separate gates']},null,2)+'\n');console.log(JSON.stringify({checks,report:join(out,'react-next-report.json')},null,2));
-}finally{await offline?.dispose();await browser?.close();if(server)await new Promise(r=>server.close(r));await closeProcess(next);await rm(destination,{recursive:true,force:true});}
+}finally{await writeFile(join(out,'next-run-diagnostic.json'),JSON.stringify({complete:checks.fiftyRealResourceAudioCleanupCycles==='PASS',checks,details},null,2)+'\n');await offline?.dispose();await browser?.close();if(server)await new Promise(r=>server.close(r));await closeProcess(next);await rm(destination,{recursive:true,force:true});}
