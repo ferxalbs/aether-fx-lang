@@ -1,5 +1,7 @@
 # React and Next App Router
 
+For the latest recorded acceptance status and unresolved failures, see [release readiness](../RELEASE-READINESS.md) and [known issues](../KNOW-ISSUES.md). Local results below do not establish hosted CI success.
+
 The reference matrix is React 19.3.0 and Next 16.4.0, pinned in the root/example lockfiles. The React package uses React as a peer and keeps `'use client'` at the beginning of its built ESM entry. It imports the existing Canvas player; no DOM, audio or asset resolution executes at module import. The package can be imported and rendered to HTML in Node.
 
 ## Server compilation, client ownership

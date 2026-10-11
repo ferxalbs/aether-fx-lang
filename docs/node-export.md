@@ -1,5 +1,7 @@
 # Node rendering and diagnosis
 
+For the latest recorded acceptance status and unresolved failures, see [release readiness](../RELEASE-READINESS.md) and [known issues](../KNOW-ISSUES.md). Local results below do not establish hosted CI success.
+
 The reference export runs the same numeric Canvas renderer in Playwright Chromium, captures exact-sized PNG frames, and streams them sequentially to external FFmpeg. It uses neither screen recording nor MediaRecorder. Node does not import the browser renderer into its own execution context.
 
 ## Deliberate setup
@@ -51,4 +53,4 @@ node scripts/verify-node-packages.mjs
 node scripts/verify-video.mjs short.webm short-1080.webm
 ```
 
-The video verifier decodes actual files, counts frames/samples, samples the marker pixel at both resolutions, compares audio onsets, and retains FFmpeg diagnostics. The lifecycle verifier performs real short exports plus pre-abort, timeout, mid-render cancellation, host failure, output preservation and repeated disposal. Its process observation uses Unix `ps` and is currently local-host evidence. The current package verifier installs seven real tarballs without symlinks, checks exported declarations, compares all 480 isolated frame states, and runs the installed `afx` doctor/check/compile/render through paths containing spaces. The shared seven-archive Node/Next/browser distribution and reference memory/performance checks now pass locally; CI and final release preparation remain unfinished. Historical five-package reports retain their executed scope. See [the API reference](api.md), [quickstart](quickstart.md) and [current release gates](../RELEASE-READINESS.md).
+The video verifier decodes actual files, counts frames/samples, samples the marker pixel at both resolutions, compares audio onsets, and retains FFmpeg diagnostics. The lifecycle verifier performs real short exports plus pre-abort, timeout, mid-render cancellation, host failure, output preservation and repeated disposal. Its process observation uses Unix `ps` and is currently local-host evidence. The current package verifier installs seven real tarballs without symlinks, checks exported declarations, compares all 480 isolated frame states, and runs the installed `afx` doctor/check/compile/render through paths containing spaces. The shared seven-archive Node/Next/browser distribution and reference memory/performance checks now pass locally; final hosted acceptance failed in Next playback and later gates did not run. Historical five-package reports retain their executed scope. See [the API reference](api.md), [quickstart](quickstart.md) and [current release gates](../RELEASE-READINESS.md).

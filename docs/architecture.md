@@ -1,10 +1,12 @@
-# AETHER Fx v0 architecture and investigation
+# AETHER Fx v0 architecture
 
-Reviewed 2026-10-10. The original request remains in `AETHER-Fx-v0-GOAL.md`; `GOAL.md` is the working acceptance specification. This document records implementation decisions, not a claim that v0 is complete.
+This is a maintainer reference for package boundaries and implementation contracts. For usage, start with the [quickstart](quickstart.md).
+
+The investigation and milestones below were recorded on 2026-10-10. Their pending gates and test counts describe those earlier stages. For the latest recorded status, use [release readiness](../RELEASE-READINESS.md) and [known issues](../KNOW-ISSUES.md): hosted acceptance has run and failed in Next playback.
 
 ## Repository baseline
 
-The repository started with an uncommitted goal document, package manifest, lockfile and TypeScript installation. There were no implementation files, tests, Git commits or Git remote. The referenced `lenguaje-nativo-animacion-investigacion.md` is absent. Preserve the original goal and do not infer the missing research's contents. The baseline manifest declared ISC. The owner subsequently authorized Apache-2.0 and supplied the copyright notice; LICENSE, NOTICE and docs/licensing.md record that decision.
+The repository started with a package manifest, lockfile and TypeScript installation. There were no implementation files, tests, Git commits or Git remote. The baseline manifest declared ISC. The owner subsequently authorized Apache-2.0 and supplied the copyright notice; LICENSE, NOTICE and docs/licensing.md record that decision.
 
 ## Verified local tools
 
@@ -43,7 +45,7 @@ Pin dependencies exactly and use the lockfile. The initial engine floor is Node 
 
 ## Review findings and remaining investigation
 
-The goal's matrices and performance targets were proposals, not measured results. The earlier research file, npm scope ownership, actual trusted publisher settings and physical mobile testing remain unknown. The owner has supplied copyright/license metadata, and the actual Git remote is now recorded in docs/licensing.md. These do not prevent local implementation, but public release cannot claim them as verified.
+The initial compatibility matrices and performance targets were proposals, not measured results. The earlier research file, npm scope ownership, actual trusted publisher settings and physical mobile testing remain unknown. The owner has supplied copyright/license metadata, and the actual Git remote is now recorded in docs/licensing.md. These do not prevent local implementation, but public release cannot claim them as verified.
 
 The player, resource resolver, browser export and Node export must test cancellation/cleanup as runtime behaviors. A schema validator cannot isolate Chromium. Node reference export must deny external requests, serve an allowlisted local resource set and invoke FFmpeg with separate arguments. Web export must query actual VP9/Opus configurations and return `EXPORT_UNSUPPORTED` when missing; no recording fallback.
 

@@ -1,5 +1,7 @@
 # Release preparation
 
+For the latest recorded acceptance status and unresolved failures, see [release readiness](../RELEASE-READINESS.md) and [known issues](../KNOW-ISSUES.md). Local results below do not establish hosted CI success.
+
 Release preparation is in progress. Nothing has been published, and these commands do not publish. Original code uses Apache-2.0 with the owner-confirmed `Copyright 2026  Fer's` notice. Repository metadata comes from the actual origin remote, https://github.com/ferxalbs/aether-fx-lang.git. See [licensing and identity](licensing.md) and [current gates](../RELEASE-READINESS.md).
 
 ## Scope and joint version
@@ -16,7 +18,7 @@ node scripts/prepare-next-example.mjs
 npm --prefix examples/next-app run typecheck
 ```
 
-Synchronization updates the seven package names, internal dependency versions, source imports, verification scripts, package README/API examples, private Next manifest, and root/Next lockfile entries. It reads all candidates before writing changes. It excludes generated builds, installed dependencies, historical goal/readiness records and artifact directories. Root and Next example remain private. It preserves external dependency versions, repository attribution and third-party notices.
+Synchronization updates the seven package names, internal dependency versions, source imports, verification scripts, package README/API examples, private Next manifest, and root/Next lockfile entries. It reads all candidates before writing changes. It excludes generated builds, installed dependencies, historical readiness records and artifact directories. Root and Next example remain private. It preserves external dependency versions, repository attribution and third-party notices.
 
 A changed package identity invalidates the private Next example's local tarball integrity entries. The synchronization command removes those obsolete internal hashes; `prepare-next-example.mjs` rebuilds the archive installation from the current package builds and records new npm integrity hashes. Run preparation before installing the Next example from its lockfile. Existing artifact directories retain their historical identities; rebuilding produces archives for the selected scope/version. Review bundle sizes again if changed embedded package names affect the measured baseline.
 
@@ -49,7 +51,7 @@ External gates remain pending: authenticated scope authority, package bootstrap 
 
 According to [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/), OIDC requires npm ≥11.5.1 and Node ≥22.14.0. The locally verified Node 22.12 consumer minimum is therefore insufficient for OIDC publishing. GitHub configuration must match the actual owner/repository and exact workflow filename, with `id-token: write`. Automatic provenance also requires a public repository and public package. Saving publisher settings does not verify them; the first successful publish validates the connection, and a new connection expires if unused for two days. Recheck those external settings at release time.
 
-The prepared workflows and local release bundle are described below. Hosted workflow execution and registry publication are not claimed.
+The prepared workflows and local release bundle are described below. Successful hosted acceptance and registry publication are not claimed.
 
 ## Prepared acceptance and release workflows
 
@@ -57,9 +59,9 @@ The prepared workflows and local release bundle are described below. Hosted work
 
 `npm run lint` checks JavaScript/TypeScript syntax and JSON validity with the existing Node/esbuild toolchain; strict semantic typechecking is separate. `npm run verify:ci` runs the existing gates sequentially, records each command's exit/result/time and stops at the first failure. It includes build/types/108 tests, budgets, geometric pixels, the illustrated patch/resources, Node cancellation/cleanup, metadata, the same seven-archive Node/Next/browser consumers, scope migration and all three preview/export-memory benchmarks. The headed benchmark uses Xvfb on Linux. Linux process-name/hardware collection is supported by the benchmark scripts; physical display latency is still unmeasured.
 
-`.github/workflows/release.yml` is manual only and calls the same acceptance workflow. Its `publish` input defaults to false. The publishing job requires both an explicit true input and a verified `publicationReady` manifest; the current generator always records false because publication is not authorized. It declares `id-token: write`, the optional `npm-publication` environment and explicit per-archive npm publish commands. No workflow has been dispatched by this goal. Configure the actual trusted publisher for owner `ferxalbs`, repository `aether-fx-lang`, workflow filename `release.yml` only after separate owner authorization and the external bootstrap/settings checks. A failed package stops the loop; inspect registry versions/integrity before any future resumption.
+`.github/workflows/release.yml` is manual only and calls the same acceptance workflow. Its `publish` input defaults to false. The publishing job requires both an explicit true input and a verified `publicationReady` manifest; the current generator always records false because publication is not authorized. It declares `id-token: write`, the optional `npm-publication` environment and explicit per-archive npm publish commands. Hosted acceptance workflows have run; the latest recorded run failed in Next playback. No publication has occurred. Configure the actual trusted publisher for owner `ferxalbs`, repository `aether-fx-lang`, workflow filename `release.yml` only after separate owner authorization and the external bootstrap/settings checks. A failed package stops the loop; inspect registry versions/integrity before any future resumption.
 
-The workflows pass Actionlint 1.7.12 locally; Bash setup syntax is checked separately. This does not prove a hosted Ubuntu execution. The canonical GitHub repository was observed public with current-account repository access. npm now authenticates as `ferxalb`; `npm org ls aether-fx --json` returned E404. This does not establish scope availability/ownership, and no organization or publisher settings were changed.
+The workflows pass Actionlint 1.7.12 locally; Bash setup syntax is checked separately. These static checks do not establish hosted acceptance success. The canonical GitHub repository was observed public with current-account repository access. npm now authenticates as `ferxalb`; `npm org ls aether-fx --json` returned E404. This does not establish scope availability/ownership, and no organization or publisher settings were changed.
 
 ## Assemble the reviewable bundle
 
@@ -71,4 +73,6 @@ This copies the verified seven tarballs, Apache LICENSE/NOTICE, changelog and do
 
 The local acceptance run and hosted CI remain distinct checklist rows. External npm authority/bootstrap gates remain blocked. Preparation is usable while external gates remain unresolved; it does not mark the artifacts publication-ready. [GitHub workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), [Playwright CI](https://playwright.dev/docs/ci-intro) and [official FFmpeg source](https://ffmpeg.org/download.html) describe the tooling used here.
 
-Current local closure: `npm run verify:ci` finished with fourteen PASS commands and one preview timeout. The earlier three-drop failure is also retained. Only the preview was then reproduced with diagnostic audio/timeout capture; it passed the same three-play/zero-drop gate. The root cause remains unresolved. `prepare-release.mjs` preserves both failure incidents and the isolated diagnosis; the full acceptance matrix remains FAIL and `publicationReady` remains false.
+Historical local closure before the later neck correction: `npm run verify:ci` finished with fourteen PASS commands and one preview timeout. The earlier three-drop failure is also retained. Only the preview was then reproduced with diagnostic audio/timeout capture; it passed the same three-play/zero-drop gate. The root cause remains unresolved. `prepare-release.mjs` preserves both failure incidents and the isolated diagnosis; that full acceptance matrix remained FAIL and `publicationReady` remained false.
+
+The later corrected local run completed all fifteen commands with PASS on `1baab1c`. Final hosted run `38110114744` on `3c589a9` failed in both Node jobs at Next Play/Pause after nine passing commands; five subsequent commands and hosted release preparation did not run. See the current readiness report before assembling or reviewing a release bundle.

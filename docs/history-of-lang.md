@@ -1,11 +1,13 @@
-# History of evolution of AETHER Fx
+# Visual history of AETHER Fx
 
-This is and evolution of the Languge and how is upgrade part by part a medida que el lenguaje va mejorando en l transcurso del tiempo
+These images record early renders of *The Little Light*, the included illustrated short. They show visual development within the experimental 0.1.0 version, rather than separate published releases.
 
-## V0.1.0 (Alpha) - The Born of Language
+## First render
 
-![AETHER Fx logo](../assets/first-born.png)
+![Early frames from The Little Light](../assets/first-born.png)
 
-## v0.1.0 (Preview One) - The First Render
+## Preview refinement
 
-![AETHER Fx logo](../assets/first-preview.png)
+![Refined frames from The Little Light](../assets/first-preview.png)
+
+The character was later corrected with a neck bridge connecting the head and torso. The images above predate that correction. Run the [current demo](quickstart.md#preview-the-included-animation) to see the checked-in animation, or read [release readiness](../RELEASE-READINESS.md#corrected-acceptance-short) for the correction and its recorded verification.

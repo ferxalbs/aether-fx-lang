@@ -1,5 +1,7 @@
 # Browser preview and export
 
+For the latest recorded acceptance status and unresolved failures, see [release readiness](../RELEASE-READINESS.md) and [known issues](../KNOW-ISSUES.md). Local results below do not establish hosted CI success.
+
 `@aether-fx/export` exports an absolute-frame PlaybackPlan to VP9/Opus WebM using native WebCodecs and Mediabunny 1.61.3. It imports in Node without touching browser globals; exporting requires a secure browser context. It imports no filesystem, FFmpeg or Playwright code. There is no MediaRecorder fallback.
 
 ```js
@@ -36,7 +38,7 @@ npx playwright install chromium firefox webkit
 npm run verify:web
 ```
 
-The current standalone verifier packs all seven real tarballs, installs them without symlinks in a temporary consumer, checks public types and Node imports, and audits the browser dependency graph. It uses actual assets/encoders and random-access file writes, then invokes `verify-video.mjs --web` on every successful output, including the demo download. `artifacts/web-export/report.json`, `video-report.json`, `SHA256SUMS`, browser bundle inputs, screenshots and WebM files contain the evidence. The earlier four-package reports remain historical milestone evidence. The native counters retain closed encoder references intentionally and must not be used for heap benchmarking.
+The current standalone verifier packs all seven real tarballs, installs them without symlinks in a temporary consumer, checks public types and Node imports, and audits the browser dependency graph. It uses actual assets/encoders and random-access file writes, then invokes `verify-video.mjs --web` on every successful output, including the demo download. `artifacts/web-export/report.json`, `video-report.json`, `SHA256SUMS`, browser bundle inputs, screenshots and WebM files contain the evidence. The earlier four-package reports remain historical milestone evidence. Lifetime instrumentation is not a full-process memory measurement; use the [memory benchmarks](performance.md) for that scope.
 
 ## Shared release archive set
 
