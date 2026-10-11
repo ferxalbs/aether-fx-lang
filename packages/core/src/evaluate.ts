@@ -1,6 +1,7 @@
 import { IDENTITY } from './types.js';
 import type { DrawList, FxDocument, Matrix, PlaybackPlan, Property, Shape, Shot, Snapshot, Transform, Value } from './types.js';
 import { interpolateShape, multiply, transformMatrix } from './geometry.js';
+import { contactState } from './contact.js';
 import { ease } from './time.js';
 
 export function initialSnapshot(d: FxDocument): Snapshot {
@@ -31,7 +32,7 @@ function interpolate(a: Value,b: Value,t:number,shortest=false): Value {
   return a+delta*t;
 }
 /** Values are fresh per call. Discrete exposures revert to the underlying drawing at end. */
-export function evaluateState(d:FxDocument,shot:Shot,snapshot:Snapshot,frame:number): Snapshot {
+function rawState(d:FxDocument,shot:Shot,snapshot:Snapshot,frame:number): Snapshot {
   const state = structuredClone(snapshot);
   const tracks = new Map<string, typeof shot.keys>();
   for (const key of shot.keys) {
@@ -50,7 +51,7 @@ export function evaluateState(d:FxDocument,shot:Shot,snapshot:Snapshot,frame:num
     }
     const sampled = left.frame+Math.floor((frame-left.frame)/left.hold)*left.hold;
     const t = right ? ease((sampled-left.frame)/(right.frame-left.frame),left.easing) : 1;
-    state.values[left.target]![left.property] = right ? interpolate(left.value,right.value,t,left.property==='rotation' && left.rotation==='shortest') : left.value;
+    state.values[left.target]![left.property] = left.property==='layer' ? left.value : right ? interpolate(left.value,right.value,t,left.property==='rotation' && left.rotation==='shortest') : left.value;
     if (left.property==='shape') delete state.shapes[left.target];
   }
   for (const morph of [...shot.morphs].sort((a,b)=>a.start-b.start)) {
@@ -77,6 +78,9 @@ export function evaluateState(d:FxDocument,shot:Shot,snapshot:Snapshot,frame:num
   // Cubic easing may overshoot geometry, but Canvas opacity is always bounded.
   for (const values of Object.values(state.values)) if (typeof values.opacity === 'number') values.opacity = Math.max(0, Math.min(1, values.opacity));
   return state;
+}
+export function evaluateState(d:FxDocument,shot:Shot,snapshot:Snapshot,frame:number): Snapshot {
+  return shot.contacts?.length ? contactState(d,shot.contacts,t=>rawState(d,shot,snapshot,t),frame) : rawState(d,shot,snapshot,frame);
 }
 export function actorParentsValid(d:FxDocument,state:Snapshot,maxDepth:number): boolean {
   for (const actor of d.actors) {
@@ -122,7 +126,7 @@ export function evaluate(plan:PlaybackPlan,options:{frame:number}): DrawList {
     const parallax=d.backgrounds.find(b=>b.actor===actor.id)?.parallax ?? 1;
     const cameraMatrix=inverse(transformMatrix({...camera,x:camera.x*parallax,y:camera.y*parallax}));
     const shape=state.shapes[target] ?? d.shapes.find(s=>s.id===v.shape) ?? null;
-    commands.push({id:target,matrix:multiply(cameraMatrix,w.matrix),opacity:w.opacity,layer:(state.values[actor.id]!.layer as number)+(v.layer as number),shape:shape ? structuredClone(shape) : null,material:structuredClone(part.material),text:part.text ? {...part.text} : null,image:part.image ? {...part.image} : null});
+    commands.push({...(part.clip ? {clip:structuredClone(d.shapes.find(s=>s.id===part.clip)!)} : {}),id:target,matrix:multiply(cameraMatrix,w.matrix),opacity:w.opacity,layer:(state.values[actor.id]!.layer as number)+(v.layer as number),shape:shape ? structuredClone(shape) : null,material:structuredClone(part.material),text:part.text ? {...part.text} : null,image:part.image ? {...part.image} : null});
   }
   commands.sort((a,b)=>a.layer-b.layer);
   return {frame,shot:item.shot.id,viewport:[...d.viewport],commands};

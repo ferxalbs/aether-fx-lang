@@ -180,3 +180,49 @@ describe('CI functional regressions',()=>{
     }finally{await rm(directory,{recursive:true,force:true});}
   });
 });
+
+describe('integrated vector scenes',()=>{
+  it.each(['fixtures/short/little-light-authored.afx','fixtures/assembly/guide-carriage.afx'])('roundtrips public authoring and seeks contact boundaries in %s',async(file)=>{
+    const {compileSource,print}=await import('@aether-fx/compiler');
+    const {matrixPoint}=await import('@aether-fx/core');
+
+      const {plan,assets}=unwrap(await loadProject(file));
+      expect(unwrap(compileSource(print(unwrap(parse(await readFile(file,'utf8')))),assets.manifest))).toEqual(plan);
+      const frames=file.includes('little-light')?[0,144,156,174,194,203,204,205,216,240,274,335,336,479]:[0,36,60,84,132,156,191,192,193,239];
+      const expected=new Map(frames.map(frame=>[frame,evaluate(plan,{frame})]));
+      for(const frame of [...frames].reverse())expect(evaluate(plan,{frame})).toEqual(expected.get(frame));
+      if(file.includes('little-light'))for(const frame of [203,204,205,216,240,274,335,336,479]){
+        const draw=expected.get(frame)!,hand=draw.commands.find(c=>c.id==='hero.hand')!,lamp=draw.commands.find(c=>c.id==='lantern.lanternBody')!;
+        const a=matrixPoint(hand.matrix,[0,0]),b=matrixPoint(lamp.matrix,[0,-20]);
+        if(frame>=204)expect(Math.hypot(a[0]-b[0],a[1]-b[1])).toBeLessThan(1e-8);
+        expect(draw.commands.find(c=>c.id==='hero.fingers')!.layer).toBeGreaterThan(draw.commands.find(c=>c.id==='lantern.lanternHandle')!.layer);
+      }
+      });
+  it('reuses a public component with changed dimensions and stable face IDs',async()=>{
+    const {compileSource}=await import('@aether-fx/compiler');
+    const source=await readFile('fixtures/assembly/guide-carriage.afx','utf8');
+    const before=unwrap(compileSource(source)),after=unwrap(compileSource(source.replace('radius: 14; height: 55;','radius: 18; height: 55;')));
+    expect(before.document.actors.find(a=>a.id==='far_post')!.solid!.radius).toBe(10);
+    expect(before.document.actors.find(a=>a.id==='near_post')!.solid!.radius).toBe(14);
+    expect(after.document.actors.find(a=>a.id==='near_post')!.solid!.radius).toBe(18);
+    expect(after.document.shapes.map(s=>s.id)).toEqual(before.document.shapes.map(s=>s.id));
+    expect(after.document.shapes.find(s=>s.id==='near_post_top_shape')).not.toEqual(before.document.shapes.find(s=>s.id==='near_post_top_shape'));
+  });
+  it('draws local gradients and evenodd clipping through nonuniform world/camera transforms',async()=>{
+    const {compileSource}=await import('@aether-fx/compiler'),{createNativeRenderer}=await import('@aether-fx/node'),{matrixPoint}=await import('@aether-fx/core');
+    const source=`project material {viewport:(320,240);fps:(24,1);
+      shape rect {primitive:rect;size:(40,40);}
+      shape hole {primitive:path;data:"M0 0 H40 V40 H0 Z M15 15 H25 V25 H15 Z";}
+      part test {shape:@rect;clip:@hole;material:{fillRule:evenodd;fill:{type:linear;from:(0,0);to:(40,0);stops:[{offset:0;color:"#ff0000";},{offset:1;color:"#0000ff";}];};};}
+      actor test {parts:[@test];transform:{x:100;y:80;scaleX:2;scaleY:1.5;rotation:30deg;};}
+      scene s {shot s {duration:2f;camera c {x:20;y:15;scaleX:0.8;scaleY:1.2;rotation:10deg;}}}}
+    `;
+    const p=unwrap(compileSource(source)),r=await createNativeRenderer(p,{manifest:[],files:new Map()});
+    try {
+      r.render(0);const pixels=r.pixels(),m=evaluate(p,{frame:0}).commands[0]!.matrix;
+      const at=(point:[number,number])=>{const [x,y]=matrixPoint(m,point);return Array.from(pixels.slice((Math.round(y)*320+Math.round(x))*4,(Math.round(y)*320+Math.round(x))*4+4));};
+      expect(at([20,20])[3]).toBe(0);expect(at([5,20])[3]).toBe(255);
+      expect(at([5,20])[0]).toBeGreaterThan(210);expect(at([35,20])[2]).toBeGreaterThan(210);
+    }finally{r.dispose();}
+  });
+});

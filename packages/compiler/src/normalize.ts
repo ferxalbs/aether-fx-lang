@@ -1,5 +1,5 @@
-import { checkSchema, compile, DEFAULT_LIMITS, diagnostic, failure, IDENTITY, success } from '@aether-fx/core';
-import type { AssetManifest, Diagnostic, FxDocument, Limits, PlaybackPlan, Result, SourceRange } from '@aether-fx/core';
+import { orthographic, catmullRomContour, createSolid, nodeContour, checkSchema, compile, DEFAULT_LIMITS, diagnostic, failure, IDENTITY, success } from '@aether-fx/core';
+import type { AssetManifest, Part, Actor, Shot, CurveNode, SolidRecipe, Diagnostic, FxDocument, Limits, PlaybackPlan, Result, SourceRange } from '@aether-fx/core';
 import type { AstField, AstValue, Declaration, DocumentAST } from './parser.js';
 import { parse } from './parser.js';
 import { expand, timeFrames } from './expand.js';
@@ -11,7 +11,7 @@ const badKeys=new Set(['__proto__','prototype','constructor']);
 /** Follow canonical collection/field names back through DSL normalization. */
 function sourceRangeForPath(root:Declaration,path=''):SourceRange {
   const steps=path.split('/').slice(1);
-  const collections:Record<string,string>={assets:'asset',shapes:'shape',parts:'part',poses:'pose',drawings:'drawing',actors:'actor',backgrounds:'background',contours:'contour',segments:'cubic',initial:'initial',keys:'key',morphs:'morph',exposures:'expose'};
+  const collections:Record<string,string>={assets:'asset',shapes:'shape',parts:'part',poses:'pose',drawings:'drawing',actors:'actor',backgrounds:'background',contours:'contour',segments:'cubic',initial:'initial',keys:'key',morphs:'morph',exposures:'expose',contacts:'contact'};
   let node:Declaration|AstValue=root;
   for(let i=0;i<steps.length;i++) {
     let name=steps[i]!;
@@ -52,7 +52,7 @@ function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
         if (frameFields.has(property)) {
           if (!['f','s','ms'].includes(unit??'')) fail('UNIT_REQUIRED',`${property} requires f, s or ms`,value.range);
           if(unit==='s'||unit==='ms'){try{return timeFrames(value,rationalFps);}catch(cause){fail('TIME_INVALID',String(cause),value.range);}}
-        } else if (property==='rotation') {
+        } else if (['rotation','azimuth','elevation'].includes(property)) {
           if (unit!=='deg'&&unit!=='rad') fail('UNIT_REQUIRED','Rotation requires deg or rad',value.range);
         } else if (unit) fail('UNIT_INVALID',`Unexpected unit ${unit} for ${property}`,value.range);
         return unit==='deg'?value.value*Math.PI/180:value.value;
@@ -60,17 +60,17 @@ function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
       return value.value;
     }
     if (value.kind==='reference') return value.value;
-    if (value.kind==='array') return value.items.map(v=>convert(v,''));
-    return fields(value.fields);
+    if (value.kind==='array') return value.items.map(v=>convert(v,property==='stops'?'stops':''));
+    return fields(value.fields,property);
   }
-  function fields(list:AstField[]):Record<string,unknown> {
+  function fields(list:AstField[],context=''):Record<string,unknown> {
     const result:Record<string,unknown>={};
     const keyProperty=list.find(f=>f.name==='property')?.value;
     const property=keyProperty?.kind==='scalar'?keyProperty.value:undefined;
     for (const field of list) {
       if (badKeys.has(field.name)) { fail('UNSAFE_KEY','Forbidden property',field.range);continue; }
       if (Object.hasOwn(result,field.name)) {fail('DUPLICATE_PROPERTY','Duplicate property',field.range);continue;}
-      result[field.name]=convert(field.value,field.name==='value'&&property==='rotation'?'rotation':field.name);
+      result[field.name]=convert(field.value,context==='stops'&&field.name==='offset'?'stopOffset':field.name==='value'&&property==='rotation'?'rotation':field.name);
     }
     return result;
   }
@@ -83,7 +83,7 @@ function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
   function transform(value:unknown):unknown { return value&&typeof value==='object'&&!Array.isArray(value)?{...IDENTITY,...value}:value===undefined?{...IDENTITY}:value; }
   const root=ast.project;
   if (root.keyword!=='project') fail('PROJECT_REQUIRED','Root declaration must be project',root.range);
-  const header=allowed(root,['version','revision','viewport','fps'],['asset','shape','part','pose','drawing','actor','background','scene','audio']);
+  const header=allowed(root,['version','revision','viewport','fps'],['asset','shape','solid','part','pose','drawing','actor','background','scene','audio']);
   const fps=header.fps;
   const result:Record<string,unknown>={schemaVersion:header.version??1,revision:header.revision??0,id:root.id,viewport:header.viewport,fps:Array.isArray(fps)?{numerator:fps[0],denominator:fps[1]}:fps,assets:[],shapes:[],parts:[],poses:[],drawings:[],actors:[],backgrounds:[],shots:[],audio:null};
   function append(collection:string,value:unknown){ (result[collection] as unknown[]).push(value); }
@@ -93,13 +93,31 @@ function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
     } else if (d.keyword==='shape') {
       const primitiveFields=allowed(d,['primitive','size','radius','from','to','points','innerRadius','count','data'],['contour']);
       const contours=d.children.filter(c=>c.keyword==='contour').map(c=>{
-        const f=allowed(c,['start','closed'],['cubic']);
+        const f=allowed(c,['start','closed','curve'],['cubic','node']);
+        const nodes=c.children.filter(n=>n.keyword==='node').map(n=>({id:n.id,...allowed(n,['point','in','out','mode'])})) as CurveNode[];
+        if(nodes.length){
+          if(c.children.some(n=>n.keyword==='cubic')||f.start!==undefined)fail('CURVE_INVALID','Nodes cannot be mixed with cubic/start',c.range,c.id);
+          try { if(f.curve!==undefined&&f.curve!=='catmull-rom'&&f.curve!=='nodes')throw new Error('Unknown curve constructor'); return f.curve==='catmull-rom'?catmullRomContour(c.id,nodes,f.closed!==false):nodeContour(c.id,nodes,f.closed!==false); }catch(cause){fail('CURVE_INVALID',String(cause),c.range,c.id);}
+        }else if(f.curve!==undefined)fail('CURVE_INVALID','Curve constructor requires nodes',c.range,c.id);
+        delete f.curve;
         return {id:c.id,closed:true,...f,segments:c.children.filter(s=>s.keyword==='cubic').map(s=>({id:s.id,...allowed(s,['control1','control2','end'])}))};
       });
       if(primitiveFields.primitive!==undefined){if(contours.length)fail('PRIMITIVE_INVALID','Cannot mix primitive and contours',d.range);const {primitive:kind,...props}=primitiveFields;try{contours.push(...primitive(String(kind),props) as typeof contours);}catch(cause){fail('PRIMITIVE_INVALID',String(cause),d.range,d.id);}}else if(Object.keys(primitiveFields).length)fail('PRIMITIVE_INVALID','Primitive kind required',d.range);
       append('shapes',{id:d.id,contours});
+    } else if (d.keyword==='solid') {
+      const f=allowed(d,['kind','height','z','ring','radius','center','steps','tolerance','projection','materials','anchors','pivot','transform','parent','layer']);
+      const {transform:placement,parent,layer,...recipe}=f;
+      if(recipe.materials&&typeof recipe.materials==='object'&&!Array.isArray(recipe.materials)) {
+        recipe.materials=Object.fromEntries(Object.entries(recipe.materials).map(([role,value])=>[role,{fill:'#000000',stroke:null,strokeWidth:0,fillRule:'nonzero',...(typeof value==='string'?{fill:value}:value as object)}]));
+      }
+      try {
+        const solid=createSolid(d.id,recipe as unknown as SolidRecipe);
+        solid.actor.transform=transform(placement) as typeof solid.actor.transform;
+        solid.actor.parent=(parent??null) as string|null;solid.actor.layer=(layer??0) as number;
+        for(const shape of solid.shapes)append('shapes',shape);for(const part of solid.parts)append('parts',part);append('actors',solid.actor);
+      }catch(cause){fail((cause as {code?:string}).code??'SOLID_INVALID',String(cause),d.range,d.id);}
     } else if (d.keyword==='part') {
-      const f=allowed(d,['parent','pivot','transform','layer','shape','material','text','image']);
+      const f=allowed(d,['parent','pivot','transform','layer','shape','material','text','image','clip','anchors']);
       const material=f.material;
       append('parts',{id:d.id,parent:null,pivot:[0,0],layer:0,shape:null,text:null,image:null,...f,transform:transform(f.transform),material:material&&typeof material==='object'&&!Array.isArray(material)?{fill:'#000000',stroke:null,strokeWidth:0,fillRule:'nonzero',...material}:material===undefined?{fill:'#000000',stroke:null,strokeWidth:0,fillRule:'nonzero'}:material});
     } else if (d.keyword==='actor') {
@@ -115,7 +133,7 @@ function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
       allowed(d,[],['shot']);
       for (const originalShot of d.children.filter(c=>c.keyword==='shot')) {
         const anchored=resolveAnchors(originalShot,rationalFps);if(!anchored.ok){errors.push(...anchored.diagnostics);continue;}const s=anchored.value;
-        const f=allowed(s,['duration'],['initial','key','morph','expose','camera']);
+        const f=allowed(s,['duration'],['initial','key','morph','expose','camera','contact']);
         const shot:Record<string,unknown>={id:s.id,...f,initial:[],keys:[],morphs:[],exposures:[],camera:{x:0,y:0,scaleX:1,scaleY:1,rotation:0}};
         let cameraSeen=false;
         for (const c of s.children) {
@@ -126,13 +144,27 @@ function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
             (shot.keys as unknown[]).push({id:c.id,easing:'linear',rotation:rotationMode??'direct',hold:1,...rest});
           } else if (c.keyword==='morph') (shot.morphs as unknown[]).push({id:c.id,easing:'linear',...allowed(c,['actor','from','to','start','end','easing'])});
           else if (c.keyword==='expose') (shot.exposures as unknown[]).push({id:c.id,...allowed(c,['actor','drawing','start','end'])});
-          else if (c.keyword==='camera') {
+          else if (c.keyword==='contact') {
+            const contact=allowed(c,['target','anchor','targetPoint','anchorPoint','start','end']);
+            const contacts=(shot.contacts??=[]) as unknown[];contacts.push({id:c.id,targetPoint:[0,0],anchorPoint:[0,0],...contact});
+          } else if (c.keyword==='camera') {
             if (cameraSeen) fail('CAMERA_MULTIPLE','Only one camera declaration per shot',c.range,c.id);
             cameraSeen=true; shot.camera={x:0,y:0,scaleX:1,scaleY:1,rotation:0,...allowed(c,['x','y','scaleX','scaleY','rotation'])};
           }
         }
         append('shots',shot);
       }
+    }
+  }
+  // Spatial landmark names resolve after all declarations, independently of source order.
+  for(const shot of result.shots as Shot[])for(const contact of shot.contacts??[]) {
+    if(typeof contact.anchorPoint==='string') {
+      const point=(result.parts as Part[]).find(p=>p.id===contact.anchor.split('.')[1])?.anchors?.[contact.anchorPoint];
+      if(point)contact.anchorPoint=[...point];else fail('REFERENCE_MISSING','Unknown contact anchor landmark',root.range,contact.id);
+    }
+    if(typeof contact.targetPoint==='string') {
+      const actor=(result.actors as Actor[]).find(a=>a.id===contact.target),point=actor?.solid?.anchors?.[contact.targetPoint];
+      if(point)contact.targetPoint=orthographic(actor!.solid!.projection).point(point);else fail('REFERENCE_MISSING','Unknown contact target landmark',root.range,contact.id);
     }
   }
   if (errors.length) return failure(errors);

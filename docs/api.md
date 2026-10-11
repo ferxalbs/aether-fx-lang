@@ -27,9 +27,27 @@ Core has no parser, React, DOM, filesystem or implicit network access.
 | `ease(t, easing)` | Linear or cubic Bézier easing; endpoints/outside `[0,1]` return `t` |
 | `multiply(a, b)` | Composition of two six-number Canvas affine matrices |
 | `transformMatrix(transform, pivot?)` | Affine transform around pivot, default `[0,0]` |
-| `topologyMatches(a, b)` | Ordered contour IDs, closure and segment IDs/counts must match |
+| `topologyMatches(a, b)` | Ordered contour IDs, closure, cubic signed-area winding and segment IDs/counts must match |
 | `interpolateShape(a, b, t)` | Numeric interpolation retaining semantic correspondence; topology mismatch throws |
 | `diagnostic`, `success`, `failure` | Constructors for diagnostic/result values; `diagnostic` defaults severity to `error` |
+
+Projected authoring is also available at the package root:
+
+| Function | Contract |
+| --- | --- |
+| `orthographic(options?)` | Returns point/depth projection, viewer direction and scale; isometric defaults, radians, z up |
+| `createSolid(id, recipe)` | Returns `{actor,parts,shapes,faces,errorBound}`; convex extrusion or bounded polygonal cylinder, ready to add to a document |
+| `orderProjectedFaces(faces, projection?)` | Convex planar face-overlap/depth audit, at most 256 faces; returns order and split/layer diagnostics |
+| `nodeContour(id, nodes, closed?)` | Identified nodes with relative corner/aligned/mirrored handles converted to cubic segments |
+| `catmullRomContour(id, nodes, closed?)` | Centripetal Catmull–Rom converted to cubic segments, retaining repeated landmark IDs |
+| `editContourNode(contour, nodeId, changes)` | Rebuilds a contour after a landmark/handle edit without mutating input |
+| `rebuildContour(contour)` | Rebuilds controls from retained authoring; clone for an explicit cubic contour |
+| `inverseMatrix(matrix)`, `matrixPoint(matrix, point)` | Affine inverse with singularity detection and point transformation |
+| `contourArea(contour)` | Exact signed area of a closed cubic contour, including the close edge |
+
+`SolidRecipe` stores dimensions, projection, top/light/dark materials, optional xyz anchors and pivot. Add all returned shapes and parts and the returned actor to the document. For dimensional edits call `createSolid` with the same ID and fixed sampling, replace that actor's generated assets, then compile: dangling references/topology changes must be repaired explicitly. `Actor.solid` and `Contour.authoring` survive JSON roundtrip; stale geometry/control data is rejected. A node edit can replace the contour with an ordinary atomic `applyPatch` update to its `contours` entry; incompatible morphs invalidate the patch. Constructors throw `RangeError` for invalid geometry. See [syntax and bounds](language-v0.1.md#public-projected-solids-editable-curves-and-contact).
+
+`Material.fill` also accepts `Gradient` (linear/radial); `Part.clip` is a local shape ID and `Part.anchors` maps names to local xy points. `Shot.contacts` contains actor-to-part bind/release intervals with coincident local points. Contact binding preserves world pose, diagnoses singular matrices/shear and persists corrected transforms at shot boundaries. Evaluation remains stateless. `CurveNode`, `ProjectionOptions`, `SolidRecipe`, `ProjectedFace`, `Vec3`, `Gradient` and `Contact` are public types. The Canvas package exports `drawOverlays(canvas, drawList, document, options)` and `OverlayOptions` for optional nodes, anchors and layer labels; these diagnostics do not alter state or exports.
 
 The core root exports model types `Vec2`, `Matrix`, `Fps`, `Transform`, `Segment`, `Contour`, `Shape`, `Material`, `AssetKind`, `Asset`, `ResolvedAsset`, `AssetManifest`, `Part`, `PartState`, `Pose`, `Drawing`, `Actor`, `Background`, `Property`, `Value`, `Easing`, `Key`, `Initial`, `Morph`, `Exposure`, `Camera`, `Shot`, `AudioTrack`, `FxDocument`, `Snapshot`, `PlannedShot`, `PlaybackPlan`, `DrawCommand`, `DrawList`, `Limits`, `Result`, `Diagnostic`, `SourceRange`, and patch types below. `SCHEMA_VERSION`, `IDENTITY` and `DEFAULT_LIMITS` are exported constants. Limits default to source 2,000,000 bytes, depth 64, parts 1,000, segments 100,000, tracks 10,000, resolution 8,192 and duration 1,000,000 frames; `Partial<Limits>` overrides are explicit host choices.
 

@@ -2,6 +2,7 @@ import { checkSchema } from './schema.js';
 import { validate } from './validate.js';
 import { DEFAULT_LIMITS, diagnostic, failure, success } from './types.js';
 import type { AssetManifest, FxDocument, Limits, PlaybackPlan, Result } from './types.js';
+import { contactState } from './contact.js';
 import { actorParentsValid, evaluateState, initialSnapshot, shotSnapshot } from './evaluate.js';
 export function freeze<T>(value: T): T {
   if (value && typeof value === 'object') { for (const child of Object.values(value)) freeze(child); Object.freeze(value); }
@@ -21,13 +22,21 @@ export function compile(document: unknown, manifest: unknown = [], options: Part
     // Parent/visibility are discrete; validating every change boundary covers the entire shot.
     const frames = new Set([0, ...shot.keys.filter(k => k.property === 'parent').map(k => k.frame)]);
     for (const frame of frames) {
-      const state = evaluateState(d, shot, snapshot, frame);
+      const state = evaluateState(d, { ...shot, contacts: [] }, snapshot, frame);
       if (!actorParentsValid(d, state, options.depth ?? DEFAULT_LIMITS.depth)) diagnostics.push(diagnostic('HIERARCHY_CYCLE', 'Actor parenting creates a cycle or exceeds depth', { id: shot.id, path:`/shots/${shotIndex}`, frame }));
     }
     const cameraFrames = new Set([0, ...shot.keys.filter(k => k.target === 'camera' && (k.property === 'scaleX' || k.property === 'scaleY')).map(k => k.frame)]);
     for (const frame of cameraFrames) {
-      const state = evaluateState(d, shot, snapshot, frame);
+      const state = evaluateState(d, { ...shot, contacts: [] }, snapshot, frame);
       if ((state.values['camera']!.scaleX as number) <= 0 || (state.values['camera']!.scaleY as number) <= 0) diagnostics.push(diagnostic('CAMERA_SCALE', 'Camera scales must be positive', { id: shot.id, path:`/shots/${shotIndex}`, frame }));
+    }
+    if (shot.contacts?.length) {
+      // Bounded exhaustive integer-frame audit includes bind, release and the shot boundary.
+      for (let frame=0;frame<=shot.duration;frame++) {
+        try { contactState(d,shot.contacts,t=>evaluateState(d,{...shot,contacts:[]},snapshot,t),frame,true); }
+        catch(cause) { const message=String(cause); diagnostics.push(diagnostic(message.includes('CONTACT_CHAIN')?'CONTACT_CHAIN':message.includes('CONTACT_GAP')?'CONTACT_GAP':message.includes('CONTACT_SHEAR')?'CONTACT_SHEAR':message.includes('HIERARCHY_CYCLE')?'HIERARCHY_CYCLE':'TRANSFORM_SINGULAR',message,{id:shot.id,path:`/shots/${shotIndex}/contacts`,frame})); break; }
+      }
+      if(diagnostics.length)return failure(diagnostics);
     }
     shots.push({ start, shot, snapshot: structuredClone(snapshot) });
     // Boundary time is duration, so a morph ending at the boundary reaches its destination.

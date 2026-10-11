@@ -328,3 +328,97 @@ describe('stagger and geometry boundary regressions',()=>{
  it('rounds each rational stagger once and supports offsets on shared anchors',()=>{const source='project p {viewport:(100,100);fps:(24,1);shape g {primitive:circle;radius:10;}part p {shape:@g;}actor a {parts:[@p];}scene s {shot a {duration:48f;anchor beat {at:0f;}repeat keys {count:3;stagger:62.5ms;key k {target:@a;property:x;frame:@beat;offset:1f;value:@index;}}}}}';const result=unwrap(compileSource(source));expect(result.document.shots[0]!.keys.map(k=>k.frame)).toEqual([1,3,4]);});
  it('rejects malformed SVG and rounds arcs into stable cubic subdivisions',()=>{for(const data of ['L0 0','M0 0 Z 4','M0 0 A20 20 0 2 1 40 0','M0 0 X20 20','M0 0 L1e999 0'])expect(compileSource(`project p {viewport:(100,100);fps:(24,1);shape g {primitive:path;data:${JSON.stringify(data)};}scene s {shot a {duration:1f;}}}`).ok).toBe(false);});
 });
+
+describe('public vector authoring',()=>{
+  it('roundtrips solids, node handles, gradients, clips and contacts from source',async()=>{
+    const source=`project authored {viewport:(320,240);fps:(24,1);
+      solid block {kind:extrude;height:12;ring:[{id:a;point:(0,0);},{id:b;point:(40,0);},{id:c;point:(40,30);},{id:d;point:(0,30);}];materials:{top:"#eeeeee";light:"#aaaaaa";dark:"#555555";};}
+      shape curve {contour outline {closed:false;node a {point:(0,0);out:(20,0);mode:mirrored;}node b {point:(50,30);in:(-15,0);out:(10,0);mode:aligned;}}}
+      part hand {shape:@curve;anchors:{grip:(0,0);};clip:@curve;material:{fill:{type:linear;from:(0,0);to:(50,0);stops:[{offset:0;color:"#ffffff";},{offset:1;color:"#000000";}];};};}
+      actor hero {parts:[@hand];}
+      scene movie {shot move {duration:24f;contact bind {target:@block;anchor:@hero.hand;start:0f;end:12f;}key a {target:@hero;property:x;frame:0f;value:0;}key b {target:@hero;property:x;frame:12f;value:100;}}}
+    }`;
+    const p=unwrap(compileSource(source));
+    expect(unwrap(compileSource(print(unwrap(parse(source)))))).toEqual(p);
+    expect(unwrap(deserializePlan(serializePlan(p)))).toEqual(p);
+    expect(p.document.actors.find(a=>a.id==='block')!.solid!.height).toBe(12);
+    const stale=structuredClone(p.document);stale.actors.find(a=>a.id==='block')!.solid!.height=20;expect(validate(stale).map(d=>d.code)).toContain('SOLID_STALE');
+    const staleCurve=structuredClone(p.document);staleCurve.shapes.find(s=>s.id==='curve')!.contours[0]!.authoring!.nodes[0]!.point=[3,0];expect(validate(staleCurve).map(d=>d.code)).toContain('CURVE_STALE');
+    const expected=Array.from({length:24},(_,frame)=>evaluate(p,{frame}));
+    for(const frame of [23,0,12,11,1,13,7])expect(evaluate(p,{frame})).toEqual(expected[frame]);
+    const object=(f:number)=>evaluate(p,{frame:f}).commands.find(c=>c.id==='block.block_top')!;
+    expect(object(0).matrix[4]).toBe(0);expect(object(12).matrix[4]).toBe(100);expect(object(23).matrix[4]).toBe(100);
+    expect(evaluate(p,{frame:0}).commands.find(c=>c.id==='hero.hand')!.clip).toBeDefined();
+  });
+  it('edits handles by node ID, preserves winding and rejects topology edits affecting morphs',async()=>{
+    const {nodeContour,editContourNode,catmullRomContour,topologyMatches}=await import('@aether-fx/core');
+    const nodes=[{id:'a',point:[0,0] as [number,number],out:[6,0] as [number,number],mode:'mirrored' as const},{id:'b',point:[20,20] as [number,number],in:[-4,0] as [number,number],out:[8,0] as [number,number],mode:'aligned' as const},{id:'c',point:[0,40] as [number,number]}];
+    const c=nodeContour('outline',nodes,true),edited=editContourNode(c,'b',{point:[25,20],out:[0,8]});
+    expect(edited.segments[0]!.control2).toEqual([25,16]);expect(edited.segments[1]!.control1).toEqual([25,28]);expect(topologyMatches({id:'a',contours:[c]},{id:'b',contours:[edited]})).toBe(true);
+    expect(topologyMatches({id:'a',contours:[c]},{id:'b',contours:[nodeContour('outline',[...nodes].reverse(),true)]})).toBe(false);
+    const d=document();d.shapes[0]!.contours=[c];d.shapes[1]!.contours=[nodeContour('outline',[...nodes,{id:'d',point:[-10,20]}],true)];
+    expect(compile(d)).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({code:'MORPH_TOPOLOGY'})])});
+    const repeats=catmullRomContour('line',[{id:'a',point:[0,0]},{id:'b',point:[0,0]},{id:'c',point:[10,10]},{id:'d',point:[10,10]}]);
+    expect(repeats.segments[0]!.control1).toEqual([0,0]);expect(repeats.segments.every(s=>[...s.control1,...s.control2,...s.end].every(Number.isFinite))).toBe(true);
+    const allSame=catmullRomContour('ring',[{id:'a',point:[1,1]},{id:'b',point:[1,1]},{id:'c',point:[1,1]}],true);expect(allSame.segments.every(s=>s.end[0]===1)).toBe(true);
+    expect(()=>nodeContour('line',[{id:'a',point:[0,0]},{id:'a',point:[1,1]}])).toThrow('IDs');
+    const corner=nodeContour('line',[{id:'a',point:[0,0],out:[8,0]},{id:'b',point:[20,0],out:[6,0]}]);
+    expect(corner.segments[0]!.control2).toEqual([20,0]);
+  });
+  it('bounds cylinder error, accepts either winding, and diagnoses incompatible occlusion',async()=>{
+    const {createSolid,orderProjectedFaces,orthographic}=await import('@aether-fx/core');
+    const mat={fill:'#ffffff',stroke:null,strokeWidth:0,fillRule:'nonzero' as const},materials={top:mat,light:mat,dark:mat};
+    const ring=[{id:'a',point:[0,0] as [number,number]},{id:'b',point:[20,0] as [number,number]},{id:'c',point:[20,20] as [number,number]},{id:'d',point:[0,20] as [number,number]}];
+    const a=createSolid('one',{kind:'extrude',height:10,ring,materials});
+    const b=createSolid('two',{kind:'extrude',height:20,ring:[...ring].reverse(),materials});expect(a.parts).toHaveLength(3);expect(b.parts).toHaveLength(3);
+    expect(orderProjectedFaces(a.faces).diagnostics).toEqual([]);
+    expect(createSolid('round',{kind:'cylinder',radius:50,height:20,steps:64,tolerance:.1,materials}).errorBound).toBeLessThanOrEqual(.1);
+    expect(()=>createSolid('bad',{kind:'cylinder',radius:500,height:20,steps:8,tolerance:.001,materials})).toThrow('budget');
+    expect(()=>createSolid('bad',{kind:'extrude',height:0,ring,materials})).toThrow('positive');
+    expect(()=>createSolid('bad',{kind:'extrude',height:20,ring:[ring[0]!,ring[2]!,ring[1]!,ring[3]!],materials})).toThrow();
+    expect(()=>orthographic({scale:Infinity})).toThrow();
+    // Both planes project onto the same quad, but opposite slopes exchange front/back.
+    const camera=orthographic(),v=camera.viewer;
+    const front=a.faces.at(-1)!;
+    const shifted={...front,id:'cross',vertices:front.vertices.map((p,i)=>p.map((n,j)=>n+v[j]!*(i<2?-12:12)) as [number,number,number])};
+    expect(orderProjectedFaces([front,shifted]).diagnostics.map(d=>d.code)).toContain('OCCLUSION_SPLIT_REQUIRED');
+    expect(orderProjectedFaces([front,{...front,id:'coplanar'}]).diagnostics[0]!.code).toBe('OCCLUSION_LAYER_REQUIRED');
+  });
+  it('rejects stale authoring, invalid gradients, contact gaps, singular transforms and writer conflicts',async()=>{
+    const valid=`project demo {viewport:(100,100);fps:(24,1);shape s {primitive:circle;radius:5;}part p {shape:@s;}actor hand {parts:[@p];}actor lamp {parts:[@p];}scene s {shot s {duration:24f;contact bind {target:@lamp;anchor:@hand.p;start:4f;end:12f;}}}}`;
+    const plan=unwrap(compileSource(valid)),d=structuredClone(plan.document);
+    d.actors[0]!.transform.scaleX=0;expect(compile(d)).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'TRANSFORM_SINGULAR'})]});
+    const gap=structuredClone(plan.document);gap.actors[1]!.transform.x=10;expect(compile(gap)).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'CONTACT_GAP'})]});
+    const gradient=structuredClone(plan.document);gradient.parts[0]!.material.fill={type:'radial',from:[0,0],to:[0,0],stops:[{offset:0,color:'#ffffff'},{offset:1,color:'#000000'}]};expect(validate(gradient).map(d=>d.code)).toContain('MATERIAL_INVALID');
+    const conflict=valid.replace('contact bind','key move {target:@lamp;property:x;frame:8f;value:20;}contact bind');expect(compileSource(conflict)).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({code:'PROPERTY_CONFLICT'})])});
+  });
+});
+
+describe('absolute contact and layer boundaries',()=>{
+  it('keeps a rotated scaled bind/release pose with random seek and subsequent free motion',()=>{
+    const s=`project contact {viewport:(300,200);fps:(24,1);shape dot {primitive:circle;radius:5;}part dot {shape:@dot;}
+      actor hand {parts:[@dot];transform:{rotation:30deg;scaleX:2;scaleY:2;};}actor lamp {parts:[@dot];}
+      scene s {shot first {duration:24f;contact grip {target:@lamp;anchor:@hand.dot;start:4f;end:12f;}
+      key rotate0 {target:@hand;property:rotation;frame:0f;value:30deg;}key rotate1 {target:@hand;property:rotation;frame:12f;value:90deg;}
+      key move0 {target:@lamp;property:x;frame:12f;value:0;}key move1 {target:@lamp;property:x;frame:23f;value:11;}
+      key layer0 {target:@lamp;property:layer;frame:0f;value:0;}key layer1 {target:@lamp;property:layer;frame:12f;value:50;}
+      }shot next {duration:2f;}}}`;
+    const p=unwrap(compileSource(s)),matrix=(f:number)=>evaluate(p,{frame:f}).commands.find(c=>c.id==='lamp.dot')!;
+    expect(matrix(3).matrix).toEqual(matrix(4).matrix);expect(matrix(11).layer).toBe(0);expect(matrix(12).layer).toBe(50);
+    expect(matrix(12).matrix[0]).toBeCloseTo(Math.cos(40*Math.PI/180));
+    expect(matrix(13).matrix[4]).toBeCloseTo(Math.cos(40*Math.PI/180));
+    expect(matrix(13).matrix[5]).toBeCloseTo(Math.sin(40*Math.PI/180));
+    expect(matrix(23).matrix).toEqual(matrix(24).matrix);
+    const expected=Array.from({length:p.duration},(_,frame)=>evaluate(p,{frame}));
+    for(let i=0;i<p.duration;i++)expect(evaluate(p,{frame:i*7%p.duration})).toEqual(expected[i*7%p.duration]);
+  });
+  it('diagnoses a zero scale between keys and a sheared contact, including interval ends',()=>{
+    const s=`project c {viewport:(100,100);fps:(24,1);shape dot {primitive:circle;radius:5;}part dot {shape:@dot;}actor hand {parts:[@dot];}actor lamp {parts:[@dot];}scene s {shot s {duration:24f;contact c {target:@lamp;anchor:@hand.dot;start:0f;end:12f;}key a {target:@hand;property:scaleX;frame:0f;value:1;}key b {target:@hand;property:scaleX;frame:12f;value:-1;}}}}`;
+    const r=compileSource(s);expect(r).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'TRANSFORM_SINGULAR',frame:6})]});
+    expect(compileSource(s.replace('frame:0f;value:1;', 'frame:0f;value:0;'))).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'TRANSFORM_SINGULAR',frame:0})]});
+    const shear=s.replace('actor hand {parts:[@dot];}','actor hand {parts:[@dot];transform:{scaleX:2;rotation:30deg;};}').replace('property:scaleX;frame:0f;value:1;','property:scaleX;frame:0f;value:2;').replace('property:scaleX;frame:12f;value:-1;','property:scaleX;frame:12f;value:3;');
+    // A change in nonuniform scale relative to a rotated target requires a shear.
+    const sheared=shear.replace('actor lamp {parts:[@dot];}','actor lamp {parts:[@dot];transform:{rotation:20deg;scaleX:2;};}');
+    expect(compileSource(sheared)).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'CONTACT_SHEAR'})]});
+  });
+});

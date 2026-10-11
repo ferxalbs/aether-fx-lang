@@ -1,0 +1,2099 @@
+project littleLightAuthored {
+  "version": 1;
+  "viewport": [1280, 720];
+  "fps": [24, 1];
+  asset nunito {
+    "kind": "font";
+    "src": "assets/Nunito.ttf";
+    "version": 1;
+    "locked": true;
+  }
+  asset paper {
+    "kind": "image";
+    "src": "assets/paper.png";
+    "version": 1;
+    "locked": true;
+  }
+  asset score {
+    "kind": "audio";
+    "src": "assets/score.wav";
+    "version": 1;
+    "locked": true;
+  }
+  shape wallShape {
+    contour outline {
+      "start": [-150, -150];
+      "closed": true;
+      cubic s0 {
+        "control1": [400, -150];
+        "control2": [950, -150];
+        "end": [1500, -150];
+      }
+      cubic s1 {
+        "control1": [1500, 183.333];
+        "control2": [1500, 516.667];
+        "end": [1500, 850];
+      }
+      cubic s2 {
+        "control1": [950, 850];
+        "control2": [400, 850];
+        "end": [-150, 850];
+      }
+      cubic s3 {
+        "control1": [-150, 516.667];
+        "control2": [-150, 183.333];
+        "end": [-150, -150];
+      }
+    }
+  }
+  part wall {
+    "shape": @wallShape;
+    "material": { "fill": "#efe5d3"; "stroke": null; "strokeWidth": 0; };
+    "layer": 0;
+    "transform": {  };
+  }
+  shape floorShape {
+    contour outline {
+      "start": [-150, 605];
+      "closed": true;
+      cubic s0 {
+        "control1": [400, 605];
+        "control2": [950, 605];
+        "end": [1500, 605];
+      }
+      cubic s1 {
+        "control1": [1500, 705];
+        "control2": [1500, 805];
+        "end": [1500, 905];
+      }
+      cubic s2 {
+        "control1": [950, 905];
+        "control2": [400, 905];
+        "end": [-150, 905];
+      }
+      cubic s3 {
+        "control1": [-150, 805];
+        "control2": [-150, 705];
+        "end": [-150, 605];
+      }
+    }
+  }
+  part floor {
+    "shape": @floorShape;
+    "material": { "fill": "#d2bda9"; "stroke": null; "strokeWidth": 0; };
+    "layer": 1;
+    "transform": {  };
+  }
+  shape baseboardShape {
+    contour outline {
+      "start": [-150, 594];
+      "closed": true;
+      cubic s0 {
+        "control1": [400, 594];
+        "control2": [950, 594];
+        "end": [1500, 594];
+      }
+      cubic s1 {
+        "control1": [1500, 598];
+        "control2": [1500, 602];
+        "end": [1500, 606];
+      }
+      cubic s2 {
+        "control1": [950, 606];
+        "control2": [400, 606];
+        "end": [-150, 606];
+      }
+      cubic s3 {
+        "control1": [-150, 602];
+        "control2": [-150, 598];
+        "end": [-150, 594];
+      }
+    }
+  }
+  part baseboard {
+    "shape": @baseboardShape;
+    "material": { "fill": "#ae8e80"; "stroke": null; "strokeWidth": 0; };
+    "layer": 2;
+    "transform": {  };
+  }
+  actor room {
+    "parts": [@wall, @floor, @baseboard];
+    "transform": { "x": 0; "y": 0; };
+    "layer": 0;
+  }
+  background wallDepth {
+    "actor": @room;
+    "parallax": 0;
+  }
+  shape windowFrameShape {
+    contour outline {
+      "start": [112, 184];
+      "closed": true;
+      cubic s0 {
+        "control1": [115.583, 160.583];
+        "control2": [135, 139.083];
+        "end": [155, 135];
+      }
+      cubic s1 {
+        "control1": [175, 130.917];
+        "control2": [331.917, 130.917];
+        "end": [352, 135];
+      }
+      cubic s2 {
+        "control1": [372.083, 139.083];
+        "control2": [392.333, 160.583];
+        "end": [396, 184];
+      }
+      cubic s3 {
+        "control1": [399.667, 207.417];
+        "control2": [419.667, 396.667];
+        "end": [396, 416];
+      }
+      cubic s4 {
+        "control1": [372.333, 435.333];
+        "control2": [135.667, 435.333];
+        "end": [112, 416];
+      }
+      cubic s5 {
+        "control1": [88.333, 396.667];
+        "control2": [108.417, 207.417];
+        "end": [112, 184];
+      }
+    }
+  }
+  part windowFrame {
+    "shape": @windowFrameShape;
+    "material": { "fill": "#aa8271"; "stroke": null; "strokeWidth": 0; };
+    "layer": 0;
+    "transform": {  };
+  }
+  shape windowGlassShape {
+    contour outline {
+      "start": [130, 190];
+      "closed": true;
+      cubic s0 {
+        "control1": [132.667, 174];
+        "control2": [156.333, 157.333];
+        "end": [170, 155];
+      }
+      cubic s1 {
+        "control1": [183.667, 152.667];
+        "control2": [321.2, 152.667];
+        "end": [335, 155];
+      }
+      cubic s2 {
+        "control1": [348.8, 157.333];
+        "control2": [374.2, 174];
+        "end": [377, 190];
+      }
+      cubic s3 {
+        "control1": [379.8, 206];
+        "control2": [393.467, 381.333];
+        "end": [377, 395];
+      }
+      cubic s4 {
+        "control1": [360.533, 408.667];
+        "control2": [146.467, 408.667];
+        "end": [130, 395];
+      }
+      cubic s5 {
+        "control1": [113.533, 381.333];
+        "control2": [127.333, 206];
+        "end": [130, 190];
+      }
+    }
+  }
+  part windowGlass {
+    "shape": @windowGlassShape;
+    "material": { "fill": "#acd0c8"; "stroke": null; "strokeWidth": 0; };
+    "layer": 1;
+    "transform": {  };
+  }
+  shape hillsShape {
+    contour outline {
+      "start": [130, 345];
+      "closed": true;
+      cubic s0 {
+        "control1": [133.4, 340.1];
+        "control2": [191.55, 297.9];
+        "end": [198, 297];
+      }
+      cubic s1 {
+        "control1": [204.45, 296.1];
+        "control2": [253.35, 328.25];
+        "end": [259, 327];
+      }
+      cubic s2 {
+        "control1": [264.65, 325.75];
+        "control2": [305.1, 272.85];
+        "end": [311, 272];
+      }
+      cubic s3 {
+        "control1": [316.9, 271.15];
+        "control2": [373.7, 303.85];
+        "end": [377, 310];
+      }
+      cubic s4 {
+        "control1": [380.3, 316.15];
+        "control2": [389.35, 390.75];
+        "end": [377, 395];
+      }
+      cubic s5 {
+        "control1": [364.65, 399.25];
+        "control2": [142.35, 397.5];
+        "end": [130, 395];
+      }
+      cubic s6 {
+        "control1": [117.65, 392.5];
+        "control2": [126.6, 349.9];
+        "end": [130, 345];
+      }
+    }
+  }
+  part hills {
+    "shape": @hillsShape;
+    "material": { "fill": "#81aaa5"; "stroke": null; "strokeWidth": 0; };
+    "layer": 2;
+    "transform": {  };
+  }
+  shape windowDividerShape {
+    contour outline {
+      "start": [245, 155];
+      "closed": true;
+      cubic s0 {
+        "control1": [249.333, 155];
+        "control2": [253.667, 155];
+        "end": [258, 155];
+      }
+      cubic s1 {
+        "control1": [258, 238.333];
+        "control2": [258, 321.667];
+        "end": [258, 405];
+      }
+      cubic s2 {
+        "control1": [253.667, 405];
+        "control2": [249.333, 405];
+        "end": [245, 405];
+      }
+      cubic s3 {
+        "control1": [245, 321.667];
+        "control2": [245, 238.333];
+        "end": [245, 155];
+      }
+    }
+  }
+  part windowDivider {
+    "shape": @windowDividerShape;
+    "material": { "fill": "#cda68d"; "stroke": null; "strokeWidth": 0; };
+    "layer": 3;
+    "transform": {  };
+  }
+  shape windowRailShape {
+    contour outline {
+      "start": [128, 276];
+      "closed": true;
+      cubic s0 {
+        "control1": [211.333, 276];
+        "control2": [294.667, 276];
+        "end": [378, 276];
+      }
+      cubic s1 {
+        "control1": [378, 279.333];
+        "control2": [378, 282.667];
+        "end": [378, 286];
+      }
+      cubic s2 {
+        "control1": [294.667, 286];
+        "control2": [211.333, 286];
+        "end": [128, 286];
+      }
+      cubic s3 {
+        "control1": [128, 282.667];
+        "control2": [128, 279.333];
+        "end": [128, 276];
+      }
+    }
+  }
+  part windowRail {
+    "shape": @windowRailShape;
+    "material": { "fill": "#cda68d"; "stroke": null; "strokeWidth": 0; };
+    "layer": 3;
+    "transform": {  };
+  }
+  actor window {
+    "parts": [@windowFrame, @windowGlass, @hills, @windowDivider, @windowRail];
+    "transform": { "x": 0; "y": 0; };
+    "layer": 0;
+  }
+  background windowDepth {
+    "actor": @window;
+    "parallax": 0.25;
+  }
+  shape shelfShape {
+    contour outline {
+      "start": [840, 294];
+      "closed": true;
+      cubic s0 {
+        "control1": [929.333, 294];
+        "control2": [1018.667, 294];
+        "end": [1108, 294];
+      }
+      cubic s1 {
+        "control1": [1108, 298.667];
+        "control2": [1108, 303.333];
+        "end": [1108, 308];
+      }
+      cubic s2 {
+        "control1": [1018.667, 308];
+        "control2": [929.333, 308];
+        "end": [840, 308];
+      }
+      cubic s3 {
+        "control1": [840, 303.333];
+        "control2": [840, 298.667];
+        "end": [840, 294];
+      }
+    }
+  }
+  part shelf {
+    "shape": @shelfShape;
+    "material": { "fill": "#86655f"; "stroke": null; "strokeWidth": 0; };
+    "layer": 0;
+    "transform": {  };
+  }
+  shape pictureFrameShape {
+    contour outline {
+      "start": [885, 177];
+      "closed": true;
+      cubic s0 {
+        "control1": [922.333, 177];
+        "control2": [959.667, 177];
+        "end": [997, 177];
+      }
+      cubic s1 {
+        "control1": [997, 210.333];
+        "control2": [997, 243.667];
+        "end": [997, 277];
+      }
+      cubic s2 {
+        "control1": [959.667, 277];
+        "control2": [922.333, 277];
+        "end": [885, 277];
+      }
+      cubic s3 {
+        "control1": [885, 243.667];
+        "control2": [885, 210.333];
+        "end": [885, 177];
+      }
+    }
+  }
+  part pictureFrame {
+    "shape": @pictureFrameShape;
+    "material": { "fill": "#9b7366"; "stroke": null; "strokeWidth": 0; };
+    "layer": 1;
+    "transform": {  };
+  }
+  part picture {
+    "material": { "fill": null; "stroke": null; "strokeWidth": 0; };
+    "layer": 2;
+    "transform": { "x": 892; "y": 184; };
+    "image": { "asset": @paper; "width": 98; "height": 86; };
+  }
+  shape potShape {
+    contour outline {
+      "start": [1022, 251];
+      "closed": true;
+      cubic s0 {
+        "control1": [1023.75, 249.25];
+        "control2": [1070.208, 249.25];
+        "end": [1072, 251];
+      }
+      cubic s1 {
+        "control1": [1073.792, 252.75];
+        "control2": [1066.75, 291.25];
+        "end": [1065, 293];
+      }
+      cubic s2 {
+        "control1": [1063.25, 294.75];
+        "control2": [1031.792, 294.75];
+        "end": [1030, 293];
+      }
+      cubic s3 {
+        "control1": [1028.208, 291.25];
+        "control2": [1020.25, 252.75];
+        "end": [1022, 251];
+      }
+    }
+  }
+  part pot {
+    "shape": @potShape;
+    "material": { "fill": "#be7a64"; "stroke": null; "strokeWidth": 0; };
+    "layer": 1;
+    "transform": {  };
+  }
+  shape leavesShape {
+    contour outline {
+      "start": [1047, 253];
+      "closed": true;
+      cubic s0 {
+        "control1": [1043.9, 249.7];
+        "control2": [1026.4, 226.2];
+        "end": [1023, 220];
+      }
+      cubic s1 {
+        "control1": [1019.6, 213.8];
+        "control2": [1011.2, 191.8];
+        "end": [1013, 191];
+      }
+      cubic s2 {
+        "control1": [1014.8, 190.2];
+        "control2": [1037.6, 206.9];
+        "end": [1041, 212];
+      }
+      cubic s3 {
+        "control1": [1044.4, 217.1];
+        "control2": [1045.1, 243.1];
+        "end": [1047, 242];
+      }
+      cubic s4 {
+        "control1": [1048.9, 240.9];
+        "control2": [1056.3, 207.3];
+        "end": [1060, 201];
+      }
+      cubic s5 {
+        "control1": [1063.7, 194.7];
+        "control2": [1082.6, 176.6];
+        "end": [1084, 179];
+      }
+      cubic s6 {
+        "control1": [1085.4, 181.4];
+        "control2": [1077, 217.6];
+        "end": [1074, 225];
+      }
+      cubic s7 {
+        "control1": [1071, 232.4];
+        "control2": [1056.7, 250.2];
+        "end": [1054, 253];
+      }
+      cubic s8 {
+        "control1": [1051.3, 255.8];
+        "control2": [1050.1, 256.3];
+        "end": [1047, 253];
+      }
+    }
+  }
+  part leaves {
+    "shape": @leavesShape;
+    "material": { "fill": "#315f68"; "stroke": null; "strokeWidth": 0; };
+    "layer": 2;
+    "transform": {  };
+  }
+  actor shelf {
+    "parts": [@shelf, @pictureFrame, @picture, @pot, @leaves];
+    "transform": { "x": 0; "y": 0; };
+    "layer": 0;
+  }
+  background shelfDepth {
+    "actor": @shelf;
+    "parallax": 0.5;
+  }
+  shape shadowShape {
+    contour outline {
+      "start": [580, 626];
+      "closed": true;
+      cubic s0 {
+        "control1": [580, 630.337];
+        "control2": [566.739, 634.247];
+        "end": [541.631, 637.314];
+      }
+      cubic s1 {
+        "control1": [516.523, 640.38];
+        "control2": [484.509, 642];
+        "end": [449, 642];
+      }
+      cubic s2 {
+        "control1": [413.491, 642];
+        "control2": [381.477, 640.38];
+        "end": [356.369, 637.314];
+      }
+      cubic s3 {
+        "control1": [331.261, 634.247];
+        "control2": [318, 630.337];
+        "end": [318, 626];
+      }
+      cubic s4 {
+        "control1": [318, 621.663];
+        "control2": [331.261, 617.753];
+        "end": [356.369, 614.686];
+      }
+      cubic s5 {
+        "control1": [381.477, 611.62];
+        "control2": [413.491, 610];
+        "end": [449, 610];
+      }
+      cubic s6 {
+        "control1": [484.509, 610];
+        "control2": [516.523, 611.62];
+        "end": [541.631, 614.686];
+      }
+      cubic s7 {
+        "control1": [566.739, 617.753];
+        "control2": [580, 621.663];
+        "end": [580, 626];
+      }
+    }
+  }
+  part shadow {
+    "shape": @shadowShape;
+    "material": { "fill": "#b59687"; "stroke": null; "strokeWidth": 0; };
+    "layer": 0;
+    "transform": {  };
+  }
+  actor shadow {
+    "parts": [@shadow];
+    "transform": { "x": 0; "y": 0; };
+    "layer": 10;
+  }
+  shape backArmShape {
+    contour outline {
+      "start": [-52, 18];
+      "closed": true;
+      cubic s0 {
+        "control1": [-55.85, 15.55];
+        "control2": [-86.05, 25.067];
+        "end": [-92, 33];
+      }
+      cubic s1 {
+        "control1": [-97.95, 40.933];
+        "control2": [-104.983, 76.317];
+        "end": [-103, 86];
+      }
+      cubic s2 {
+        "control1": [-101.017, 95.683];
+        "control2": [-81.067, 114.367];
+        "end": [-75, 116];
+      }
+      cubic s3 {
+        "control1": [-68.933, 117.633];
+        "control2": [-52.517, 104.433];
+        "end": [-51, 100];
+      }
+      cubic s4 {
+        "control1": [-49.483, 95.567];
+        "control2": [-61.067, 83.367];
+        "end": [-62, 78];
+      }
+      cubic s5 {
+        "control1": [-62.933, 72.633];
+        "control2": [-60.167, 61];
+        "end": [-59, 54];
+      }
+      cubic s6 {
+        "control1": [-57.833, 47];
+        "control2": [-48.15, 20.45];
+        "end": [-52, 18];
+      }
+    }
+  }
+  part backArm {
+    "shape": @backArmShape;
+    "material": { "fill": "#315f68"; "stroke": null; "strokeWidth": 0; };
+    "layer": 1;
+    "transform": {  };
+  }
+  shape legsShape {
+    contour outline {
+      "start": [-44, 122];
+      "closed": true;
+      cubic s0 {
+        "control1": [-37.775, 113.6];
+        "control2": [35.1, 113.975];
+        "end": [42, 122];
+      }
+      cubic s1 {
+        "control1": [48.9, 130.025];
+        "control2": [50.025, 220.45];
+        "end": [48, 229];
+      }
+      cubic s2 {
+        "control1": [45.975, 237.55];
+        "control2": [18.45, 240.725];
+        "end": [15, 236];
+      }
+      cubic s3 {
+        "control1": [11.55, 231.275];
+        "control2": [3.65, 165.85];
+        "end": [2, 166];
+      }
+      cubic s4 {
+        "control1": [0.35, 166.15];
+        "control2": [-3.775, 232.9];
+        "end": [-7, 238];
+      }
+      cubic s5 {
+        "control1": [-10.225, 243.1];
+        "control2": [-38.225, 242.7];
+        "end": [-41, 234];
+      }
+      cubic s6 {
+        "control1": [-43.775, 225.3];
+        "control2": [-50.225, 130.4];
+        "end": [-44, 122];
+      }
+    }
+  }
+  part legs {
+    "shape": @legsShape;
+    "material": { "fill": "#3f354d"; "stroke": null; "strokeWidth": 0; };
+    "layer": 2;
+    "transform": {  };
+  }
+  shape shoesShape {
+    contour outline {
+      "start": [-43, 224];
+      "closed": true;
+      cubic s0 {
+        "control1": [-41.133, 223.65];
+        "control2": [-13.158, 223.717];
+        "end": [-11, 225];
+      }
+      cubic s1 {
+        "control1": [-8.842, 226.283];
+        "control2": [-3.258, 244.775];
+        "end": [-6, 246];
+      }
+      cubic s2 {
+        "control1": [-8.742, 247.225];
+        "control2": [-54.967, 246.583];
+        "end": [-58, 246];
+      }
+      cubic s3 {
+        "control1": [-61.033, 245.417];
+        "control2": [-58.875, 236.875];
+        "end": [-58, 236];
+      }
+      cubic s4 {
+        "control1": [-57.125, 235.125];
+        "control2": [-43.875, 231.7];
+        "end": [-43, 231];
+      }
+      cubic s5 {
+        "control1": [-42.125, 230.3];
+        "control2": [-44.867, 224.35];
+        "end": [-43, 224];
+      }
+    }
+    contour right {
+      "start": [13, 225];
+      "closed": true;
+      cubic s0 {
+        "control1": [14.925, 223.6];
+        "control2": [40.725, 221.592];
+        "end": [43, 222];
+      }
+      cubic s1 {
+        "control1": [45.275, 222.408];
+        "control2": [50.542, 231.183];
+        "end": [52, 232];
+      }
+      cubic s2 {
+        "control1": [53.458, 232.817];
+        "control2": [67.067, 235.183];
+        "end": [68, 236];
+      }
+      cubic s3 {
+        "control1": [68.933, 236.817];
+        "control2": [71.383, 245.417];
+        "end": [68, 246];
+      }
+      cubic s4 {
+        "control1": [64.617, 246.583];
+        "control2": [13.208, 247.225];
+        "end": [10, 246];
+      }
+      cubic s5 {
+        "control1": [6.792, 244.775];
+        "control2": [11.075, 226.4];
+        "end": [13, 225];
+      }
+    }
+  }
+  part shoes {
+    "shape": @shoesShape;
+    "material": { "fill": "#315f68"; "stroke": null; "strokeWidth": 0; };
+    "layer": 3;
+    "transform": {  };
+  }
+  shape neckShape {
+    contour outline {
+      "start": [-16, -82];
+      "closed": true;
+      cubic s0 {
+        "control1": [-5.333, -82];
+        "control2": [5.333, -82];
+        "end": [16, -82];
+      }
+      cubic s1 {
+        "control1": [16, -52];
+        "control2": [16, -22];
+        "end": [16, 8];
+      }
+      cubic s2 {
+        "control1": [5.333, 8];
+        "control2": [-5.333, 8];
+        "end": [-16, 8];
+      }
+      cubic s3 {
+        "control1": [-16, -22];
+        "control2": [-16, -52];
+        "end": [-16, -82];
+      }
+    }
+  }
+  part neck {
+    "shape": @neckShape;
+    "material": { "fill": "#edb68e"; "stroke": null; "strokeWidth": 0; };
+    "layer": 4;
+    "transform": {  };
+  }
+  shape bodyShape {
+    contour outline {
+      "start": [-30, -13];
+      "closed": true;
+      cubic s0 {
+        "control1": [-16.8, -19];
+        "control2": [15.2, -18.25];
+        "end": [29, -13];
+      }
+      cubic s1 {
+        "control1": [42.8, -7.75];
+        "control2": [56.6, 6.4];
+        "end": [62, 22];
+      }
+      cubic s2 {
+        "control1": [67.4, 37.6];
+        "control2": [66.8, 72.55];
+        "end": [65, 91];
+      }
+      cubic s3 {
+        "control1": [63.2, 109.45];
+        "control2": [67.85, 136.9];
+        "end": [50, 145];
+      }
+      cubic s4 {
+        "control1": [32.15, 153.1];
+        "control2": [-37.05, 154.75];
+        "end": [-54, 145];
+      }
+      cubic s5 {
+        "control1": [-70.95, 135.25];
+        "control2": [-62.25, 97.7];
+        "end": [-63, 80];
+      }
+      cubic s6 {
+        "control1": [-63.75, 62.3];
+        "control2": [-63.95, 40.95];
+        "end": [-59, 27];
+      }
+      cubic s7 {
+        "control1": [-54.05, 13.05];
+        "control2": [-43.2, -7];
+        "end": [-30, -13];
+      }
+    }
+  }
+  part body {
+    "shape": @bodyShape;
+    "material": { "fill": "#588f91"; "stroke": null; "strokeWidth": 0; };
+    "layer": 4;
+    "transform": {  };
+  }
+  shape collarShape {
+    contour outline {
+      "start": [-34, -14];
+      "closed": true;
+      cubic s0 {
+        "control1": [-28.5, -16.083];
+        "control2": [26.25, -16.083];
+        "end": [32, -14];
+      }
+      cubic s1 {
+        "control1": [37.75, -11.917];
+        "control2": [37.417, 7.25];
+        "end": [35, 11];
+      }
+      cubic s2 {
+        "control1": [32.583, 14.75];
+        "control2": [8.75, 31];
+        "end": [3, 31];
+      }
+      cubic s3 {
+        "control1": [-2.75, 31];
+        "control2": [-30.917, 14.75];
+        "end": [-34, 11];
+      }
+      cubic s4 {
+        "control1": [-37.083, 7.25];
+        "control2": [-39.5, -11.917];
+        "end": [-34, -14];
+      }
+    }
+  }
+  part collar {
+    "shape": @collarShape;
+    "material": { "fill": "#f1b955"; "stroke": null; "strokeWidth": 0; };
+    "layer": 5;
+    "transform": {  };
+  }
+  shape headShape {
+    contour outline {
+      "start": [-44, -175];
+      "closed": true;
+      cubic s0 {
+        "control1": [-35.833, -188.167];
+        "control2": [-19.167, -192.167];
+        "end": [-5, -191];
+      }
+      cubic s1 {
+        "control1": [9.167, -189.833];
+        "control2": [31.167, -179.5];
+        "end": [41, -168];
+      }
+      cubic s2 {
+        "control1": [50.833, -156.5];
+        "control2": [54, -137.333];
+        "end": [54, -122];
+      }
+      cubic s3 {
+        "control1": [54, -106.667];
+        "control2": [48.333, -86.333];
+        "end": [41, -76];
+      }
+      cubic s4 {
+        "control1": [33.667, -65.667];
+        "control2": [21.833, -60.667];
+        "end": [10, -60];
+      }
+      cubic s5 {
+        "control1": [-1.833, -59.333];
+        "control2": [-19.333, -63.333];
+        "end": [-30, -72];
+      }
+      cubic s6 {
+        "control1": [-40.667, -80.667];
+        "control2": [-51.667, -94.833];
+        "end": [-54, -112];
+      }
+      cubic s7 {
+        "control1": [-56.333, -129.167];
+        "control2": [-52.167, -161.833];
+        "end": [-44, -175];
+      }
+    }
+  }
+  part head {
+    "shape": @headShape;
+    "material": { "fill": "#edb68e"; "stroke": null; "strokeWidth": 0; };
+    "layer": 6;
+    "transform": {  };
+  }
+  shape hairShape {
+    contour outline {
+      "start": [-54, -124];
+      "closed": true;
+      cubic s0 {
+        "control1": [-57.542, -127.117];
+        "control2": [-66.558, -154.375];
+        "end": [-65, -165];
+      }
+      cubic s1 {
+        "control1": [-63.442, -175.625];
+        "control2": [-53.058, -192.908];
+        "end": [-43, -199];
+      }
+      cubic s2 {
+        "control1": [-32.942, -205.092];
+        "control2": [-6.183, -209.983];
+        "end": [6, -208];
+      }
+      cubic s3 {
+        "control1": [18.183, -206.017];
+        "control2": [35.633, -193.925];
+        "end": [43, -185];
+      }
+      cubic s4 {
+        "control1": [50.367, -176.075];
+        "control2": [60.408, -149.108];
+        "end": [58, -145];
+      }
+      cubic s5 {
+        "control1": [55.592, -140.892];
+        "control2": [33.65, -151.608];
+        "end": [26, -156];
+      }
+      cubic s6 {
+        "control1": [18.35, -160.392];
+        "control2": [10.092, -177.275];
+        "end": [4, -176];
+      }
+      cubic s7 {
+        "control1": [-2.092, -174.725];
+        "control2": [-10.767, -151.675];
+        "end": [-17, -147];
+      }
+      cubic s8 {
+        "control1": [-23.233, -142.325];
+        "control2": [-34.758, -146.258];
+        "end": [-40, -143];
+      }
+      cubic s9 {
+        "control1": [-45.242, -139.742];
+        "control2": [-50.458, -120.883];
+        "end": [-54, -124];
+      }
+    }
+  }
+  part hair {
+    "shape": @hairShape;
+    "material": { "fill": "#49354d"; "stroke": null; "strokeWidth": 0; };
+    "layer": 7;
+    "transform": {  };
+  }
+  shape eyeOpen {
+    contour left {
+      "start": [-32, -126];
+      "closed": true;
+      cubic s0 {
+        "control1": [-32.3, -129.6];
+        "control2": [-25.7, -136.7];
+        "end": [-23, -137];
+      }
+      cubic s1 {
+        "control1": [-20.3, -137.3];
+        "control2": [-14.3, -131.6];
+        "end": [-14, -128];
+      }
+      cubic s2 {
+        "control1": [-13.7, -124.4];
+        "control2": [-18.3, -113.3];
+        "end": [-21, -113];
+      }
+      cubic s3 {
+        "control1": [-23.7, -112.7];
+        "control2": [-31.7, -122.4];
+        "end": [-32, -126];
+      }
+    }
+    contour right {
+      "start": [8, -129];
+      "closed": true;
+      cubic s0 {
+        "control1": [7.55, -132.6];
+        "control2": [15, -139.85];
+        "end": [18, -140];
+      }
+      cubic s1 {
+        "control1": [21, -140.15];
+        "control2": [27.55, -133.6];
+        "end": [28, -130];
+      }
+      cubic s2 {
+        "control1": [28.45, -126.4];
+        "control2": [24, -116.15];
+        "end": [21, -116];
+      }
+      cubic s3 {
+        "control1": [18, -115.85];
+        "control2": [8.45, -125.4];
+        "end": [8, -129];
+      }
+    }
+  }
+  shape eyeClosed {
+    contour left {
+      "start": [-32, -126];
+      "closed": true;
+      cubic s0 {
+        "control1": [-32.233, -125.767];
+        "control2": [-25.1, -124.767];
+        "end": [-23, -125];
+      }
+      cubic s1 {
+        "control1": [-20.9, -125.233];
+        "control2": [-14.233, -127.767];
+        "end": [-14, -128];
+      }
+      cubic s2 {
+        "control1": [-13.767, -128.233];
+        "control2": [-18.9, -127.233];
+        "end": [-21, -127];
+      }
+      cubic s3 {
+        "control1": [-23.1, -126.767];
+        "control2": [-31.767, -126.233];
+        "end": [-32, -126];
+      }
+    }
+    contour right {
+      "start": [8, -129];
+      "closed": true;
+      cubic s0 {
+        "control1": [7.65, -128.883];
+        "control2": [15.667, -127.883];
+        "end": [18, -128];
+      }
+      cubic s1 {
+        "control1": [20.333, -128.117];
+        "control2": [27.65, -129.883];
+        "end": [28, -130];
+      }
+      cubic s2 {
+        "control1": [28.35, -130.117];
+        "control2": [23.333, -129.117];
+        "end": [21, -129];
+      }
+      cubic s3 {
+        "control1": [18.667, -128.883];
+        "control2": [8.35, -129.117];
+        "end": [8, -129];
+      }
+    }
+  }
+  part eyes {
+    "shape": @eyeOpen;
+    "material": { "fill": "#3f354d"; "stroke": null; "strokeWidth": 0; };
+    "layer": 8;
+    "transform": {  };
+  }
+  shape noseShape {
+    contour outline {
+      "start": [0, -126];
+      "closed": true;
+      cubic s0 {
+        "control1": [0.458, -126.208];
+        "control2": [9.083, -107.042];
+        "end": [9, -106];
+      }
+      cubic s1 {
+        "control1": [8.917, -104.958];
+        "control2": [-1.625, -100.167];
+        "end": [-2, -101];
+      }
+      cubic s2 {
+        "control1": [-2.375, -101.833];
+        "control2": [-0.458, -125.792];
+        "end": [0, -126];
+      }
+    }
+  }
+  part nose {
+    "shape": @noseShape;
+    "material": { "fill": "#c98675"; "stroke": null; "strokeWidth": 0; };
+    "layer": 9;
+    "transform": {  };
+  }
+  shape mouthNeutral {
+    contour mouth {
+      "start": [-13, -88];
+      "closed": false;
+      cubic smile {
+        "control1": [-7, -86];
+        "control2": [11, -88];
+        "end": [17, -91];
+      }
+    }
+  }
+  shape mouthSmile {
+    contour mouth {
+      "start": [-13, -88];
+      "closed": false;
+      cubic smile {
+        "control1": [-7, -73];
+        "control2": [11, -75];
+        "end": [17, -91];
+      }
+    }
+  }
+  part mouth {
+    "shape": @mouthNeutral;
+    "material": { "fill": null; "stroke": "#3f354d"; "strokeWidth": 3; };
+    "layer": 10;
+    "transform": {  };
+  }
+  shape armRest {
+    contour outline {
+      "closed": true;
+      node s0 {
+        "point": [0, -16];
+        "out": [5.12, -5.76];
+        "mode": "mirrored";
+      }
+      node s1 {
+        "point": [28, 0];
+        "out": [8.48, 11.52];
+        "mode": "mirrored";
+      }
+      node s2 {
+        "point": [53, 56];
+        "out": [13.280000000000001, 10.56];
+        "mode": "mirrored";
+      }
+      node s3 {
+        "point": [111, 66];
+        "out": [11.68, 4.64];
+        "mode": "mirrored";
+      }
+      node s4 {
+        "point": [126, 85];
+        "out": [-0.16, 5.76];
+        "mode": "mirrored";
+      }
+      node s5 {
+        "point": [110, 102];
+        "out": [-12, 1.44];
+        "mode": "mirrored";
+      }
+      node s6 {
+        "point": [51, 94];
+        "out": [-18.240000000000002, -10.56];
+        "mode": "mirrored";
+      }
+      node s7 {
+        "point": [-4, 36];
+        "out": [-8.16, -17.6];
+        "mode": "mirrored";
+      }
+    }
+  }
+  shape armReach {
+    contour outline {
+      "closed": true;
+      node s0 {
+        "point": [0, -16];
+        "out": [9.28, -3.84];
+        "mode": "mirrored";
+      }
+      node s1 {
+        "point": [54, 12];
+        "out": [19.04, 6.5600000000000005];
+        "mode": "mirrored";
+      }
+      node s2 {
+        "point": [119, 25];
+        "out": [26.080000000000002, -7.5200000000000005];
+        "mode": "mirrored";
+      }
+      node s3 {
+        "point": [217, -35];
+        "out": [18.72, -6.88];
+        "mode": "mirrored";
+      }
+      node s4 {
+        "point": [236, -18];
+        "out": [0.96, 5.44];
+        "mode": "mirrored";
+      }
+      node s5 {
+        "point": [223, -1];
+        "out": [-18.56, 11.52];
+        "mode": "mirrored";
+      }
+      node s6 {
+        "point": [120, 54];
+        "out": [-36.32, 5.92];
+        "mode": "mirrored";
+      }
+      node s7 {
+        "point": [-4, 36];
+        "out": [-19.2, -11.200000000000001];
+        "mode": "mirrored";
+      }
+    }
+  }
+  shape armLift {
+    contour outline {
+      "closed": true;
+      node s0 {
+        "point": [0, -16];
+        "out": [5.6000000000000005, -9.92];
+        "mode": "mirrored";
+      }
+      node s1 {
+        "point": [31, -26];
+        "out": [6.72, -5.44];
+        "mode": "mirrored";
+      }
+      node s2 {
+        "point": [42, -50];
+        "out": [13.120000000000001, -13.6];
+        "mode": "mirrored";
+      }
+      node s3 {
+        "point": [113, -111];
+        "out": [14.72, -6.5600000000000005];
+        "mode": "mirrored";
+      }
+      node s4 {
+        "point": [134, -91];
+        "out": [0.48, 6.08];
+        "mode": "mirrored";
+      }
+      node s5 {
+        "point": [116, -73];
+        "out": [-12.16, 11.68];
+        "mode": "mirrored";
+      }
+      node s6 {
+        "point": [58, -18];
+        "out": [-19.2, 17.44];
+        "mode": "mirrored";
+      }
+      node s7 {
+        "point": [-4, 36];
+        "out": [-9.28, 0.32];
+        "mode": "mirrored";
+      }
+    }
+  }
+  part frontArm {
+    "shape": @armRest;
+    "material": { "fill": "#588f91"; "stroke": null; "strokeWidth": 0; };
+    "layer": 11;
+    "transform": { "x": 45; "y": 10; };
+  }
+  shape handShape {
+    contour outline {
+      "closed": true;
+      node s0 {
+        "point": [-14, -8];
+        "out": [1.04, -2.21];
+        "mode": "mirrored";
+      }
+      node s1 {
+        "point": [-5, -14];
+        "out": [1.9500000000000002, 0];
+        "mode": "mirrored";
+      }
+      node s2 {
+        "point": [1, -8];
+        "out": [1.69, 0.91];
+        "mode": "mirrored";
+      }
+      node s3 {
+        "point": [8, -7];
+        "out": [1.17, 1.17];
+        "mode": "mirrored";
+      }
+      node s4 {
+        "point": [10, 1];
+        "out": [-0.52, 2.47];
+        "mode": "mirrored";
+      }
+      node s5 {
+        "point": [4, 12];
+        "out": [-2.08, 1.17];
+        "mode": "mirrored";
+      }
+      node s6 {
+        "point": [-6, 10];
+        "out": [-2.21, -1.17];
+        "mode": "mirrored";
+      }
+      node s7 {
+        "point": [-13, 3];
+        "out": [-1.04, -2.34];
+        "mode": "mirrored";
+      }
+    }
+  }
+  part hand {
+    "shape": @handShape;
+    "material": { "fill": "#dca17f"; };
+    "layer": 12;
+    "transform": { "x": 115; "y": 85; };
+    "parent": @frontArm;
+    "anchors": { "grip": [0, 0]; };
+  }
+  actor hero {
+    "parts": [@backArm, @legs, @shoes, @neck, @body, @collar, @head, @hair, @eyes, @nose, @mouth, @frontArm, @hand, @thumb, @fingers];
+    "transform": { "x": 420; "y": 380; };
+    "layer": 20;
+  }
+  part lanternBody {
+    "shape": @blank;
+    "material": { "fill": null; };
+    "layer": 0;
+    "transform": {  };
+  }
+  shape lanternGlassShape {
+    contour outline {
+      "start": [-16, 12];
+      "closed": true;
+      cubic s0 {
+        "control1": [-14.25, 9.9];
+        "control2": [14.25, 9.9];
+        "end": [16, 12];
+      }
+      cubic s1 {
+        "control1": [17.75, 14.1];
+        "control2": [20.75, 51.9];
+        "end": [19, 54];
+      }
+      cubic s2 {
+        "control1": [17.25, 56.1];
+        "control2": [-17.25, 56.1];
+        "end": [-19, 54];
+      }
+      cubic s3 {
+        "control1": [-20.75, 51.9];
+        "control2": [-17.75, 14.1];
+        "end": [-16, 12];
+      }
+    }
+  }
+  part lanternGlass {
+    "shape": @lanternGlassShape;
+    "material": { "fill": { "type": "radial"; "from": [0, 28]; "to": [0, 28]; "radius0": 0; "radius1": 38; "stops": [{ "offset": 0; "color": "#fffbe2"; }, { "offset": 1; "color": "#e6bc77"; }]; }; };
+    "layer": 1;
+    "transform": {  };
+    "clip": @lanternGlassShape;
+  }
+  shape handleShape {
+    contour outline {
+      "start": [-15, 1];
+      "closed": true;
+      cubic s0 {
+        "control1": [-15.417, -0.75];
+        "control2": [-15.25, -17.667];
+        "end": [-14, -20];
+      }
+      cubic s1 {
+        "control1": [-12.75, -22.333];
+        "control2": [-2.333, -27];
+        "end": [0, -27];
+      }
+      cubic s2 {
+        "control1": [2.333, -27];
+        "control2": [12.75, -22.333];
+        "end": [14, -20];
+      }
+      cubic s3 {
+        "control1": [15.25, -17.667];
+        "control2": [15.417, -0.75];
+        "end": [15, 1];
+      }
+      cubic s4 {
+        "control1": [14.583, 2.75];
+        "control2": [9.583, 2.333];
+        "end": [9, 1];
+      }
+      cubic s5 {
+        "control1": [8.417, -0.333];
+        "control2": [8.75, -13.25];
+        "end": [8, -15];
+      }
+      cubic s6 {
+        "control1": [7.25, -16.75];
+        "control2": [1.333, -20];
+        "end": [0, -20];
+      }
+      cubic s7 {
+        "control1": [-1.333, -20];
+        "control2": [-7.25, -16.75];
+        "end": [-8, -15];
+      }
+      cubic s8 {
+        "control1": [-8.75, -13.25];
+        "control2": [-8.417, -0.333];
+        "end": [-9, 1];
+      }
+      cubic s9 {
+        "control1": [-9.583, 2.333];
+        "control2": [-14.583, 2.75];
+        "end": [-15, 1];
+      }
+    }
+  }
+  part lanternHandle {
+    "material": { "fill": "#8e655b"; "stroke": null; "strokeWidth": 0; };
+    "layer": 3;
+    "transform": {  };
+    "shape": @handleShape;
+  }
+  actor lantern {
+    "parts": [@lanternBody, @lanternGlass, @lanternHandle];
+    "transform": { "x": 690; "y": 392; };
+    "layer": 60;
+  }
+  part title {
+    "material": { "fill": "#3f354d"; "stroke": null; "strokeWidth": 0; };
+    "layer": 0;
+    "transform": { "x": 78; "y": 80; };
+    "text": { "content": "THE LITTLE LIGHT"; "font": @nunito; "size": 30; };
+  }
+  actor title {
+    "parts": [@title];
+    "transform": { "x": 0; "y": 0; };
+    "layer": 100;
+  }
+  part subtitle {
+    "material": { "fill": "#866c73"; "stroke": null; "strokeWidth": 0; };
+    "layer": 0;
+    "transform": { "x": 80; "y": 111; };
+    "text": { "content": "A quiet moment, drawn in curves."; "font": @nunito; "size": 18; };
+  }
+  actor subtitle {
+    "parts": [@subtitle];
+    "transform": { "x": 0; "y": 0; };
+    "layer": 100;
+  }
+  part caption {
+    "material": { "fill": "#3f354d"; "stroke": null; "strokeWidth": 0; };
+    "layer": 0;
+    "transform": { "x": 81; "y": 680; };
+    "text": { "content": "Notice."; "font": @nunito; "size": 25; };
+  }
+  actor caption {
+    "parts": [@caption];
+    "transform": { "x": 0; "y": 0; };
+    "layer": 100;
+  }
+  part captionReach {
+    "material": { "fill": "#3f354d"; "stroke": null; "strokeWidth": 0; };
+    "layer": 0;
+    "transform": { "x": 81; "y": 680; };
+    "text": { "content": "Reach. Hold."; "font": @nunito; "size": 25; };
+  }
+  actor captionReach {
+    "parts": [@captionReach];
+    "transform": { "x": 0; "y": 0; };
+    "layer": 100;
+  }
+  part captionClose {
+    "material": { "fill": "#3f354d"; "stroke": null; "strokeWidth": 0; };
+    "layer": 0;
+    "transform": { "x": 81; "y": 680; };
+    "text": { "content": "Keep a little light."; "font": @nunito; "size": 25; };
+  }
+  actor captionClose {
+    "parts": [@captionClose];
+    "transform": { "x": 0; "y": 0; };
+    "layer": 100;
+  }
+  shape pulseShape {
+    contour outline {
+      "start": [0, 0];
+      "closed": true;
+      cubic s0 {
+        "control1": [9.333, 0];
+        "control2": [18.667, 0];
+        "end": [28, 0];
+      }
+      cubic s1 {
+        "control1": [28, 2.667];
+        "control2": [28, 5.333];
+        "end": [28, 8];
+      }
+      cubic s2 {
+        "control1": [18.667, 8];
+        "control2": [9.333, 8];
+        "end": [0, 8];
+      }
+      cubic s3 {
+        "control1": [0, 5.333];
+        "control2": [0, 2.667];
+        "end": [0, 0];
+      }
+    }
+  }
+  part syncPulse {
+    "shape": @pulseShape;
+    "material": { "fill": "#f1b955"; "stroke": null; "strokeWidth": 0; };
+    "layer": 0;
+    "transform": {  };
+  }
+  actor sync {
+    "parts": [@syncPulse];
+    "transform": { "x": 1170; "y": 82; };
+    "layer": 120;
+  }
+  pose idle {
+    "parts": { "frontArm": { "shape": @armRest; }; "hand": { "transform": { "x": 115; "y": 85; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+  pose reach {
+    "parts": { "frontArm": { "shape": @armReach; }; "hand": { "transform": { "x": 225; "y": -18; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+  pose lift {
+    "parts": { "frontArm": { "shape": @armLift; }; "hand": { "transform": { "x": 120; "y": -95; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+  pose smile {
+    "parts": { "frontArm": { "shape": @armLift; }; "hand": { "transform": { "x": 120; "y": -95; }; }; "mouth": { "shape": @mouthSmile; }; };
+  }
+  drawing eyesOpen {
+    "parts": { "eyes": @eyeOpen; };
+  }
+  drawing eyesClosed {
+    "parts": { "eyes": @eyeClosed; };
+  }
+  scene moment {
+    shot notice {
+      "duration": 144f;
+      initial sync {
+        "visible": false;
+      }
+      initial captionReach {
+        "visible": false;
+      }
+      initial captionClose {
+        "visible": false;
+      }
+      key pulseOn {
+        "target": @sync;
+        "property": "visible";
+        "frame": 24f;
+        "value": true;
+      }
+      key pulseOff {
+        "target": @sync;
+        "property": "visible";
+        "frame": 27f;
+        "value": false;
+      }
+      key b0 {
+        "target": @hero;
+        "property": "y";
+        "frame": 0f;
+        "value": 380;
+        "easing": [0.42, 0, 0.58, 1];
+      }
+      key b1 {
+        "target": @hero;
+        "property": "y";
+        "frame": 36f;
+        "value": 377;
+        "easing": [0.42, 0, 0.58, 1];
+      }
+      key b2 {
+        "target": @hero;
+        "property": "y";
+        "frame": 72f;
+        "value": 380;
+        "easing": [0.42, 0, 0.58, 1];
+      }
+      key b3 {
+        "target": @hero;
+        "property": "y";
+        "frame": 108f;
+        "value": 377;
+        "easing": [0.42, 0, 0.58, 1];
+      }
+      key b4 {
+        "target": @hero;
+        "property": "y";
+        "frame": 143f;
+        "value": 380;
+        "easing": [0.42, 0, 0.58, 1];
+      }
+      key look0 {
+        "target": @hero.eyes;
+        "property": "x";
+        "frame": 0f;
+        "value": 0;
+        "hold": 2f;
+      }
+      key look1 {
+        "target": @hero.eyes;
+        "property": "x";
+        "frame": 72f;
+        "value": 5;
+        "hold": 2f;
+      }
+      expose firstBlink {
+        "actor": @hero;
+        "drawing": @eyesClosed;
+        "start": 103f;
+        "end": 106f;
+      }
+      camera wide {
+        "x": 0;
+        "y": 0;
+      }
+    }
+    shot reachAndLift {
+      "duration": 192f;
+      initial caption {
+        "visible": false;
+      }
+      initial captionReach {
+        "visible": true;
+      }
+      initial sync {
+        "visible": false;
+      }
+      key pulseOn {
+        "target": @sync;
+        "property": "visible";
+        "frame": 24f;
+        "value": true;
+      }
+      key pulseOff {
+        "target": @sync;
+        "property": "visible";
+        "frame": 27f;
+        "value": false;
+      }
+      key armOcclusion {
+        "target": @hero.frontArm;
+        "property": "layer";
+        "frame": 50f;
+        "value": 50;
+      }
+      expose reachBlink {
+        "actor": @hero;
+        "drawing": @eyesClosed;
+        "start": 166f;
+        "end": 169f;
+      }
+      camera reachCamera {
+        "x": 0;
+        "y": 0;
+      }
+      key camera0 {
+        "target": @camera;
+        "property": "x";
+        "frame": 0f;
+        "value": 0;
+      }
+      key camera1 {
+        "target": @camera;
+        "property": "x";
+        "frame": 150f;
+        "value": 20;
+      }
+      morph anticipate {
+        "actor": @hero;
+        "from": @idle;
+        "to": @anticipate;
+        "start": 0f;
+        "end": 12f;
+        "easing": "ease-in-out";
+      }
+      morph arc {
+        "actor": @hero;
+        "from": @anticipate;
+        "to": @reachArc;
+        "start": 12f;
+        "end": 38f;
+        "easing": "ease-in-out";
+      }
+      morph settle {
+        "actor": @hero;
+        "from": @reachArc;
+        "to": @reach;
+        "start": 38f;
+        "end": 60f;
+        "easing": "ease-out";
+      }
+      morph liftArc {
+        "actor": @hero;
+        "from": @reach;
+        "to": @liftArc;
+        "start": 72f;
+        "end": 102f;
+        "easing": "ease-in-out";
+      }
+      morph lift {
+        "actor": @hero;
+        "from": @liftArc;
+        "to": @lift;
+        "start": 102f;
+        "end": 130f;
+        "easing": "ease-out";
+      }
+      contact carry {
+        "target": @lantern;
+        "anchor": @hero.hand;
+        "targetPoint": [0, -20];
+        "anchorPoint": grip;
+        "start": 60f;
+        "end": 192f;
+      }
+      key palmOrder {
+        "target": @hero.hand;
+        "property": "layer";
+        "frame": 50f;
+        "value": 39;
+      }
+      key shadow0 {
+        "target": @contactShadow;
+        "property": "opacity";
+        "frame": 72f;
+        "value": 1;
+      }
+      key shadow1 {
+        "target": @contactShadow;
+        "property": "opacity";
+        "frame": 110f;
+        "value": 0.15;
+      }
+    }
+    shot keep {
+      "duration": 144f;
+      initial captionReach {
+        "visible": false;
+      }
+      initial captionClose {
+        "visible": true;
+        "x": 245;
+        "y": 105;
+        "scaleX": 0.62;
+        "scaleY": 0.62;
+      }
+      initial title {
+        "visible": false;
+      }
+      initial subtitle {
+        "visible": false;
+      }
+      initial sync {
+        "visible": false;
+        "x": 970.4;
+        "y": 155.84;
+        "scaleX": 0.62;
+        "scaleY": 0.62;
+      }
+      key pulseOn {
+        "target": @sync;
+        "property": "visible";
+        "frame": 24f;
+        "value": true;
+      }
+      key pulseOff {
+        "target": @sync;
+        "property": "visible";
+        "frame": 27f;
+        "value": false;
+      }
+      camera close {
+        "x": 245;
+        "y": 105;
+        "scaleX": 0.62;
+        "scaleY": 0.62;
+      }
+      morph expression {
+        "actor": @hero;
+        "from": @lift;
+        "to": @smile;
+        "start": 12f;
+        "end": 72f;
+        "easing": [0.4, 0, 0.2, 1];
+      }
+      expose closeBlink {
+        "actor": @hero;
+        "drawing": @eyesClosed;
+        "start": 91f;
+        "end": 94f;
+      }
+      key gaze0 {
+        "target": @hero.eyes;
+        "property": "x";
+        "frame": 0f;
+        "value": 5;
+        "hold": 2f;
+      }
+      key gaze1 {
+        "target": @hero.eyes;
+        "property": "x";
+        "frame": 36f;
+        "value": 1;
+        "hold": 2f;
+      }
+    }
+  }
+  audio soundtrack {
+    "asset": @score;
+    "offset": 0f;
+    "trimStart": 0f;
+    "duration": 480f;
+    "gain": 1;
+  }
+  theme wood {
+    "top": "#ba8b70";
+    "light": "#a57561";
+    "dark": "#80565a";
+  }
+  component leg {
+    "params": { "ring": [{ "id": "a"; "point": [650, -8]; }, { "id": "b"; "point": [670, -8]; }, { "id": "c"; "point": [670, 8]; }, { "id": "d"; "point": [650, 8]; }]; };
+    solid post {
+      "kind": "extrude";
+      "ring": @ring;
+      "z": -696;
+      "height": 161;
+      "projection": { "azimuth": 0deg; "elevation": 22deg; };
+      "materials": { "top": @wood.top; "light": @wood.light; "dark": @wood.dark; };
+      "layer": 40;
+    }
+  }
+  instance left {
+    "component": @leg;
+  }
+  instance right {
+    "component": @leg;
+    "args": { "ring": [{ "id": "a"; "point": [917, -8]; }, { "id": "b"; "point": [937, -8]; }, { "id": "c"; "point": [937, 8]; }, { "id": "d"; "point": [917, 8]; }]; };
+  }
+  solid table {
+    "kind": "extrude";
+    "height": 18;
+    "z": -535;
+    "projection": { "azimuth": 0deg; "elevation": 22deg; };
+    "ring": [{ "id": "backLeft"; "point": [585, -26]; }, { "id": "backRight"; "point": [1000, -26]; }, { "id": "frontRight"; "point": [1000, 26]; }, { "id": "frontLeft"; "point": [585, 26]; }];
+    "materials": { "top": @wood.top; "light": @wood.light; "dark": @wood.dark; };
+    "layer": 44;
+  }
+  shape blank {
+    contour anchor {
+      "start": [0, 0];
+      "closed": false;
+    }
+  }
+  solid housing {
+    "kind": "cylinder";
+    "radius": 30;
+    "height": 64;
+    "z": -72;
+    "steps": 64;
+    "tolerance": 0.1;
+    "projection": { "origin": [0, -6]; "azimuth": 45deg; "elevation": 12deg; };
+    "materials": { "top": "#f9d58a"; "light": "#e3a24b"; "dark": "#ac723d"; };
+    "parent": @lantern.lanternBody;
+    "layer": 60;
+  }
+  solid lampFoot {
+    "kind": "cylinder";
+    "radius": 33;
+    "height": 9;
+    "z": -80;
+    "steps": 64;
+    "tolerance": 0.1;
+    "projection": { "origin": [0, -6]; "azimuth": 45deg; "elevation": 12deg; };
+    "materials": { "top": "#ad8370"; "light": "#956958"; "dark": "#704e4d"; };
+    "parent": @lantern.lanternBody;
+    "layer": 64;
+  }
+  solid lampRim {
+    "kind": "cylinder";
+    "radius": 31;
+    "height": 5;
+    "z": -8;
+    "steps": 64;
+    "tolerance": 0.1;
+    "projection": { "origin": [0, -6]; "azimuth": 45deg; "elevation": 12deg; };
+    "materials": { "top": "#f9d58a"; "light": "#ad8370"; "dark": "#704e4d"; };
+    "parent": @lantern.lanternBody;
+    "layer": 62;
+  }
+  shape thumbShape {
+    "primitive": "roundedRect";
+    "size": [13, 19];
+    "radius": 5;
+  }
+  part thumb {
+    "shape": @thumbShape;
+    "parent": @hand;
+    "transform": { "x": -7; "y": 1; };
+    "layer": 64;
+    "material": { "fill": "#d49678"; };
+  }
+  shape gripFinger {
+    contour outline {
+      "closed": true;
+      node a {
+        "point": [-11, -7];
+        "out": [0, -4];
+        "in": [0, 4];
+        "mode": "mirrored";
+      }
+      node b {
+        "point": [-2, -11];
+        "out": [5, 0];
+        "in": [-5, 0];
+        "mode": "mirrored";
+      }
+      node c {
+        "point": [8, -7];
+        "out": [0, 4];
+        "in": [0, -4];
+        "mode": "mirrored";
+      }
+      node d {
+        "point": [5, 3];
+        "out": [-5, 0];
+        "in": [5, 0];
+        "mode": "mirrored";
+      }
+    }
+  }
+  part fingers {
+    "shape": @gripFinger;
+    "parent": @hand;
+    "layer": 65;
+    "material": { "fill": "#efbd99"; };
+  }
+  shape lampShadow {
+    "primitive": "ellipse";
+    "radius": [40, 7];
+  }
+  part lampShadow {
+    "shape": @lampShadow;
+    "transform": { "x": 690; "y": 472; };
+    "material": { "fill": "#80565a"; };
+  }
+  actor contactShadow {
+    "parts": [@lampShadow];
+    "layer": 49;
+  }
+  shape armAnticipate {
+    contour outline {
+      "closed": true;
+      node s0 {
+        "point": [0, -16];
+        "out": [4.48, -4.8];
+        "mode": "mirrored";
+      }
+      node s1 {
+        "point": [24, 6];
+        "out": [6.88, 14.72];
+        "mode": "mirrored";
+      }
+      node s2 {
+        "point": [43, 76];
+        "out": [11.52, 11.52];
+        "mode": "mirrored";
+      }
+      node s3 {
+        "point": [96, 78];
+        "out": [9.92, 3.68];
+        "mode": "mirrored";
+      }
+      node s4 {
+        "point": [105, 99];
+        "out": [-1.6, 5.76];
+        "mode": "mirrored";
+      }
+      node s5 {
+        "point": [86, 114];
+        "out": [-11.200000000000001, 0.8];
+        "mode": "mirrored";
+      }
+      node s6 {
+        "point": [35, 104];
+        "out": [-14.4, -12.48];
+        "mode": "mirrored";
+      }
+      node s7 {
+        "point": [-4, 36];
+        "out": [-5.6000000000000005, -19.2];
+        "mode": "mirrored";
+      }
+    }
+  }
+  shape armArc {
+    contour outline {
+      "closed": true;
+      node s0 {
+        "point": [0, -16];
+        "out": [8.48, -5.12];
+        "mode": "mirrored";
+      }
+      node s1 {
+        "point": [49, 4];
+        "out": [16.8, 8.64];
+        "mode": "mirrored";
+      }
+      node s2 {
+        "point": [105, 38];
+        "out": [18.88, -5.44];
+        "mode": "mirrored";
+      }
+      node s3 {
+        "point": [167, -30];
+        "out": [13.120000000000001, -7.36];
+        "mode": "mirrored";
+      }
+      node s4 {
+        "point": [187, -8];
+        "out": [0.64, 6.08];
+        "mode": "mirrored";
+      }
+      node s5 {
+        "point": [171, 8];
+        "out": [-13.6, 12.64];
+        "mode": "mirrored";
+      }
+      node s6 {
+        "point": [102, 71];
+        "out": [-28, 4.48];
+        "mode": "mirrored";
+      }
+      node s7 {
+        "point": [-4, 36];
+        "out": [-16.32, -13.92];
+        "mode": "mirrored";
+      }
+    }
+  }
+  shape armLiftArc {
+    contour outline {
+      "closed": true;
+      node s0 {
+        "point": [0, -16];
+        "out": [7.04, -6.88];
+        "mode": "mirrored";
+      }
+      node s1 {
+        "point": [40, -7];
+        "out": [12, -0.64];
+        "mode": "mirrored";
+      }
+      node s2 {
+        "point": [75, -20];
+        "out": [17.76, -13.280000000000001];
+        "mode": "mirrored";
+      }
+      node s3 {
+        "point": [151, -90];
+        "out": [15.52, -7.36];
+        "mode": "mirrored";
+      }
+      node s4 {
+        "point": [172, -66];
+        "out": [0.48, 6.72];
+        "mode": "mirrored";
+      }
+      node s5 {
+        "point": [154, -48];
+        "out": [-14.88, 12.48];
+        "mode": "mirrored";
+      }
+      node s6 {
+        "point": [79, 12];
+        "out": [-25.28, 13.44];
+        "mode": "mirrored";
+      }
+      node s7 {
+        "point": [-4, 36];
+        "out": [-12.64, -4.48];
+        "mode": "mirrored";
+      }
+    }
+  }
+  pose anticipate {
+    "parts": { "frontArm": { "shape": @armAnticipate; }; "hand": { "transform": { "x": 98; "y": 96; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+  pose reachArc {
+    "parts": { "frontArm": { "shape": @armArc; }; "hand": { "transform": { "x": 177; "y": -15; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+  pose liftArc {
+    "parts": { "frontArm": { "shape": @armLiftArc; }; "hand": { "transform": { "x": 163; "y": -74; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+}

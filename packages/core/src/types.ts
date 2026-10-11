@@ -11,14 +11,17 @@ export interface Fps { numerator: number; denominator: number }
 export interface Transform { x: number; y: number; scaleX: number; scaleY: number; rotation: number; opacity: number; visible: boolean }
 export const IDENTITY: Readonly<Transform> = Object.freeze({ x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0, opacity: 1, visible: true });
 export interface Segment { id: string; control1: Vec2; control2: Vec2; end: Vec2 }
-export interface Contour { id: string; start: Vec2; segments: Segment[]; closed: boolean }
+export interface CurveNode { id: string; point: Vec2; in?: Vec2; out?: Vec2; mode?: 'corner' | 'aligned' | 'mirrored' }
+export interface Contour { authoring?: { kind: 'nodes' | 'catmull-rom'; nodes: CurveNode[] }; id: string; start: Vec2; segments: Segment[]; closed: boolean }
 export interface Shape { id: string; contours: Contour[] }
-export interface Material { fill: string | null; stroke: string | null; strokeWidth: number; fillRule: 'nonzero' | 'evenodd' }
+export interface Gradient { type: 'linear' | 'radial'; from: Vec2; to: Vec2; stops: { offset: number; color: string }[]; radius0?: number; radius1?: number }
+export interface Material { fill: string | Gradient | null; stroke: string | null; strokeWidth: number; fillRule: 'nonzero' | 'evenodd' }
 export type AssetKind = 'image' | 'font' | 'audio';
 export interface Asset { id: string; version: number; kind: AssetKind; src: string; locked: boolean }
 export interface ResolvedAsset { id: string; version: number; kind: AssetKind; hash: string; width?: number; height?: number; duration?: number; sampleRate?: number; channels?: number }
 export type AssetManifest = ResolvedAsset[];
 export interface Part {
+  anchors?: Record<string, Vec2>; clip?: string;
   id: string; parent: string | null; pivot: Vec2; transform: Transform; layer: number;
   shape: string | null; material: Material;
   text: { content: string; font: string; size: number } | null;
@@ -27,7 +30,7 @@ export interface Part {
 export interface PartState { transform?: Partial<Transform>; shape?: string; layer?: number }
 export interface Pose { id: string; parts: Record<string, PartState> }
 export interface Drawing { id: string; parts: Record<string, string> }
-export interface Actor { id: string; parts: string[]; transform: Transform; parent: string | null; layer: number }
+export interface Actor { solid?: import('./solids.js').SolidRecipe; id: string; parts: string[]; transform: Transform; parent: string | null; layer: number }
 export interface Background { id: string; actor: string; parallax: number }
 export type Property = keyof Transform | 'layer' | 'parent' | 'shape';
 export type Value = number | boolean | string | null;
@@ -37,7 +40,8 @@ export interface Initial { target: string; values: Partial<Record<Property, Valu
 export interface Morph { id: string; actor: string; from: string; to: string; start: number; end: number; easing: Easing }
 export interface Exposure { id: string; actor: string; drawing: string; start: number; end: number }
 export interface Camera { x: number; y: number; scaleX: number; scaleY: number; rotation: number }
-export interface Shot { id: string; duration: number; initial: Initial[]; keys: Key[]; morphs: Morph[]; exposures: Exposure[]; camera: Camera }
+export interface Contact { id: string; target: string; anchor: string; targetPoint: Vec2; anchorPoint: Vec2; start: number; end: number }
+export interface Shot { contacts?: Contact[]; id: string; duration: number; initial: Initial[]; keys: Key[]; morphs: Morph[]; exposures: Exposure[]; camera: Camera }
 export interface AudioTrack { asset: string; offset: number; trimStart: number; duration: number; gain: number }
 export interface FxDocument {
   schemaVersion: 1; revision: number; id: string; viewport: Vec2; fps: Fps;
@@ -48,6 +52,7 @@ export interface Snapshot { values: Record<string, Partial<Record<Property, Valu
 export interface PlannedShot { start: number; shot: Shot; snapshot: Snapshot }
 export interface PlaybackPlan { schemaVersion: 1; document: FxDocument; manifest: AssetManifest; duration: number; shots: PlannedShot[] }
 export interface DrawCommand {
+  clip?: Shape;
   id: string; matrix: Matrix; opacity: number; layer: number; shape: Shape | null;
   material: Material; text: Part['text']; image: Part['image'];
 }

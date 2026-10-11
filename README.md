@@ -69,6 +69,8 @@ Seven ESM packages are prepared as local archives, with no npm publication. See 
 
 `evaluate(plan, {frame:97})` derives state without wall time, implicit randomness or previous frames. State determinism does not imply identical pixels across platforms. Backends declare their measured raster tolerances.
 
+Public vector authoring now includes projected convex solids and cylinders, editable node handles, centripetal curves, local linear/radial fills, vector clipping and absolute-frame contact intervals. See the [syntax and bounds](docs/language-v0.1.md#public-projected-solids-editable-curves-and-contact), the [authored Little Light](fixtures/short/little-light-authored.afx), and the [guide carriage assembly](fixtures/assembly/guide-carriage.afx). The historical short remains available for regression comparison. The playground can overlay nodes/handles, pivots/anchors and layer order and export critical-frame sheets.
+
 ## Learn and develop
 
 - [Language v0.1](docs/language-v0.1.md) and [compatible v0](docs/language-v0.md).

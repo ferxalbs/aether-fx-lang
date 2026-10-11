@@ -1,0 +1,90 @@
+project guideCarriage {
+  viewport: (960, 720); fps: (24, 1);
+  theme steel { top: "#ced8d6"; light: "#98adaa"; dark: "#536f73"; }
+  theme brass { top: "#f1cc85"; light: "#c69b59"; dark: "#886942"; }
+  const view { value: { preset: isometric; origin: (480, 460); scale: 1.5; }; }
+  shape paper { primitive: rect; size: (960, 720); }
+  part paper { shape: @paper; material: { fill: "#f3f0e7"; }; }
+  actor paper { parts: [@paper]; layer: -100; }
+  shape shadow { primitive: ellipse; radius: (270, 52); }
+  part shadow { shape: @shadow; transform: { x: 470; y: 482; }; material: { fill: "#dddcd1"; }; }
+  actor shadow { parts: [@shadow]; layer: -50; }
+  solid bed {
+    kind: extrude; height: 14; z: -14; projection: @view;
+    ring: [{id: a; point: (-135, -75);}, {id: b; point: (135, -75);}, {id: c; point: (135, 75);}, {id: d; point: (-135, 75);}];
+    materials: { top: @steel.top; light: @steel.light; dark: @steel.dark; };
+    anchors: { datum: (0, 0, 0); };
+    layer: 0;
+  }
+  component guide {
+    params: { radius: 12; height: 55; center: (-90, 0); layer: 10; };
+    solid post {
+      kind: cylinder; radius: @radius; height: @height; center: @center; steps: 64; tolerance: 0.1; projection: @view;
+      materials: { top: @steel.top; light: @steel.light; dark: @steel.dark; };
+      anchors: { socket: (0, 0, 0); }; layer: @layer;
+    }
+    // Locating pins are seated on the carriage cap; standoffs contact its underside.
+    solid tip {
+      kind: cylinder; radius: @radius; height: 23; z: 73; center: @center; steps:64; tolerance:0.1; projection:@view;
+      materials:{top:@steel.top;light:@steel.light;dark:@steel.dark;};
+      parent:@carriage.carriage_top; layer:32;
+    }
+  }
+  instance far { component: @guide; args: { radius: 10; height: 55; center: (-90, -35); layer: 10; }; }
+  instance near { component: @guide; args: { radius: 14; height: 55; center: (90, 35); layer: 20; }; }
+  solid carriage {
+    kind: extrude; height: 18; z: 55; projection: @view;
+    ring: [{id: a; point: (-112,-53);}, {id: b; point: (112,-53);}, {id: c; point: (112,53);}, {id: d; point: (-112,53);}];
+    materials: { top: @brass.top; light: @brass.light; dark: @brass.dark; }; layer: 30;
+  }
+  solid dial {
+    kind: cylinder; radius: 26; height: 17; z: 73; center: (0,0); steps: 64; tolerance: 0.1; projection: @view;
+    materials: { top: @steel.top; light: @steel.light; dark: @steel.dark; }; layer: 40;
+  }
+  component screw {
+    params: { center: (-113, -52); layer: 6; };
+    solid head {
+      kind: cylinder; radius: 4; height: 2; center: @center; steps: 24; tolerance: 0.1; projection: @view;
+      materials: { top: "#6d8588"; light: "#526b70"; dark: "#3a555c"; }; layer: @layer; parent:@bed.bed_top;
+    }
+  }
+  instance boltA { component: @screw; }
+  instance boltB { component: @screw; args: { center: (113,-52); }; }
+  instance boltC { component: @screw; args: { center: (113,52); }; }
+  instance boltD { component: @screw; args: { center: (-113,52); }; }
+  // Drawing details stay in their face plane; the closed slot is attached to the cap.
+  shape dialSlot { primitive: roundedRect; size: (18, 3); radius: 1; }
+  part dialSlot { shape: @dialSlot; transform: {x:472;y:349.77;rotation:30deg;}; material:{fill:"#536f73";}; }
+  actor dialSlot { parts:[@dialSlot]; parent:@dial.dial_top; layer:42; }
+  scene assembly {
+    shot explode {
+      duration: 240f;
+      anchor separate { at: 36f; }
+      anchor apart { after: @separate; offset: 48f; }
+      anchor return { at: 132f; }
+      anchor assembled { at: 192f; }
+      key far0 { target:@far_post; property:y; frame:@separate; value:0; easing:ease-in-out; }
+      key far1 { target:@far_post; property:y; frame:@apart; value:-90; }
+      key far2 { target:@far_post; property:y; frame:@return; value:-90; easing:ease-in-out; }
+      key far3 { target:@far_post; property:y; frame:@assembled; value:0; }
+      key near0 { target:@near_post; property:y; frame:@separate; value:0; easing:ease-in-out; }
+      key near1 { target:@near_post; property:y; frame:@apart; value:-90; }
+      key near2 { target:@near_post; property:y; frame:@return; value:-90; easing:ease-in-out; }
+      key near3 { target:@near_post; property:y; frame:@assembled; value:0; }
+      key carriage0 { target:@carriage; property:y; frame:@separate; value:0; easing:ease-in-out; }
+      key carriage1 { target:@carriage; property:y; frame:@apart; value:-135; }
+      key carriage2 { target:@carriage; property:y; frame:@return; value:-135; easing:ease-in-out; }
+      key carriage3 { target:@carriage; property:y; frame:@assembled; value:0; }
+      key dial0 { target:@dial; property:y; frame:@separate; value:0; easing:ease-in-out; }
+      key dial1 { target:@dial; property:y; frame:@apart; value:-185; }
+      key dial2 { target:@dial; property:y; frame:@return; value:-185; easing:ease-in-out; }
+      key dial3 { target:@dial; property:y; frame:@assembled; value:0; }
+      contact carriageSocket { target:@carriage; anchor:@bed.bed_top; start:@assembled; end:240f; targetPoint:(480,460); anchorPoint:(480,460); }
+      contact dialSocket { target:@dial; anchor:@bed.bed_top; start:@assembled; end:240f; targetPoint:(480,460); anchorPoint:(480,460); }
+      key bed0 { target:@bed; property:x; frame:@assembled; value:0; easing:ease-in-out; }
+      key bed1 { target:@bed; property:x; frame:239f; value:12; }
+      contact farSocket { target:@far_post; anchor:@bed.bed_top; start:@assembled; end:240f; targetPoint:(480,460); anchorPoint:(480,460); }
+      contact nearSocket { target:@near_post; anchor:@bed.bed_top; start:@assembled; end:240f; targetPoint:(480,460); anchorPoint:(480,460); }
+    }
+  }
+}

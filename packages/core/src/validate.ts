@@ -1,9 +1,21 @@
 import { checkSchema } from './schema.js';
 import { DEFAULT_LIMITS, diagnostic, IDENTITY } from './types.js';
 import type { AssetManifest, Diagnostic, FxDocument, Limits, Property, Value } from './types.js';
+import { createSolid } from './solids.js';
+import { rebuildContour } from './authoring.js';
 import { topologyMatches } from './geometry.js';
 import { frameSeconds, mayOvershoot } from './time.js';
 
+function authoringEqual(a:unknown,b:unknown):boolean {
+  if(typeof a==='number'&&typeof b==='number')return Math.abs(a-b)<=1e-9+1e-12*Math.max(Math.abs(a),Math.abs(b));
+  if(a===b)return true;
+  if(Array.isArray(a)&&Array.isArray(b))return a.length===b.length&&a.every((v,i)=>authoringEqual(v,b[i]));
+  if(a&&b&&typeof a==='object'&&typeof b==='object') {
+    const x=a as Record<string,unknown>,y=b as Record<string,unknown>,keys=Object.keys(x);
+    return keys.length===Object.keys(y).length&&keys.every(k=>Object.hasOwn(y,k)&&authoringEqual(x[k],y[k]));
+  }
+  return false;
+}
 export function validProperty(property: Property, value: Value, kind: 'actor' | 'part' | 'camera'): boolean {
   if (property === 'shape') return kind === 'part' && typeof value === 'string';
   if (property === 'parent') return kind === 'actor' && (value === null || typeof value === 'string');
@@ -59,12 +71,17 @@ export function validate(input: unknown, manifestInput: unknown = [], options: P
   let segmentCount = 0;
   for (const shape of d.shapes) {
     unique(shape.contours, `contour in ${shape.id}`);
-    for (const contour of shape.contours) { unique(contour.segments, `segment in ${shape.id}.${contour.id}`); segmentCount += contour.segments.length; }
+    for (const contour of shape.contours) {
+      if(contour.authoring)try {
+        const rebuilt=rebuildContour(contour);
+        if(!authoringEqual([rebuilt.start,rebuilt.segments],[contour.start,contour.segments]))fail('CURVE_STALE','Rebuild node controls after an authoring edit',shape);
+      }catch(cause){fail('CURVE_INVALID',String(cause),shape);}
+      unique(contour.segments, `segment in ${shape.id}.${contour.id}`); segmentCount += contour.segments.length; }
   }
   if (d.parts.length > limits.parts || segmentCount > limits.segments || d.viewport.some(n => n > limits.resolution)) fail('LIMIT_EXCEEDED', 'Geometry or resolution limit exceeded');
   const duration = d.shots.reduce((sum, s) => sum + s.duration, 0);
   if (!d.shots.length || !Number.isSafeInteger(duration) || duration > limits.duration) fail('LIMIT_EXCEEDED', 'Movie duration must be positive and within limits');
-  const trackCount = d.shots.reduce((sum, s) => sum + s.keys.length + s.morphs.length + s.exposures.length, 0);
+  const trackCount = d.shots.reduce((sum, s) => sum + s.keys.length + s.morphs.length + s.exposures.length + (s.contacts?.length??0), 0);
   if (trackCount > limits.tracks) fail('LIMIT_EXCEEDED', 'Track limit exceeded');
   for (const asset of d.assets) {
     const r = resolved.get(asset.id);
@@ -76,6 +93,13 @@ export function validate(input: unknown, manifestInput: unknown = [], options: P
   for (const p of d.parts) {
     if (p.parent && !parts.has(p.parent)) fail('REFERENCE_MISSING', 'Unknown parent part', p, '/parent');
     if ([p.shape, p.text, p.image].filter(v => v !== null).length !== 1) fail('PART_CONTENT', 'Each part must have exactly one shape, text or image', p);
+    if (p.clip && !shapes.has(p.clip)) fail('REFERENCE_MISSING','Unknown local clip shape',p,'/clip');
+    const gradient=p.material.fill;
+    if(gradient&&typeof gradient==='object') {
+      if(gradient.stops.some((stop,i)=>i>0&&stop.offset<gradient.stops[i-1]!.offset))fail('MATERIAL_INVALID','Gradient stops must be ordered',p,'/material/fill/stops');
+      if(gradient.type==='radial'&&(gradient.radius0===undefined||gradient.radius1===undefined||gradient.radius0>=gradient.radius1))fail('MATERIAL_INVALID','Radial gradient requires 0 <= radius0 < radius1',p,'/material/fill');
+      if(gradient.type==='linear'&&(gradient.radius0!==undefined||gradient.radius1!==undefined||gradient.from.every((n,i)=>n===gradient.to[i])))fail('MATERIAL_INVALID','Linear gradient requires distinct endpoints and no radii',p,'/material/fill');
+    }
     if (p.shape && !shapes.has(p.shape)) fail('REFERENCE_MISSING', 'Unknown shape', p, '/shape');
     if (p.text) assetKind(p.text.font, 'font', p, '/text/font');
     if (p.image) assetKind(p.image.asset, 'image', p, '/image/asset');
@@ -88,6 +112,11 @@ export function validate(input: unknown, manifestInput: unknown = [], options: P
     if (seen.size > limits.depth) fail('LIMIT_EXCEEDED', 'Part hierarchy exceeds depth limit', p);
   }
   for (const actor of d.actors) {
+    if(actor.solid)try {
+      const generated=createSolid(actor.id,actor.solid);
+      for(const shape of generated.shapes)if(!authoringEqual(shapes.get(shape.id),shape))fail('SOLID_STALE','Regenerate solid geometry after a parameter edit',actor,'/solid');
+      for(const part of generated.parts)if(!actor.parts.includes(part.id))fail('SOLID_STALE','Solid must retain generated face IDs',actor,'/solid');
+    }catch(cause){fail((cause as {code?:string}).code??'SOLID_INVALID',String(cause),actor,'/solid');}
     if (!actor.parts.length || new Set(actor.parts).size !== actor.parts.length) fail('ACTOR_PARTS', 'Actor needs distinct parts', actor, '/parts');
     for (const [index,id] of actor.parts.entries()) {
       const part = parts.get(id);
@@ -112,7 +141,18 @@ export function validate(input: unknown, manifestInput: unknown = [], options: P
     if (property === 'parent' && typeof value === 'string' && targetKind(d, value) !== 'part') fail('REFERENCE_MISSING', 'Parent must be actor.part', owner, valuePath);
   };
   for (const shot of d.shots) {
-    unique([...shot.keys, ...shot.morphs, ...shot.exposures], `track in ${shot.id}`);
+    unique([...shot.keys, ...shot.morphs, ...shot.exposures, ...(shot.contacts??[])], `track in ${shot.id}`);
+    const contacts=shot.contacts??[];
+    if(contacts.length>16||contacts.length&&shot.duration>4096)fail('LIMIT_EXCEEDED','Contact audit budget: 16 constraints and 4096 frames per shot',shot);
+    for(const contact of contacts) {
+      if(targetKind(d,contact.target)!=='actor'||targetKind(d,contact.anchor)!=='part')fail('REFERENCE_MISSING','Contact target must be actor and anchor actor.part',shot,'/contacts');
+      if(contact.start>=contact.end||contact.end>shot.duration)fail('FRAME_RANGE','Contact interval must be within shot',shot,'/contacts');
+      if(contact.target===contact.anchor.split('.')[0]||contacts.some(c=>c.target===contact.anchor.split('.')[0]))fail('CONTACT_CHAIN','Contact anchors must belong to unconstrained actors; split a chained assembly into explicit relations',shot,'/contacts');
+      if(d.actors.some(a=>a.id===contact.anchor.split('.')[0]&&a.parent?.split('.')[0]===contact.target))fail('HIERARCHY_CYCLE','Contact anchor cannot descend from its target',shot,'/contacts');
+      if(contacts.some(c=>c!==contact&&c.target===contact.target&&c.start<contact.end&&contact.start<c.end))fail('PROPERTY_CONFLICT','Contact intervals for a target cannot overlap',shot,'/contacts');
+      if(shot.keys.some(k=>k.target===contact.target&&k.property==='parent'))fail('PROPERTY_CONFLICT','Use contact bind/release without a concurrent parent track',shot,'/contacts');
+      if(shot.keys.some(k=>k.target===contact.target&&['x','y','rotation','scaleX','scaleY'].includes(k.property)&&k.frame>contact.start&&k.frame<contact.end))fail('PROPERTY_CONFLICT','Contact owns target transform during its interval',shot,'/contacts');
+    }
     const initial = new Set<string>();
     for (const [index,i] of shot.initial.entries()) for (const [p, value] of Object.entries(i.values)) {
       propertyCheck(i.target, p as Property, value, shot, `/initial/${index}/values/${p}`, `/initial/${index}/target`);
@@ -127,7 +167,7 @@ export function validate(input: unknown, manifestInput: unknown = [], options: P
       const token = `${key.target}:${key.property}:${key.frame}`;
       if (frames.has(token)) fail('PROPERTY_CONFLICT', 'Multiple keys write the same property at the same frame', key);
       frames.add(token);
-      if (typeof key.value !== 'number' && (key.easing !== 'linear' || key.rotation !== 'direct')) fail('DISCRETE_INTERPOLATION', 'Discrete properties cannot use easing/rotation interpolation', key);
+      if ((typeof key.value !== 'number'||key.property==='layer') && (key.easing !== 'linear' || key.rotation !== 'direct')) fail('DISCRETE_INTERPOLATION', 'Discrete properties cannot use easing/rotation interpolation', key);
       if (key.target === 'camera' && (key.property === 'scaleX' || key.property === 'scaleY') && mayOvershoot(key.easing)) fail('CAMERA_SCALE', 'Camera scale easing must not overshoot', key);
     }
     const writes: { target: string; property: string; start: number; end: number; owner:{id:string} }[] = [];

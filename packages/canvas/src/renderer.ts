@@ -24,10 +24,19 @@ export function createRenderer(canvas:HTMLCanvasElement|OffscreenCanvas,resource
         try{
           context.setTransform(sx,0,0,sy,0,0);context.transform(...command.matrix);context.globalAlpha=command.opacity;
           const material=command.material;
-          if(material.fill!==null)context.fillStyle=material.fill;
+          if(material.fill!==null) {
+            if(typeof material.fill==='string')context.fillStyle=material.fill;
+            else {
+              const fill=material.fill;
+              const gradient=fill.type==='linear'?context.createLinearGradient(...fill.from,...fill.to):context.createRadialGradient(...fill.from,fill.radius0!,...fill.to,fill.radius1!);
+              for(const stop of fill.stops)gradient.addColorStop(stop.offset,stop.color);
+              context.fillStyle=gradient;
+            }
+          }
+          if(command.clip){path(command.clip);context.clip(material.fillRule);}
           if(material.stroke!==null)context.strokeStyle=material.stroke;
           context.lineWidth=material.strokeWidth;
-          if(command.shape){path(command.shape);if(material.fill!==null)context.fill(material.fillRule);if(material.stroke!==null&&material.strokeWidth>0)context.stroke();}
+          if(command.shape&&(material.fill!==null||material.stroke!==null&&material.strokeWidth>0)){path(command.shape);if(material.fill!==null)context.fill(material.fillRule);if(material.stroke!==null&&material.strokeWidth>0)context.stroke();}
           if(command.image){const image=resources.images.get(command.image.asset);if(!image)throw new Error(`Image not loaded: ${command.image.asset}`);context.drawImage(image,0,0,command.image.width,command.image.height);}
           if(command.text){const font=resources.fonts.get(command.text.font);if(!font)throw new Error(`Font not loaded: ${command.text.font}`);context.font=`${command.text.size}px "${font}"`;context.textBaseline='alphabetic';if(material.fill!==null)context.fillText(command.text.content,0,0);if(material.stroke!==null&&material.strokeWidth>0)context.strokeText(command.text.content,0,0);}
         }finally{context.restore();}

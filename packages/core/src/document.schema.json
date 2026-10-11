@@ -90,6 +90,9 @@
             },
             {
               "type": "null"
+            },
+            {
+              "$ref": "#/$defs/gradient"
             }
           ]
         },
@@ -166,6 +169,30 @@
         },
         "closed": {
           "type": "boolean"
+        },
+        "authoring": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "nodes",
+                "catmull-rom"
+              ]
+            },
+            "nodes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/curveNode"
+              },
+              "minItems": 2,
+              "maxItems": 256
+            }
+          },
+          "required": [
+            "kind",
+            "nodes"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -386,6 +413,20 @@
               "type": "null"
             }
           ]
+        },
+        "clip": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "anchors": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/vec2"
+          }
         }
       },
       "required": [
@@ -497,6 +538,9 @@
         },
         "layer": {
           "type": "number"
+        },
+        "solid": {
+          "$ref": "#/$defs/solid"
         }
       },
       "required": [
@@ -877,6 +921,12 @@
         },
         "camera": {
           "$ref": "#/$defs/camera"
+        },
+        "contacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contact"
+          }
         }
       },
       "required": [
@@ -1125,6 +1175,266 @@
         "manifest",
         "duration",
         "shots"
+      ],
+      "additionalProperties": false
+    },
+    "curveNode": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "point": {
+          "$ref": "#/$defs/vec2"
+        },
+        "in": {
+          "$ref": "#/$defs/vec2"
+        },
+        "out": {
+          "$ref": "#/$defs/vec2"
+        },
+        "mode": {
+          "enum": [
+            "corner",
+            "aligned",
+            "mirrored"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "point"
+      ],
+      "additionalProperties": false
+    },
+    "gradient": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "linear",
+            "radial"
+          ]
+        },
+        "from": {
+          "$ref": "#/$defs/vec2"
+        },
+        "to": {
+          "$ref": "#/$defs/vec2"
+        },
+        "radius0": {
+          "type": "number",
+          "minimum": 0
+        },
+        "radius1": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "stops": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "offset": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$"
+              }
+            },
+            "required": [
+              "offset",
+              "color"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "type",
+        "from",
+        "to",
+        "stops"
+      ],
+      "additionalProperties": false
+    },
+    "vec3": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "projection": {
+      "type": "object",
+      "properties": {
+        "preset": {
+          "enum": [
+            "isometric"
+          ]
+        },
+        "origin": {
+          "$ref": "#/$defs/vec2"
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "azimuth": {
+          "type": "number"
+        },
+        "elevation": {
+          "type": "number"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "solid": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "extrude",
+            "cylinder"
+          ]
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "z": {
+          "type": "number"
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "center": {
+          "$ref": "#/$defs/vec2"
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 256
+        },
+        "tolerance": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "ring": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+              },
+              "point": {
+                "$ref": "#/$defs/vec2"
+              }
+            },
+            "required": [
+              "id",
+              "point"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 3,
+          "maxItems": 256
+        },
+        "projection": {
+          "$ref": "#/$defs/projection"
+        },
+        "materials": {
+          "type": "object",
+          "properties": {
+            "top": {
+              "$ref": "#/$defs/material"
+            },
+            "light": {
+              "$ref": "#/$defs/material"
+            },
+            "dark": {
+              "$ref": "#/$defs/material"
+            }
+          },
+          "required": [
+            "top",
+            "light",
+            "dark"
+          ],
+          "additionalProperties": false
+        },
+        "anchors": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/vec3"
+          }
+        },
+        "pivot": {
+          "$ref": "#/$defs/vec2"
+        }
+      },
+      "required": [
+        "kind",
+        "height",
+        "materials"
+      ],
+      "additionalProperties": false
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "target": {
+          "type": "string",
+          "pattern": "^(?!(?:constructor|prototype|__proto__)$)[A-Za-z][A-Za-z0-9_-]{0,63}$"
+        },
+        "anchor": {
+          "type": "string",
+          "maxLength": 100000
+        },
+        "targetPoint": {
+          "$ref": "#/$defs/vec2"
+        },
+        "anchorPoint": {
+          "$ref": "#/$defs/vec2"
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id",
+        "target",
+        "anchor",
+        "targetPoint",
+        "anchorPoint",
+        "start",
+        "end"
       ],
       "additionalProperties": false
     }
