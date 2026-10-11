@@ -6,7 +6,5 @@ artifacts/
 *.tgz
 test-results/
 .DS_Store
-
-AETHER-Fx-v0-GOAL.md
-GOAL.md
+*.md
 /.work/

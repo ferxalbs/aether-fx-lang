@@ -33,6 +33,97 @@ describe('illustrated acceptance semantics',()=>{
     expect(evaluate(plan,{frame:479})).toEqual({...evaluate(plan,{frame:450}),frame:479});
   });
 });
+describe('parametric lamp/table authoring',()=>{
+  const generatorPath='../scripts/create-parametric-demo.mjs';
+  const geometryPath='../scripts/parametric-geometry.mjs';
+  it('regenerates the canonical fixture and preserves face correspondence through dimensional edits',async()=>{
+    const {createDemo,demoSource}=await import(generatorPath);
+    const original=createDemo(),edited=createDemo({tableWidth:320,lampRadius:28});
+    expect(await readFile('fixtures/parametric/lamp-table.afx','utf8')).toBe(demoSource(original.document));
+    const loaded=unwrap(await loadProject('fixtures/parametric/lamp-table.afx'));
+    expect(loaded.plan.document).toEqual(original.document);
+    expect(loaded.plan.duration).toBe(384);
+    expect(edited.solids.length).toBe(original.solids.length);
+    for(let i=0;i<original.solids.length;i++)expect(edited.solids[i].topology).toEqual(original.solids[i].topology);
+    expect(edited.document.shapes).not.toEqual(original.document.shapes);
+    for(const s of edited.solids)if(s.approximation)expect(s.approximation.projectedErrorBound).toBeLessThanOrEqual(.5);
+    expect(JSON.stringify(createDemo({cylinderSteps:48}).solids.find((s:{id:string})=>s.id==='base').topology)).not.toBe(JSON.stringify(original.solids.find((s:{id:string})=>s.id==='base').topology));
+    expect(()=>createDemo({tableWidth:100})).toThrow('Dimensions');
+    const handle=original.solids.find((s:{id:string})=>s.id==='handleTop').parameters;
+    const front=original.solids.find((s:{id:string})=>s.id==='gripFront').parameters;
+    const back=original.solids.find((s:{id:string})=>s.id==='gripBack').parameters;
+    expect(front.ring[0].position[1]).toBe(handle.ring[2].position[1]);
+    expect(back.ring[2].position[1]).toBe(handle.ring[0].position[1]);
+    expect(front.z).toBeLessThan(handle.z);expect(front.z+front.height).toBeGreaterThan(handle.z+handle.height);
+  });
+  it('rejects unsupported outlines and cylinder approximations rather than silently exceeding their budget',async()=>{
+    const {extrude,cylinder,projection}=await import(geometryPath),camera=projection();
+    const palette={top:'#ffffff',light:'#aaaaaa',dark:'#555555'};
+    const make=(positions:number[][])=>extrude({id:'solid',ring:positions.map((position,i)=>({id:'v'+i,position})),height:10,palette},camera);
+    expect(()=>make([[0,0],[10,10],[0,10],[10,0]])).toThrow('convex');
+    expect(()=>make([[0,0],[0,10],[10,10],[10,0]])).toThrow('convex');
+    expect(()=>make([[0,0],[10,0],[5,3],[10,10],[0,10]])).toThrow('convex');
+    expect(()=>cylinder({id:'solid',radius:100,height:10,palette,tolerance:.001,steps:32},camera)).toThrow('budget');
+    expect(()=>projection({scale:0})).toThrow('positive');
+  });
+  it('paints same-tone cylinder joints without background leaks while retaining face IDs and silhouette',async()=>{
+    const {createDemo}=await import(generatorPath),demo=createDemo();
+    const {createNativeRenderer}=await import('@aether-fx/node');
+    const {plan,assets}=unwrap(await loadProject('fixtures/parametric/lamp-table.afx'));
+    // Isolate the surface so prepared frame posts cannot occlude sampled joints.
+    const surface=structuredClone(plan.document);
+    for(const p of surface.parts)if(p.id!=='wall'&&!p.id.startsWith('housing_'))p.material.fill=null;
+    const renderer=await createNativeRenderer(unwrap(compile(surface,assets.manifest)),assets);
+    const housing=demo.solids.find((s:{id:string})=>s.id==='housing');
+    const seamSamples:{at:number;expected:number[]}[]=[];
+    try{
+      for(const frame of [0,156,300,383]){
+        const draw=evaluate(plan,{frame}),root=draw.commands.find(c=>c.id==='lamp.'+housing.faces[0].id)!;
+        renderer.render(frame);const pixels=renderer.pixels();let checked=0;
+        for(let i=1;i<housing.faces.length;i++){
+          const a=housing.faces[i-1],b=housing.faces[i];
+          if(!a.role||a.role!==b.role||a.vertices[1].id!==b.vertices[0].id||b.vertices[0].position[1]<12)continue;
+          const position=[...b.vertices[0].position];position[2]+=housing.parameters.height/2;
+          const p=demo.camera.point(position),m=root.matrix;
+          const x=Math.round(m[0]*p[0]+m[2]*p[1]+m[4]),y=Math.round(m[1]*p[0]+m[3]*p[1]+m[5]);
+          const expected=(b.fill.match(/\w\w/g) as string[]).map(hex=>parseInt(hex,16));
+          const at=(y*960+x)*4;
+          if(frame===383)seamSamples.push({at,expected});
+          for(let channel=0;channel<3;channel++)expect(Math.abs(pixels[at+channel]!-expected[channel]!)).toBeLessThanOrEqual(2);
+          expect(draw.commands.find(c=>c.id==='lamp.'+b.id)!.material.fill).toBeNull();checked++;
+        }
+        expect(checked).toBeGreaterThan(0);
+        for(const group of housing.paintGroups)for(const contour of group.shape.contours){
+          const face=housing.faces.find((f:{id:string})=>f.id===contour.id);
+          expect({...contour,id:'outline'}).toEqual(face.shape.contours[0]);
+        }
+      }
+      const separate=structuredClone(surface);
+      for(const group of housing.paintGroups)separate.parts.find(p=>p.id===group.id)!.material.fill=null;
+      for(const face of housing.faces)separate.parts.find(p=>p.id===face.id)!.material.fill=face.fill;
+      const previous=await createNativeRenderer(unwrap(compile(separate,assets.manifest)),assets);
+      try{
+        previous.render(383);const pixels=previous.pixels();
+        expect(seamSamples.some(s=>s.expected.some((n,c)=>Math.abs(pixels[s.at+c]!-n)>2))).toBe(true);
+      }finally{previous.dispose();}
+    }finally{renderer.dispose();}
+  });
+  it('preserves the assembled contact pose and seek state through separation, attachment and lifting',async()=>{
+    const {plan}=unwrap(await loadProject('fixtures/parametric/lamp-table.afx'));
+    const frames=Array.from({length:plan.duration},(_,frame)=>evaluate(plan,{frame}));
+    const serialized=frames.map(frame=>JSON.stringify(frame));
+    for(let i=0;i<plan.duration;i++)expect(JSON.stringify(evaluate(plan,{frame:i*137%plan.duration}))).toBe(serialized[i*137%plan.duration]);
+    for(let frame=plan.duration-1;frame>=0;frame--)expect(JSON.stringify(evaluate(plan,{frame}))).toBe(serialized[frame]);
+    expect(frames[239]!.commands).toEqual(frames[0]!.commands);
+    const base=(frame:number)=>frames[frame]!.commands.find(c=>c.id==='lamp.base_top')!;
+    expect(base(263).matrix).toEqual(base(264).matrix);
+    for(let frame=264;frame<384;frame++){
+      const anchor=frames[frame]!.commands.find(c=>c.id==='grip.anchor')!;
+      expect(base(frame).matrix).toEqual(anchor.matrix);
+    }
+    expect(base(348).matrix[5]).toBeLessThan(base(264).matrix[5]);
+  },15000);
+});
 describe('explicit local asset resolver',()=>{
   it('parses the real PCM WAV and PNG metadata and rejects truncated data',async()=>{
     const wav=await readFile('fixtures/short/assets/score.wav'),png=await readFile('fixtures/short/assets/paper.png');
