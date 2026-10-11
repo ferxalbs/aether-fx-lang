@@ -6,6 +6,6 @@
 - [Node export](node-export.md), [browser export](browser-export.md) and [capabilities](export-v0.1.md)
 - [React/Next](react-next.md) and [tools](tooling.md)
 - [Reproducible performance](performance-v0.1.md), [historical performance](performance.md) and [comparison](comparison.md)
-- [Licenses](licensing.md), [release verification](release.md), [readiness](../RELEASE-READINESS.md) and [known limitations](../KNOW-ISSUES.md)
+- [Licenses](licensing.md), [release verification](release.md), [readiness](../RELEASE-READINESS.md) and [single known-issues register](../KNOW-ISSUES.md)
 
 AETHER Fx compiles declarative `.afx` source to deterministic frame state. Pixel output remains backend/font/platform dependent. Package version and document schema version are separate.

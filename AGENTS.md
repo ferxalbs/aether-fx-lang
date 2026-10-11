@@ -32,3 +32,17 @@ Tests import built package exports: rebuild after source changes. Extend the rel
 ## Commit & Pull Request Guidelines
 
 Recent commits use imperative, descriptive subjects, such as “Keep native render addons external in Next server builds.” Follow that style. Keep diffs focused. PRs should explain the behavior change, link relevant issues, and report exact verification commands/results. Include rendered evidence for visual changes and identify unverified platforms. Preserve dependency pins, asset provenance, and LICENSE/NOTICE obligations.
+
+## Public Documentation and Evidence Policy
+
+This is an OSS repository. Treat every tracked file, commit, PR, public CI artifact and npm package payload as public.
+
+- Public documentation explains the language, APIs, architecture, usage, contribution and relevant limitations.
+- Keep session reports, internal prompts, commercial costs, private plans, personal information, authentication results, credentials, tokens, secret variables and unsanitized traces outside the repository. Store private evidence outside the checkout; use synthetic examples and relative paths in public documentation.
+- Before staging, committing, pushing or packaging, inspect the corresponding content and generated files. Before a push, review every new reachable commit: removing a file from the current tree does not remove earlier versions from history.
+- `.gitignore` does not protect already tracked files. Inspect both Git's tracked content and the actual `npm pack` payload. Keep explicit allowlists for package and public artifact content where applicable. Preserve the package `files` lists, generated-output exclusions and candidate evidence allowlist; review any expansion before including new content. An allowed path still requires a content review.
+- Never reproduce discovered secrets in reports, commands or responses. Identify their location in sanitized form and state the need for revocation. Do not rewrite or publish history to clean information without express authorization.
+- Preserve LICENSE, NOTICE, required attribution and technical documentation. Do not conceal product defects under this policy: maintain `KNOW-ISSUES.md` as the single public register of defects, limitations and pending validations. Use private disclosure for sensitive vulnerabilities.
+- Do not generate additional reports by default. Update existing documentation and provide a brief closure.
+
+AGENTS.md guides agents; it is not a security boundary. Enforce this policy through content review and the existing exclusions/allowlists: `.gitignore` excludes `.work/`, generated artifacts and tarballs; workspace package manifests allow only `dist`, README, LICENSE and NOTICE; the candidate assembler selects documentation and evidence explicitly. Public CI upload selections must contain only reviewed technical diagnostics and synthetic or versioned inputs, never private evidence. Sanitization does not replace review.

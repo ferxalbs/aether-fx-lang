@@ -81,6 +81,6 @@ npm run check       # Metadata, build, types and current tests
 npm run verify:ci   # Every acceptance gate; preserves failures
 ```
 
-Full acceptance additionally requires Playwright browser builds and external FFmpeg for independent decode and the retained oracle. Local macOS results do not establish Linux or physical-device compatibility. Gradients/shadows and complete text layout/reveal are not delivered in this candidate.
+Full acceptance additionally requires Playwright browser builds and external FFmpeg for independent decode and the retained oracle. Local macOS results do not establish Linux or physical-device compatibility. The single register of current defects, unsupported scope and pending qualification is [KNOW-ISSUES.md](KNOW-ISSUES.md); recording a limitation does not approve a release.
 
 Original code remains [Apache-2.0](LICENSE). [NOTICE](NOTICE), [asset provenance](fixtures/short/ASSETS.md) and [dependency licensing](docs/licensing.md) preserve third-party obligations. Dependency terms remain separate from the project license.

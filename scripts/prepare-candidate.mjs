@@ -33,7 +33,7 @@ await mkdir(out); // Immutable destination: never overwrite a prior candidate.
 const files=[];
 async function write(destination,bytes){await mkdir(join(out,destination,'..'),{recursive:true});await writeFile(join(out,destination),bytes);files.push({file:destination,bytes:bytes.length,sha256:sha256(bytes)});}
 async function copy(path,destination){const s=await lstat(path);if(s.isDirectory()){for(const name of (await readdir(path)).sort())await copy(join(path,name),join(destination,name));}else if(s.isFile()){const bytes=await readFile(path);if(/\.(?:md|json)$/.test(path))assert(!forbidden.test(bytes.toString()),'Internal public document: '+path);await write(destination,bytes);}}
-for(const path of ['README.md','LICENSE','NOTICE','CHANGELOG.md','RELEASE-READINESS.md','docs','fixtures/short','artifacts/playground'])await copy(path,path==='fixtures/short'?'reference-short':path==='artifacts/playground'?'playground':path);
+for(const path of ['README.md','LICENSE','NOTICE','CHANGELOG.md','RELEASE-READINESS.md','KNOW-ISSUES.md','docs','fixtures/short','artifacts/playground'])await copy(path,path==='fixtures/short'?'reference-short':path==='artifacts/playground'?'playground':path);
 for(const a of archives)await copy(a.path,basename(a.path));
 for(const r of reports)await write('evidence/'+r.name,r.bytes);
 for(const [path,name] of [['artifacts/short/contact-sheet.png','reference-poses.png'],['artifacts/ci-node.mp4','node.mp4'],['artifacts/ci-browser-mp4/chromium.mp4','browser.mp4'],...Array.from({length:3},(_,i)=>['artifacts/native-benchmark/run-'+(i+1)+'.json.webm','native-run-'+(i+1)+'.webm'])])await copy(path,'evidence/'+name);
