@@ -1,0 +1,19 @@
+{
+  "actionlint": {
+    "version": "1.7.12",
+    "binarySha256": "5b44c3bc2255115c9b69e30efc0fecdf498fdb63c5d58e17084fd5f16324c644",
+    "workflowSyntax": "PASS",
+    "shellcheck": "Not installed; shell syntax checked with bash -n"
+  },
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "5e593e40e7bc80674cb1c80d6746a80e63a87aea8a956ed18f65c9392a046552"
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "sha256": "2ccc393100a8247bf8aca8f28ecbd0e8698466c06132094c821fd4d4368c9e9b"
+    }
+  ],
+  "limits": "Executed local Actionlint audit; prepare-release checks current workflow hashes. Hosted execution is a separate gate."
+}

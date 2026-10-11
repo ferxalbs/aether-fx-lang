@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { platform, release } from 'node:os';
+import { platform, release, cpus, totalmem } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { build } from 'esbuild';
 import { chromium } from 'playwright';
@@ -10,7 +10,8 @@ import { compileSource } from '@aether-fx/compiler';
 import { startPreviewServer } from '../examples/browser/serve.mjs';
 import { measureBrowserBundles } from './verify-bundle-budgets.mjs';
 
-const out=resolve('artifacts/performance');await mkdir(out,{recursive:true});
+const out=resolve(process.argv[2]??'artifacts/performance');await mkdir(out,{recursive:true});
+await writeFile(resolve(out,'preview-report.json'),JSON.stringify({date:new Date().toISOString(),checks:{benchmarkCompletion:'NOT RUN'},reason:'Benchmark started; a previous report must not stand in for this run'},null,2)+'\n');
 const source=await readFile('fixtures/short/little-light.afx','utf8');
 const server=await startPreviewServer(),{plan,assets}=server.project;
 const percentile=(values,p)=>[...values].sort((a,b)=>a-b)[Math.max(0,Math.ceil(values.length*p)-1)];
@@ -18,7 +19,8 @@ const stats=values=>({samples:values.length,p50Ms:percentile(values,.5),p95Ms:pe
 const measure=(fn,warmup=10,count=100)=>{for(let i=0;i<warmup;i++)assert(fn().ok);const samples=[];for(let i=0;i<count;i++){const start=performance.now();assert(fn().ok);samples.push(performance.now()-start);}return stats(samples);};
 const nodeCompile={source:measure(()=>compileSource(source,assets.manifest)),canonical:measure(()=>compile(plan.document,assets.manifest))};
 const sysctl=name=>{const r=spawnSync('sysctl',['-n',name],{encoding:'utf8'});return r.status===0?r.stdout.trim():null;};
-const host={os:platform(),release:release(),node:process.version,model:sysctl('hw.model'),cpu:sysctl('machdep.cpu.brand_string'),physicalCores:sysctl('hw.physicalcpu'),logicalCores:sysctl('hw.logicalcpu'),ramBytes:sysctl('hw.memsize')};
+const mac=platform()==='darwin';
+const host={os:platform(),release:release(),node:process.version,model:mac?sysctl('hw.model'):await readFile('/sys/devices/virtual/dmi/id/product_name','utf8').then(s=>s.trim()).catch(()=>null),cpu:mac?sysctl('machdep.cpu.brand_string'):cpus()[0]?.model??null,physicalCores:mac?sysctl('hw.physicalcpu'):null,logicalCores:mac?sysctl('hw.logicalcpu'):cpus().length,ramBytes:mac?sysctl('hw.memsize'):totalmem()};
 const bundles=await measureBrowserBundles();
 const auxiliary=await build({stdin:{contents:"export {compileSource} from '@aether-fx/compiler';export {createPlayer} from '@aether-fx/canvas';",resolveDir:process.cwd(),sourcefile:'benchmark.js'},bundle:true,format:'esm',platform:'browser',target:'es2022',write:false});
 let browser,memoryTimer,deadline;
@@ -45,6 +47,12 @@ try {
     const nativeRAF=window.requestAnimationFrame,clear=CanvasRenderingContext2D.prototype.clearRect,restore=CanvasRenderingContext2D.prototype.restore;
     window.previewBenchmark={firstFrame:null,firstStart:null,restores:0,phase:null,frames:[],raf:[],lastRaf:null,visibility:[]};
     const audit=window.previewBenchmark;
+    const NativeAudioContext=window.AudioContext;window.previewAudioContexts=[];audit.audioStates=[];audit.audioOperations=[];audit.clockSamples=[];audit.controls=[];
+    window.AudioContext=class extends NativeAudioContext {
+      constructor(...args){super(...args);window.previewAudioContexts.push(this);this.addEventListener('statechange',()=>audit.audioStates.push({time:performance.now(),state:this.state,currentTime:this.currentTime}));}
+      resume(...args){audit.audioOperations.push({operation:'resume',event:'start',time:performance.now(),state:this.state});return super.resume(...args).then(value=>{audit.audioOperations.push({operation:'resume',event:'resolved',time:performance.now(),state:this.state});return value;});}
+    };
+    for(const type of ['click','input','change'])document.addEventListener(type,event=>{if(event.target?.closest('nav'))audit.controls.push({type,target:event.target.id,time:performance.now(),value:event.target.value,trusted:event.isTrusted});});
     CanvasRenderingContext2D.prototype.clearRect=function(...args){if(audit.firstStart===null)audit.firstStart=performance.now();return clear.apply(this,args);};
     CanvasRenderingContext2D.prototype.restore=function(...args){const result=restore.apply(this,args);if(audit.firstStart!==null&&audit.firstFrame===null&&++audit.restores===commands)audit.firstFrame=performance.now()-audit.firstStart;return result;};
     document.addEventListener('visibilitychange',()=>audit.visibility.push({state:document.visibilityState,time:performance.now()}));
@@ -55,7 +63,8 @@ try {
       if(watch){
         if(time!==audit.lastRaf){audit.raf.push({phase:audit.phase,time});audit.lastRaf=time;}
         const after=player.getStats().renderedFrames;
-        if(after>before)audit.frames.push({phase:audit.phase,time,elapsed,frame:player.getCurrentFrame()});
+        if(after>before)audit.frames.push({phase:audit.phase,time,elapsed,frame:player.getCurrentFrame(),audioTime:window.previewAudioContexts[0]?.currentTime??null});
+        const last=audit.clockSamples.at(-1);if(!last||start-last.wallTime>=100){const context=window.previewAudioContexts[0];audit.clockSamples.push({phase:audit.phase,wallTime:start,rafTime:time,frame:player.getCurrentFrame(),draws:after,audioTime:context?.currentTime??null,audioState:context?.state??null,visibility:document.visibilityState});}
       }
     });
   },{commands:evaluate(plan,{frame:0}).commands.length});
@@ -90,7 +99,13 @@ try {
     const before=await page.evaluate(()=>preview.player.getStats()),start=performance.now();
     await page.getByRole('button',{name:'Play with sound'}).click();
     console.log(`Visible 720p playback ${pass+1}/3 started`);
-    await page.waitForFunction(()=>preview.player.getCurrentFrame()===479,{}, {timeout:30000});
+    try { await page.waitForFunction(()=>preview.player.getCurrentFrame()===479,{}, {timeout:30000}); }
+    catch(error){
+      const snapshot=await page.evaluate(()=>({audit:previewBenchmark,frame:preview.player.getCurrentFrame(),stats:preview.player.getStats(),visibility:document.visibilityState,status:document.querySelector('#status').textContent,audio:window.previewAudioContexts.map(context=>({state:context.state,currentTime:context.currentTime,sampleRate:context.sampleRate}))}));
+      await writeFile(resolve(out,'preview-raw.json'),JSON.stringify({timings,audit:snapshot.audit,memory,snapshot},null,2)+'\n');
+      await writeFile(resolve(out,'preview-report.json'),JSON.stringify({date:new Date().toISOString(),host,chromium:browserVersion,setup,plays,failedPhase:currentPhase,error:String(error),snapshot,checks:{benchmarkCompletion:'FAIL',frameP95:'NOT RUN',noDroppedFrames:'NOT RUN'},limitations:['Playback timed out; complete three-play timing statistics are unavailable']},null,2)+'\n');
+      throw error;
+    }
     await page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,120)));
     await page.getByRole('button',{name:'Pause',exact:true}).click();
     const after=await page.evaluate(()=>{previewBenchmark.phase=null;return preview.player.getStats();});

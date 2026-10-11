@@ -23,7 +23,9 @@
     "verify:react": "npm run check && node scripts/verify-react-next.mjs",
     "verify:web": "npm run check && node scripts/verify-web-export.mjs",
     "release:sync": "node scripts/sync-release.mjs --write",
-    "release:check": "node scripts/sync-release.mjs --check"
+    "release:check": "node scripts/sync-release.mjs --check",
+    "lint": "node scripts/lint.mjs",
+    "verify:ci": "node scripts/verify-ci.mjs"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
