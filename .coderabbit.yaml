@@ -1,0 +1,112 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# https://docs.coderabbit.ai/getting-started/yaml-configuration
+language: en-US
+tone_instructions: Be direct and specific. Cite the invariant that a change can break. Skip style nits that the repository linter does not enforce.
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - files: docs/architecture.md
+        applyTo: packages/**/*,tests/**/*,scripts/**/*
+      - files: docs/language-v0.md
+        applyTo: packages/compiler/**/*,packages/core/**/*,fixtures/**/*
+      - files: docs/react-next.md
+        applyTo: packages/react/**/*,examples/next-app/**/*
+      - files: docs/node-export.md
+        applyTo: packages/node/**/*,packages/cli/**/*
+      - files: docs/browser-export.md
+        applyTo: packages/export/**/*,packages/canvas/**/*
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  high_level_summary_instructions: Summarize behavior changes, new diagnostics, and which acceptance command would catch a regression. Do not restate unchanged package layout.
+  poem: false
+  in_progress_fortune: false
+  review_status: true
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: true
+    ignore_title_keywords:
+      - WIP
+      - "[skip review]"
+    base_branches:
+      - main
+  pre_merge_checks:
+    docstrings:
+      mode: "off"
+    title:
+      mode: warning
+      requirements: State the user-visible or semantic change. Keep it under 72 characters.
+    description:
+      mode: warning
+  finishing_touches:
+    docstrings:
+      enabled: false
+  path_filters:
+    - "!artifacts/**"
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    - "!**/.next/**"
+    - "!**/coverage/**"
+    - "!package-lock.json"
+    - "!**/*.tgz"
+    - "!**/*.{png,jpg,jpeg,webp,gif,webm,wav,mp4,mp3}"
+  instructions: |
+    AETHER Fx is an experimental typed 2D animation language with a universal TypeScript runtime. Packages are ESM-only and live under packages/. Public names are @aether-fx/*. Engines require Node >=22.12.0. Dependencies are pinned exactly; identity comes from release.config.json and scripts/sync-release.mjs.
+    Review for semantic regressions, resource leaks, and contract drift. The repository linter only checks syntax and JSON, so do not request an ESLint, Biome, or Oxlint setup.
+  path_instructions:
+    - path: packages/core/**/*
+      instructions: |
+        Core must not import the DOM, filesystem, networking, or the parser. Results stay `{ ok: true, value } | { ok: false, diagnostics }`. External JSON is never coerced and never receives inserted defaults. schemaVersion stays 1. Plans are copied and frozen. Failed patches must not mutate the caller document.
+    - path: packages/compiler/**/*
+      instructions: |
+        Chevrotain parses syntax; normalization rejects unknown declarations and properties. Source diagnostics use zero-based half-open UTF-16 offsets plus one-based line and column. Do not add a JavaScript expression grammar. DSL defaults belong in normalization, not in external JSON validation.
+    - path: packages/{canvas,export}/**/*
+      instructions: |
+        Browser export must query real VP9/Opus configurations and return EXPORT_UNSUPPORTED when they are missing. Do not add a MediaRecorder fallback. Cancellation must close native encoders. Draw lists own their geometry.
+    - path: packages/{node,cli}/**/*
+      instructions: |
+        Node export must deny external requests, serve only an allowlisted local resource set, and invoke FFmpeg with separate arguments. Doctor, check, compile, and render stay deterministic. Paths may contain spaces.
+    - path: packages/react/**/*
+      instructions: |
+        The packaged player must keep its client directive. One player and resource session per plan and resolver identity, created in an effect. Server-to-client data must stay serializable. Verify cleanup across StrictMode replay and navigation.
+    - path: "**/*.{test,spec}.ts"
+      instructions: |
+        Tests use Vitest. Prefer deterministic frame, diagnostic, and pixel assertions over snapshots of generated media. A curve fixture is a semantic regression, not visual acceptance evidence.
+    - path: .github/workflows/**/*
+      instructions: |
+        Keep actions pinned by commit SHA with a version comment. CI must stay read-only on contents. Do not weaken the Node 24.21 and 22.12 matrix or skip ffmpeg, Playwright, or verify:ci.
+    - path: "{package.json,packages/*/package.json,release.config.json,bundle-budgets.json}"
+      instructions: |
+        Preserve exact dependency pins, the Apache-2.0 license, and synchronized package names and versions. Flag scope or version edits that bypass release.config.json and scripts/sync-release.mjs.
+  tools:
+    eslint:
+      enabled: false
+    biome:
+      enabled: false
+    oxc:
+      enabled: false
+    markdownlint:
+      enabled: false
+    languagetool:
+      enabled: false
+    vale:
+      enabled: false
+    shellcheck:
+      enabled: true
+    actionlint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    osvScanner:
+      enabled: true
+    ast-grep:
+      enabled: true
+chat:
+  auto_reply: true
+  art: true
