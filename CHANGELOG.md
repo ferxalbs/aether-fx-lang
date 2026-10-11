@@ -4,7 +4,9 @@
 
 Avoid single-use runtime schema aliases by counting children of shared subtrees once during build. Public schema, APIs and diagnostics are unchanged. Core and Export each save 13 gzip bytes; Compiler saves 15. Their original size gates remain failed. The native export profiler records the actual FFmpeg command and offers explicit verbose filter diagnostics without changing production encoding. RC.3 remains intact; no new candidate or encoding policy change is delivered.
 
-CI preparation adds runner-only libx264/AAC provisioning with an encode probe, reproducible native benchmark inputs and separate validation/assembly jobs. A v0.2 bundle-budget proposal remains unapplied; original failures and immutable RC.3 artifacts are retained. Linux execution is pending.
+CI preparation adds runner-only libx264/AAC provisioning with an encode probe, reproducible native benchmark inputs and separate validation/assembly jobs. A v0.2 bundle-budget proposal remains unapplied; original failures and immutable RC.3 artifacts are retained. The first Linux execution failed; its results remain preserved.
+
+Next acceptance replaces the fixed Play delay with instrumented frame advancement and a bounded timeout, retains Pause stability and pending-Play cancellation checks, and writes diagnostics on failure. Opus capability/export guards reject insufficient decoded coverage after pre-skip instead of accepting truncated audio. Release verification consumes structured Vitest JSON and process results. Assembly distinguishes missing/failed evidence, blocks failed acceptance and uploads diagnostics even without a candidate. Caps, codecs, quality, native rendering and immutable RC.3 archives are unchanged; corrected Linux execution remains pending.
 
 ## 0.2.0-rc.3 — size and export optimization, unapproved
 

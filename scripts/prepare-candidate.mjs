@@ -8,8 +8,19 @@ import {readReleaseConfig} from './release-config.mjs';
 import {verificationSource,sha256,builtRuntimeArtifacts} from './verification-source.mjs';
 const outputIndex=process.argv.indexOf('--out');
 assert(process.argv.length===2||(process.argv.length===4&&outputIndex===2&&process.argv[3]),'Usage: node scripts/prepare-candidate.mjs [--out fresh-directory]');
-const release=await readReleaseConfig(),out=outputIndex<0?`artifacts/release-v${release.version}`:process.argv[outputIndex+1],archives=await loadReleaseArchives('artifacts/metadata-packages');
-const acceptance=JSON.parse(await readFile('artifacts/ci/acceptance-report.json')),source=await verificationSource();
+const diagnosticPath='artifacts/assembly/diagnostic.json';
+const diagnostic={status:'RUNNING',complete:false,candidateCreated:false,blockers:[],reports:[],node:process.version,platform:process.platform};
+try{
+const release=await readReleaseConfig(),out=outputIndex<0?`artifacts/release-v${release.version}`:process.argv[outputIndex+1];diagnostic.requestedOutput=out;
+const loaded=new Map();
+for(const path of ['artifacts/ci/acceptance-report.json','artifacts/ci-node/report.json','artifacts/ci-next/react-next-report.json','artifacts/ci-web/report.json','.work/aether-fx/quickstart/report.json']){
+ try{const bytes=await readFile(path),report=JSON.parse(bytes);loaded.set(path,report);diagnostic.reports.push({path,sha256:sha256(bytes),status:report.status??(report.complete===false?'FAIL':'LEGACY')});if(report.status==='FAIL'||report.complete===false)diagnostic.blockers.push({code:path==='artifacts/ci/acceptance-report.json'?'ACCEPTANCE_FAILED':'REPORT_FAILED',path,failedGates:report.results?.filter(r=>r.status==='FAIL')});}
+ catch(error){diagnostic.blockers.push({code:error.code==='ENOENT'?'REPORT_MISSING':'REPORT_INVALID',path,error:String(error)});}
+}
+const acceptance=loaded.get('artifacts/ci/acceptance-report.json');
+if(acceptance&&(acceptance.complete!==true||acceptance.ranAll!==true||!Array.isArray(acceptance.results)||!acceptance.results.length||acceptance.results.some(r=>r.status!=='PASS'))&&!diagnostic.blockers.some(b=>b.code==='ACCEPTANCE_FAILED'))diagnostic.blockers.push({code:'ACCEPTANCE_FAILED',path:'artifacts/ci/acceptance-report.json',failedGates:acceptance.results?.filter(r=>r.status!=='PASS')});
+assert.equal(diagnostic.blockers.length,0,'Assembly blocked; see '+diagnosticPath);
+const archives=await loadReleaseArchives('artifacts/metadata-packages'),source=await verificationSource();
 assert.equal(source.treeSha256,acceptance.source.treeSha256,'Verification source changed after acceptance');
 for(const path of ['artifacts/ci-node/report.json','artifacts/ci-next/react-next-report.json','artifacts/ci-web/report.json','.work/aether-fx/quickstart/report.json']){
  const r=JSON.parse(await readFile(path));assert.equal(r.tarballs.length,7);for(const a of archives)assert.equal(r.tarballs.find(t=>t.name===a.name)?.sha256,a.sha256,'Consumer archive mismatch: '+path);
@@ -41,3 +52,7 @@ const manifest={schemaVersion:1,...release,snapshotKind:outputIndex<0?'release-c
 await write('manifest.json',Buffer.from(JSON.stringify(manifest,null,2)+'\n'));
 await writeFile(join(out,'SHA256SUMS'),files.sort((a,b)=>a.file.localeCompare(b.file)).map(f=>`${f.sha256}  ${f.file}`).join('\n')+'\n');
 console.log(JSON.stringify({out,archives:7,files:files.length,technicalApproved:false},null,2));
+
+diagnostic.status='PASS';diagnostic.complete=true;diagnostic.candidateCreated=true;
+}catch(error){diagnostic.status='FAIL';diagnostic.error={name:error.name,message:error.message,stack:error.stack};throw error;}
+finally{await mkdir('artifacts/assembly',{recursive:true});await writeFile(diagnosticPath,JSON.stringify(diagnostic,null,2)+'\n');}

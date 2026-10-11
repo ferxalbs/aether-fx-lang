@@ -7,16 +7,16 @@
     "workflowSyntax": "PASS",
     "shellcheck": "Shell blocks checked with bash -n"
   },
-  "bashBlocks": 1,
+  "bashBlocks": 2,
   "files": [
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "1f70b22fce76e492e9295fa0194d8aa1dfb0bd8e590b86ecfeee64a7f6be5205"
+      "sha256": "b9e4c5cfbaad96fee91e113db274992eaea99ea068d07b8fd196c7ca91ee004a"
     },
     {
       "path": ".github/workflows/release.yml",
       "sha256": "09dac3d5ce7b74ed68e6f1f86b0fc2a66720b4a049bd2a759d8d0f05d16f18e5"
     }
   ],
-  "limits": "actionlint syntax and bash -n only; updated Linux workflow not executed. Historical hosted failures remain separate."
+  "limits": "actionlint syntax and bash -n only for the current workflow changes; not dispatched or pushed. Hosted run 38168445048 verifies the earlier fbe8745 source and retains its failures."
 }
