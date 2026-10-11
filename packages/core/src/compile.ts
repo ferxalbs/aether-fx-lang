@@ -13,21 +13,21 @@ export function compile(document: unknown, manifest: unknown = [], options: Part
   const d = structuredClone(document as FxDocument), m = structuredClone(manifest as AssetManifest);
   const shots: PlaybackPlan['shots'] = [];
   let snapshot = initialSnapshot(d), start = 0;
-  for (const shot of d.shots) {
+  for (const [shotIndex,shot] of d.shots.entries()) {
     snapshot = shotSnapshot(snapshot, shot);
-    for (const key of shot.keys) if (snapshot.values[key.target]![key.property] === undefined && key.frame !== 0) {
-      diagnostics.push(diagnostic('INITIAL_MISSING', 'Property needs an initial value before its first key', { id: key.id }));
+    for (const [keyIndex,key] of shot.keys.entries()) if (snapshot.values[key.target]![key.property] === undefined && key.frame !== 0) {
+      diagnostics.push(diagnostic('INITIAL_MISSING', 'Property needs an initial value before its first key', { id: key.id, path: `/shots/${shotIndex}/keys/${keyIndex}`, frame:key.frame }));
     }
     // Parent/visibility are discrete; validating every change boundary covers the entire shot.
     const frames = new Set([0, ...shot.keys.filter(k => k.property === 'parent').map(k => k.frame)]);
     for (const frame of frames) {
       const state = evaluateState(d, shot, snapshot, frame);
-      if (!actorParentsValid(d, state, options.depth ?? DEFAULT_LIMITS.depth)) diagnostics.push(diagnostic('HIERARCHY_CYCLE', 'Actor parenting creates a cycle or exceeds depth', { id: shot.id, frame }));
+      if (!actorParentsValid(d, state, options.depth ?? DEFAULT_LIMITS.depth)) diagnostics.push(diagnostic('HIERARCHY_CYCLE', 'Actor parenting creates a cycle or exceeds depth', { id: shot.id, path:`/shots/${shotIndex}`, frame }));
     }
     const cameraFrames = new Set([0, ...shot.keys.filter(k => k.target === 'camera' && (k.property === 'scaleX' || k.property === 'scaleY')).map(k => k.frame)]);
     for (const frame of cameraFrames) {
       const state = evaluateState(d, shot, snapshot, frame);
-      if ((state.values['camera']!.scaleX as number) <= 0 || (state.values['camera']!.scaleY as number) <= 0) diagnostics.push(diagnostic('CAMERA_SCALE', 'Camera scales must be positive', { id: shot.id, frame }));
+      if ((state.values['camera']!.scaleX as number) <= 0 || (state.values['camera']!.scaleY as number) <= 0) diagnostics.push(diagnostic('CAMERA_SCALE', 'Camera scales must be positive', { id: shot.id, path:`/shots/${shotIndex}`, frame }));
     }
     shots.push({ start, shot, snapshot: structuredClone(snapshot) });
     // Boundary time is duration, so a morph ending at the boundary reaches its destination.

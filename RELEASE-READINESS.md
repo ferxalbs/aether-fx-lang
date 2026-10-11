@@ -23,9 +23,9 @@ Reviewed 2026-10-10. The goal remains active. No public registry publication has
 | Command | Result | Scope and limits |
 | --- | --- | --- |
 | `npm ci` | PASS, initial foundation | Clean local dependency reinstall; later Node dependency additions are in the lockfile |
-| `npm run check` | PASS | Seven-package build, strict typecheck, 102 tests |
+| `npm run check` | PASS | Seven-package build, strict typecheck, 108 tests |
 | `node scripts/verify-foundation.mjs` | PASS | Three foundation tarballs, isolated imports/types/browser bundle, all 480 Node/Chromium states, pixel/seek/DPR/50-cycle RAF disposal checks |
-| `npm exec --yes --package=node@22.12.0 -- node node_modules/vitest/vitest.mjs run` | PASS | 102 tests on the declared Node floor |
+| `npm exec --yes --package=node@22.12.0 -- node node_modules/vitest/vitest.mjs run` | PASS | 108 tests on the declared Node floor |
 | `node scripts/verify-resources.mjs` | PASS | Real image/font/WAV decoding, no AudioContext before gesture, pause/seek/rate, suspension, disposal, integrity failure and partial cancellation cleanup |
 | `node scripts/inspect-short.mjs` | PASS | Eight illustrated references plus a six-frame earlier expression patch: six before/after real Chromium images, exact outside-interval pixels and intermediate changes confined to the mouth region |
 | `node examples/node/export.mjs fixtures/short/little-light.afx artifacts/short/little-light-720.webm` | PASS | Real 480-frame 720p WebM; 15.103 s observed, export factor 0.755 |
@@ -41,7 +41,10 @@ Reviewed 2026-10-10. The goal remains active. No public registry publication has
 | `node scripts/verify-web-export.mjs` | PASS | Four isolated tarballs, all 480 shuffled numeric states in three engines, real preview/audio/seek, native VP9/Opus progressive exports, queue/resource audits, pre-abort/cancel/write-failure cleanup and demo download |
 | `npm run verify:web` | PASS, browser milestone | Seven-package build/types/40 tests at that milestone, full isolated browser matrix and automatic decoding of all five successful outputs; exact frames/timestamps/flashes, audio sync, pre-skip/tail and zero decode errors |
 | `node scripts/verify-foundation.mjs artifacts/corpus-packages` | PASS | Current core/compiler/canvas tarballs with source-location fixes and Apache metadata: isolated imports/types/browser bundle, all 480 frame states, pixels/seek/DPR/cleanup |
-| `node scripts/verify-package-metadata.mjs` | PASS | Seven real tarballs include identical Apache LICENSE and supplied NOTICE, actual remote/directory metadata, valid exports/protocols, SHA-256 sums, and unchanged Nunito license |
+| `node scripts/verify-package-metadata.mjs`, earlier metadata milestone | PASS, historical | Seven real tarballs include identical Apache LICENSE and the previously supplied full NOTICE, actual remote/directory metadata, valid exports/protocols, SHA-256 sums, and unchanged Nunito license |
+| `node scripts/verify-package-metadata.mjs`, current checkout | FAIL | NOTICE changed during the semantic audit to remove the Enosis Labs wording; the exact-owner assertion fails. Edits are preserved and attribution clarification is pending |
+| `node scripts/verify-foundation.mjs artifacts/semantic-packages` | PASS | Current semantic-path fixes in three isolated tarballs; all 480 states, crossing contours under both fill rules, evenodd/nonzero interior pixels, animated layer occlusion under direct/reverse seeks, and lifecycle checks |
+| `npm exec --yes --package=node@22.12.0 -- node scripts/verify-foundation.mjs artifacts/semantic-packages-node22` | PASS | Same eleven isolated foundation checks on Node 22.12; benchmark/memory and seven-package release remain separate |
 | `git diff --check` | PASS | Whitespace check; untracked additions are also inspected directly |
 
 Reference host: Node 24.21.0, npm 11.19.0, Playwright 1.64.0 / Chromium 156.0.8078.4, FFmpeg 8.0.1, macOS 15.7.7 x86_64. React/Next integration also passes on Node 22.12.0. These are local observations, not completed CI or platform-wide support claims. The prior three-package Node 22 tarball checks are preserved under `artifacts/foundation-node22`; those precede the latest audio-clock change.
@@ -56,8 +59,8 @@ Evidence: `artifacts/corpus-packages` contains the current three-package isolate
 
 | Gate | Status | Work remaining |
 | --- | --- | --- |
-| Complete parser/error corpus | PARTIAL | All 18 declarations have valid roundtrip and invalid-property/truncation cases; EOF/unit/schema-field range fixes pass exact tests. Semantic diagnostic ownership remains open: reusing an ID across collections can highlight the wrong declaration. Geometry coverage remains under audit |
-| Complete geometry and patch corpus | PARTIAL | Illustrated six-frame patch passes all-frame locality and real pixel checks; contour/segment order, closure and count mismatches reject remapping. Crossings/occlusion visual regression corpus remains pending |
+| Complete parser/error corpus | PASS, local reference | All 18 declarations have valid roundtrip and invalid-property/truncation cases; EOF/unit/schema-field range fixes pass exact tests. Semantic paths distinguish collections/shots and repeated nested IDs; host manifests retain separate paths without invented source ranges |
+| Complete geometry and patch corpus | PASS, local reference | Illustrated six-frame patch passes all-frame locality and real pixel checks; contour/segment order, closure and count mismatches reject remapping. Real Chromium crossing contours, both fill rules, holes and animated layer occlusion under direct/reverse seeks pass isolated tarball checks on Node 24 and 22 |
 | Illustrated acceptance short | PASS, local reference | Required character/poses/drawings/backgrounds/contact/text/real assets and exact shot lengths present; desktop frame 97 images and all 480 numeric states checked in Chromium/Firefox/WebKit; complete geometry corpus remains separate |
 | Audio/image/font lifecycle | PASS, local Chromium | Real resource/audio paths and fifty React StrictMode mount/play/dispose cycles pass; three-engine preview/audio/seek/asset disposal passes; exhaustive resource failure/StrictMode matrix was Chromium |
 | React / Next production consumers | PASS, local Chromium | Six-tarball production Next 16.4.0 / React 19.3.0 SSR/hydration/navigation/direct seek, plus separate development StrictMode proof |
@@ -66,14 +69,14 @@ Evidence: `artifacts/corpus-packages` contains the current three-package isolate
 | 720p/1080p WebM and synchronization | PASS, local reference | VP9/Opus, 480 decoded frames, 20-second content and audio alignment within one frame |
 | Firefox/WebKit / mobile | PARTIAL | Desktop Chromium/Firefox/WebKit preview and native export pass; physical mobile remains provisional |
 | Performance / memory | PARTIAL | Export times observed; complete frame/seek/compile p50/p95, visible preview and 20s/60s full pipeline bounded-memory measurements remain pending |
-| Seven-package distribution | PARTIAL | Six-package Next and four-package browser milestone consumers pass; seven licensed archives/metadata pass. Scope config and final seven-package consumers remain |
+| Seven-package distribution | PARTIAL | Six-package Next and four-package browser milestone consumers pass; seven licensed archives/metadata passed before the concurrent NOTICE edit. Current exact-notice check fails pending attribution clarification. Scope config and final seven-package consumers remain |
 | CI / release preparation | NOT RUN | Full acceptance workflows, pinned tools, release manifest/changelog/checklist and verified publish order |
-| Publication identity | BLOCKED EXTERNAL | License/notice confirmed and actual Git remote inspected. @aether-fx package names return 404, which does not prove scope availability/ownership; npm whoami returns ENEEDAUTH. Scope control and trusted publisher remain unverified |
+| Publication identity | PENDING OWNER / EXTERNAL | Apache-2.0 and actual Git remote confirmed. Concurrent edits shortened NOTICE to Copyright 2026  Fer's; intended final attribution needs clarification before rebuilding release archives. @aether-fx package names returned 404, which does not prove scope availability/ownership; npm whoami returned ENEEDAUTH. Scope control and trusted publisher remain unverified |
 
 `ExportReport.peakRssBytes` measures only the Node coordinator; it excludes Chromium and FFmpeg and does not prove the memory gate. Physical audiovisual output latency, optional MP4 acceptance, physical mobile and final distribution are unverified. External publication prerequisites do not block the independent implementation work. Open mandatory gates prevent declaring v0 complete.
 
 ## Next execution sequence
 
-1. Attach canonical ownership paths to semantic diagnostics (a shared part/actor ID currently selects the wrong declaration), then finish crossings/occlusion visual regressions; preserve the verified source-range and illustrated patch gates.
-2. Measure visible performance and 20s/60s full pipeline memory; keep physical mobile provisional.
-3. Prepare and verify all seven final tarballs and CI/release artifacts; preserve external publication prerequisites without publishing.
+1. Measure visible performance and 20s/60s full pipeline memory; keep physical mobile provisional.
+2. Resolve the concurrent NOTICE edit against the owner's intended attribution, then prepare and verify all seven final tarballs and CI/release artifacts.
+3. Preserve external publication prerequisites without publishing.

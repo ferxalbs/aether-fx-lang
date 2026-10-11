@@ -6,7 +6,7 @@ import { parse } from './parser.js';
 const frameFields=new Set(['frame','duration','start','end','offset','trimStart','hold']);
 const badKeys=new Set(['__proto__','prototype','constructor']);
 /** Follow canonical collection/field names back through DSL normalization. */
-function schemaSourceRange(root:Declaration,path=''):SourceRange {
+function sourceRangeForPath(root:Declaration,path=''):SourceRange {
   const steps=path.split('/').slice(1);
   const collections:Record<string,string>={assets:'asset',shapes:'shape',parts:'part',poses:'pose',drawings:'drawing',actors:'actor',backgrounds:'background',contours:'contour',segments:'cubic',initial:'initial',keys:'key',morphs:'morph',exposures:'expose'};
   let node:Declaration|AstValue=root;
@@ -128,7 +128,7 @@ export function normalize(ast:DocumentAST):Result<FxDocument> {
   }
   if (errors.length) return failure(errors);
   const invalid=checkSchema(result,'document');
-  if (invalid.length) return failure(invalid.map(e=>({...e,range:schemaSourceRange(root,e.code==='SCHEMA_VERSION'?'/schemaVersion':e.path)})));
+  if (invalid.length) return failure(invalid.map(e=>({...e,range:sourceRangeForPath(root,e.code==='SCHEMA_VERSION'?'/schemaVersion':e.path)})));
   return success(result as unknown as FxDocument);
 }
 export function compileSource(source:string,manifest:AssetManifest=[],options:Partial<Limits>={}):Result<PlaybackPlan> {
@@ -136,9 +136,7 @@ export function compileSource(source:string,manifest:AssetManifest=[],options:Pa
   const document=normalize(ast.value);if (!document.ok) return document;
   const plan=compile(document.value,manifest,options);
   if (!plan.ok) {
-    const declarations:Declaration[]=[];
-    const visit=(d:Declaration)=>{declarations.push(d);d.children.forEach(visit);};visit(ast.value.project);
-    return failure(plan.diagnostics.map(e=>({...e,range:declarations.find(d=>d.id===e.id)?.range??ast.value.project.range})));
+    return failure(plan.diagnostics.map(e=>e.path==='/manifest'||e.path?.startsWith('/manifest/')?e:{...e,range:sourceRangeForPath(ast.value.project,e.path)}));
   }
   return plan;
 }

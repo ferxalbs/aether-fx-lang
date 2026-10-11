@@ -167,6 +167,41 @@ describe('source diagnostics',()=>{
     const missing=corpus.replace('size: 24;',''),parsed=unwrap(parse(missing)),label=parsed.project.children.find(d=>d.keyword==='part'&&d.id==='label')!,text=label.fields.find(f=>f.name==='text')!;
     const invalid=compileSource(missing,shortManifest);expect(invalid.ok).toBe(false);if(!invalid.ok)expect(invalid.diagnostics.find(d=>d.path==='/parts/1/text/size')?.range).toEqual(text.value.range);
   });
+  it('locates references by collection ownership when actor and part IDs match',()=>{
+    const valid=corpus.replaceAll('@hero','@mouth').replace('actor hero {','actor mouth {').replace('initial hero {','initial mouth {');
+    expect(compileSource(valid,shortManifest).ok).toBe(true);
+    const input=valid.replace('actor mouth { parts: [@mouth, @label]','actor mouth { parts: [@absent, @label]'),start=input.indexOf('@absent');
+    expect(compileSource(input,shortManifest)).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({code:'REFERENCE_MISSING',id:'mouth',path:'/actors/0/parts/0',range:location(input,start,start+7)})])});
+  });
+  it('locates a reused track ID in its own shot and retains its invalid frame',()=>{
+    const key='key turn0 { target: @hero; property: x; frame: 192f; value: 0; }';
+    const input=corpus.replace('shot second { duration: 192f;','shot second { duration: 192f; '+key),start=input.indexOf('192f',input.indexOf(key));
+    expect(compileSource(input,shortManifest)).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({code:'FRAME_RANGE',id:'turn0',path:'/shots/1/keys/0/frame',frame:192,range:location(input,start,start+4)})])});
+    expect(compileSource(input.replace(key,key.replace('192f','0f')),shortManifest).ok).toBe(true);
+  });
+  it('locates duplicate declarations at the second owner, including nested contours',()=>{
+    const part='part mouth { shape: @neutralShape; }',input=corpus.replace('part texture {',part+'\n  part texture {'),start=input.indexOf(part);
+    expect(compileSource(input,shortManifest)).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({code:'DUPLICATE_ID',id:'mouth',path:'/parts/2/id',range:location(input,start,start+part.length)})])});
+    const parsed=unwrap(parse(corpus)),shape=parsed.project.children.find(d=>d.id==='smileShape')!;shape.children.push(structuredClone(shape.children[0]!));
+    const nested=print(parsed),owners=unwrap(parse(nested)).project.children.find(d=>d.id==='smileShape')!.children;
+    expect(compileSource(nested,shortManifest)).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({code:'DUPLICATE_ID',id:'outline',path:'/shapes/1/contours/1/id',range:owners[1]!.range})])});
+  });
+  it('maps initial property errors through their shot and retains exposure intervals',()=>{
+    const input=corpus.replace('initial object { parent: null; }','initial object { x: true; }'),start=input.indexOf('true',input.indexOf('shot second'));
+    expect(compileSource(input,shortManifest)).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({code:'PROPERTY_TYPE',id:'second',path:'/shots/1/initial/0/values/x',range:location(input,start,start+4)})])});
+    const interval=corpus.replace('end: 74f','end: 145f'),expose=unwrap(parse(interval)).project.children.find(d=>d.keyword==='scene')!.children[0]!.children.find(d=>d.keyword==='expose')!;
+    expect(compileSource(interval,shortManifest)).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({code:'FRAME_RANGE',id:'blinkOnce',path:'/shots/0/exposures/0',interval:[72,145],range:expose.range})])});
+  });
+  it('locates compile-time camera errors in their shot even when a shape has that ID',()=>{
+    const input=corpus.replaceAll('neutralShape','second').replace('shot second { duration: 192f;','shot second { duration: 192f; camera close { scaleX: 0; }');
+    const shot=unwrap(parse(input)).project.children.filter(d=>d.keyword==='scene')[1]!.children[0]!;
+    expect(compileSource(input,shortManifest)).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({code:'CAMERA_SCALE',id:'second',path:'/shots/1',frame:0,range:shot.range})])});
+  });
+  it('keeps host manifest paths distinct without inventing a source location',()=>{
+    const manifest=structuredClone(shortManifest);manifest[0].hash='invalid';
+    const result=compileSource(corpus,manifest);expect(result.ok).toBe(false);
+    if(!result.ok){expect(result.diagnostics[0]!.path).toBe('/manifest/0/hash');expect(result.diagnostics[0]!.range).toBeUndefined();}
+  });
   it('treats JavaScript text as data and never executes invalid programs',()=>{
     const name='__aetherFxExecutionProbe',original=Object.getOwnPropertyDescriptor(globalThis,name);let executions=0;
     Object.defineProperty(globalThis,name,{configurable:true,set(){executions++;}});
