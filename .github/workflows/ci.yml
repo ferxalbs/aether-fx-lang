@@ -28,6 +28,8 @@ jobs:
       - run: npx --no-install playwright install --with-deps chromium firefox webkit
       - run: bash scripts/ci-install-ffmpeg.sh
       - name: Diagnose Firefox clock and configure runner audio
+        id: preflight
+        continue-on-error: true
         run: |
           npm run build
           node scripts/verify-package-metadata.mjs
@@ -62,7 +64,7 @@ jobs:
         if: ${{ always() && steps.acceptance.outcome != 'skipped' }}
         run: node scripts/benchmark-native-candidate.mjs artifacts/native-benchmark
       - name: Preserve complete acceptance outcome
-        if: ${{ always() && steps.acceptance.outcome == 'failure' }}
+        if: ${{ always() && (steps.acceptance.outcome == 'failure' || steps.preflight.outcome == 'failure') }}
         run: exit 1
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: ${{ always() }}
