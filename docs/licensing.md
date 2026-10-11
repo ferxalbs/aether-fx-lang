@@ -2,7 +2,7 @@
 
 Original AETHER Fx code, documentation and original fixture assets use Apache-2.0, as explicitly authorized by the owner on 2026-10-10. The complete official Apache License is preserved in LICENSE. NOTICE records the supplied attribution verbatim:
 
-> Copyright 2026  Fer's under licence exclusive Enosis Labs, Inc.
+> Copyright 2026  Fer's
 
 The build copies the same LICENSE and NOTICE into all seven packages, and each package includes them in its npm file allowlist. This choice replaces the initial provisional ISC declaration for original work. It does not relicense third-party dependencies, fonts or external binaries.
 
