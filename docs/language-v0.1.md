@@ -118,14 +118,33 @@ Lengths are positive project units. The upper shoulder comes from its part place
 
 The editable [short](../fixtures/short/little-light-authored.afx) imports visible art, rig, lamp recipes, motion and sequence modules. Its [dimensional variation](../fixtures/short/little-light-varied.afx) changes table placement and lamp scale using the same modules and goal poses. The [assembly](../fixtures/short/little-light-assembly.afx) reuses the turned-piece component and the excursion clip for separation, a held exploded pose and exact return; that same clip animates the short's curious gaze. Both short entries reuse the pose/drawing grip clip. The historical [short](../fixtures/short/little-light.afx) and [guide carriage](../fixtures/assembly/guide-carriage.afx) remain supported.
 
+The rig also reuses the existing component expansion inside poses. Its `reachArm` component owns the chain, lengths, grip and elbow choice once. Each pose instantiates that recipe with only its goal/offset and hand angle:
+
+```afx
+pose near {
+  parts: { torsoRig: { transform: { rotation: 2.5deg; }; };
+           headRig: { transform: { rotation: 3deg; }; };
+           mouth: { shape: @mouthNeutral; }; };
+  instance goal {
+    component: @reachArm;
+    args: { offset: (-6, 0); };
+  }
+}
+```
+
+See the executable [rig module](../fixtures/short/little-light/rig.afx) for the recipe and its nine callers. Pose, actor and track IDs remain unchanged by this refactoring. Shared material objects use theme references. Rectangles, ellipses and polygons describe static manufactured silhouettes; organic nodes remain for the character and hand drawings. This uses existing syntax and introduces no expression evaluator. Identified entry-file lexing, parsing and nesting-limit diagnostics retain `range.source`, just as imported source diagnostics do.
+
 ```sh
 npm run check
 node examples/browser/serve.mjs fixtures/short/little-light-authored.afx
 node scripts/verify-authored-short.mjs
 # A fresh directory may be supplied; the verifier rejects existing movies/PNGs.
+node scripts/verify-authored-short.mjs /tmp/afx-short-review authored varied
 ```
 
 The verifier checks every frame in linear, reverse and shuffled order, planted feet and grip alignment, bind/support/lift and shot continuity, Chromium/Skia parity at all declared critical frames, and exports/decode of all three examples. Its PNG sheets require visual review; numeric parity does not qualify artistic quality. Timings distinguish preloaded text compilation, pure evaluation and full export. The default evidence directory is outside the checkout; the final reviewed history images are versioned separately.
+
+Optional names after the output directory select only the examples affected by an edit. Source metrics include all loaded modules and recipes, including unused definitions in those files. Seeking comparisons retain SHA-256 fingerprints of complete serialized DrawLists rather than retaining all frames' geometry; critical cross-engine comparisons still compare complete states with the existing roundoff tolerance.
 
 ## Public projected solids, editable curves and contact
 

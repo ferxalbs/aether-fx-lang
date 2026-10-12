@@ -1,25 +1,38 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { compileSource } from '@aether-fx/compiler';
+import { createHash } from 'node:crypto';
+import { createCanvas, GlobalFonts, loadImage } from '@napi-rs/canvas';
+import { compileSource, parse } from '@aether-fx/compiler';
 import { evaluate, matrixPoint } from '@aether-fx/core';
 import { loadProject, createNativeRenderer, createOfflineRenderer, exportVideo } from '@aether-fx/node';
 
 const output = process.argv[2] ?? await mkdtemp(join(tmpdir(), 'aether-authoring-'));
 await mkdir(output, { recursive: true });
-const names = ['authored', 'varied', 'assembly'];
+const available = ['authored', 'varied', 'assembly'];
+const names = process.argv.length > 3 ? process.argv.slice(3) : available;
+assert(names.every(name => available.includes(name)), 'Unknown example');
 const results = [];
 const between = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
-const critical = [...new Set([0, 143, 144, 156, 174, 184, ...between(190, 222), 240, 274, 298, ...between(330, 340), 384, 479])].sort((a, b) => a - b);
+const critical = [...new Set([0, ...between(140, 148), 156, 174, 184, ...between(190, 222), 240, 274, 298, ...between(330, 340), 384, 479])].sort((a, b) => a - b);
 const command = (list, id) => list.commands.find(c => c.id === id);
 const close = (a, b, tolerance = 1e-8) => a.forEach((n, i) => assert(Math.abs(n - b[i]) <= tolerance));
+const labelBytes = await readFile(new URL('../fixtures/short/assets/Nunito.ttf', import.meta.url));
 for (const name of names) {
   const loaded = await loadProject(`fixtures/short/little-light-${name}.afx`);
   assert(loaded.ok, JSON.stringify(loaded.diagnostics));
   const project = loaded.value, { plan, assets, sources } = project;
+  const sourceCounts = {};
+  for (const text of sources.values()) {
+    const ast = parse(text); assert(ast.ok);
+    const count = declaration => {
+      sourceCounts[declaration.keyword] = (sourceCounts[declaration.keyword] ?? 0) + 1;
+      declaration.children.forEach(count);
+    };
+    count(ast.value.project);
+  }
   // Benchmark compiler text and evaluation independently; module IO is preloaded.
   const entry = [...sources.keys()][0], source = sources.get(entry);
   const options = { sourceId: entry, resolveModule: (specifier, importer) => {
@@ -37,12 +50,14 @@ for (const name of names) {
     for (let frame = 0; frame < plan.duration; frame++) evaluate(plan, { frame });
     if (i > 0) evaluateMs.push(performance.now() - start);
   }
-  const expected = Array.from({ length: plan.duration }, (_, frame) => evaluate(plan, { frame }));
+  // Retain only fingerprints, not a movie's worth of owned geometry.
+  const fingerprint = list => createHash('sha256').update(JSON.stringify(list)).digest('hex');
+  const expected = Array.from({ length: plan.duration }, (_, frame) => fingerprint(evaluate(plan, { frame })));
   for (let i = 0; i < plan.duration; i++) {
     const frame = i * 137 % plan.duration;
-    assert.deepEqual(evaluate(plan, { frame }), expected[frame]);
+    assert.equal(fingerprint(evaluate(plan, { frame })), expected[frame]);
   }
-  for (let frame = plan.duration - 1; frame >= 0; frame--) assert.deepEqual(evaluate(plan, { frame }), expected[frame]);
+  for (let frame = plan.duration - 1; frame >= 0; frame--) assert.equal(fingerprint(evaluate(plan, { frame })), expected[frame]);
   if (name !== 'assembly') {
     const world = structuredClone(plan);
     for (const item of world.shots) {
@@ -67,11 +82,13 @@ for (const name of names) {
   } else {
     for (const id of ['housing_piece', 'foot_piece', 'rim_piece']) {
       const target = plan.document.actors.find(a => a.id === id).parts[0];
-      close(command(expected[0], id + '.' + target).matrix, command(expected[143], id + '.' + target).matrix);
-      assert.notDeepEqual(command(expected[0], id + '.' + target).matrix, command(expected[60], id + '.' + target).matrix);
+      close(command(evaluate(plan, { frame: 0 }), id + '.' + target).matrix, command(evaluate(plan, { frame: 143 }), id + '.' + target).matrix);
+      assert.notDeepEqual(command(evaluate(plan, { frame: 0 }), id + '.' + target).matrix, command(evaluate(plan, { frame: 60 }), id + '.' + target).matrix);
     }
   }
   const native = await createNativeRenderer(plan, assets), browser = await createOfflineRenderer(plan, assets);
+  // Use an explicit font so disposing the preceding scene cannot invalidate a fallback.
+  const labelFont = GlobalFonts.register(labelBytes, 'verificationLabels'); assert(labelFont);
   const canvas = createCanvas(1280, 720), context = canvas.getContext('2d');
   const frames = name === 'assembly' ? [0, 11, 12, 24, 35, 36, 60, 84, 107, 108, 143] : critical;
   const sheet = createCanvas(7 * 256, Math.ceil(frames.length / 7) * 224), sheetContext = sheet.getContext('2d');
@@ -79,6 +96,7 @@ for (const name of names) {
   let maxMae = 0, maxDifferentRatio = 0, maxStateError = 0;
   try {
     for (const [index, frame] of frames.entries()) {
+      const draw = evaluate(plan, { frame });
       const png = await native.captureFrame(frame), reference = await browser.captureFrame(frame), state = await browser.evaluateFrame(frame);
       // Cross-engine trig is permitted only bounded roundoff; same-runtime seeks above stay exact.
       const compare = (a, b) => {
@@ -91,7 +109,7 @@ for (const name of names) {
           for (const key of Object.keys(a)) compare(a[key], b[key]);
         } else assert.equal(a, b);
       };
-      compare(state, expected[frame]);
+      compare(state, draw);
       context.clearRect(0, 0, 1280, 720); context.drawImage(await loadImage(reference), 0, 0);
       const a = native.pixels(), b = context.getImageData(0, 0, 1280, 720).data;
       let sum = 0, different = 0;
@@ -109,14 +127,14 @@ for (const name of names) {
       const image = await loadImage(png);
       if (name === 'assembly') sheetContext.drawImage(image, x, y, 256, 196);
       else {
-        const grip = matrixPoint(command(expected[frame], 'hero.hand').matrix, [18, -5]);
+        const grip = matrixPoint(command(draw, 'hero.hand').matrix, [18, -5]);
         sheetContext.drawImage(image, grip[0] - 100, grip[1] - 55, 200, 180, x, y, 256, 196);
       }
-      sheetContext.fillStyle = '#493c49'; sheetContext.font = '15px sans-serif';
-      sheetContext.fillText(`G${frame} / ${expected[frame].shot} L${frame - plan.shots.find(s => s.shot.id === expected[frame].shot).start}`, x + 8, y + 215);
+      sheetContext.fillStyle = '#493c49'; sheetContext.font = '15px "verificationLabels"';
+      sheetContext.fillText(`G${frame} / ${draw.shot} L${frame - plan.shots.find(s => s.shot.id === draw.shot).start}`, x + 8, y + 215);
     }
     await writeFile(`${output}/${name}-critical.png`, sheet.toBuffer('image/png'), { flag: 'wx' });
-  } finally { native.dispose(); await browser.dispose(); }
+  } finally { GlobalFonts.remove(labelFont); native.dispose(); await browser.dispose(); }
   const video = await exportVideo(project, { output: `${output}/${name}.${name === 'assembly' ? 'webm' : 'mp4'}`, format: name === 'assembly' ? 'webm' : 'mp4', backend: 'native' });
   const probe = spawnSync('ffprobe', ['-v', 'error', '-count_frames', '-select_streams', 'v:0', '-show_entries', 'stream=nb_read_frames', '-of', 'json', video.output], { encoding: 'utf8' });
   assert.equal(probe.status, 0, probe.stderr);
@@ -124,7 +142,7 @@ for (const name of names) {
   const decode = spawnSync('ffmpeg', ['-v', 'error', '-xerror', '-i', video.output, '-f', 'null', '-'], { encoding: 'utf8' });
   assert.equal(decode.status, 0, decode.stderr); assert.equal(decode.stderr, '');
   const median = xs => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
-  const result = { name, sourceFiles: sources.size, sourceLines: [...sources.values()].reduce((n, s) => n + s.split('\n').length - 1, 0), sourceBytes: [...sources.values()].reduce((n, s) => n + Buffer.byteLength(s), 0), duration: plan.duration, compileMedianMs: median(compileMs), evaluateMovieMedianMs: median(evaluateMs), parityFrames: frames.length, maxMae, maxDifferentRatio, maxStateError, video: video.output, exportSeconds: video.seconds, seeking: 'PASS', decode: 'PASS' };
+  const result = { name, sourceFiles: sources.size, sourceLines: [...sources.values()].reduce((n, s) => n + s.split('\n').length - 1, 0), sourceBytes: [...sources.values()].reduce((n, s) => n + Buffer.byteLength(s), 0), sourceDeclarations: Object.values(sourceCounts).reduce((n, count) => n + count, 0), sourceCounts, duration: plan.duration, compileMedianMs: median(compileMs), evaluateMovieMedianMs: median(evaluateMs), parityFrames: frames.length, maxMae, maxDifferentRatio, maxStateError, video: video.output, exportSeconds: video.seconds, seeking: 'PASS', decode: 'PASS' };
   results.push(result); console.log(JSON.stringify(result));
 }
 console.log(JSON.stringify({ status: 'PASS', output, results, limitations: ['Single macOS host, sampled raster parity, no universal artistic/platform or encoding speed claim'] }, null, 2));

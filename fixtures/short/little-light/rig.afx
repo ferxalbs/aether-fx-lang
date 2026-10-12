@@ -6,7 +6,7 @@ module rig {
   }
   part frontArm {
     shape: @upperSleeve;
-    material: { fill: { type: "linear"; from: [0, -20]; to: [100, 20]; stops: [{ offset: 0; color: "#73aaa3"; }, { offset: 1; color: "#477a82"; }]; }; };
+    material: @palette.sleeve;
     layer: 11;
     transform: { x: 45; y: 10; rotation: 0deg; };
     parent: @torsoRig;
@@ -154,14 +154,14 @@ module rig {
     material: { fill: null; };
     parent: @torsoRig;
     pivot: [0, -90];
-    transform: { rotation: 4deg; };
+    transform: { y: 14; rotation: 4deg; };
   }
   part foreArm {
     shape: @foreSleeve;
     parent: @frontArm;
     transform: { x: 104; rotation: 0deg; };
     layer: 12;
-    material: { fill: { type: "linear"; from: [0, -20]; to: [100, 20]; stops: [{ offset: 0; color: "#73aaa3"; }, { offset: 1; color: "#477a82"; }]; }; };
+    material: @palette.sleeve;
   }
   part cuff {
     shape: @cuffShape;
@@ -464,145 +464,84 @@ module rig {
   drawing handHolding {
     parts: { hand: @palmHolding; fingers: @fingersHolding; thumb: @thumbHolding; };
   }
-  pose idle {
-    parts: { torsoRig: { transform: { rotation: 0deg; }; }; headRig: { transform: { rotation: 4deg; }; }; mouth: { shape: @mouthNeutral; }; };
+  // One chain recipe; poses retain their stable names and only author goals.
+  component reachArm {
+    params: { target: @lantern; point: @reachRig.crown; offset: (0, 0); angle: 0deg; initial: false; };
     arm reach {
       actor: @hero;
       upper: @frontArm;
       fore: @foreArm;
       hand: @hand;
       lengths: @reachRig.lengths;
-      initial: true;
-      target: [543.33, 528.088];
+      target: @target;
+      point: @point;
+      offsetPoint: @offset;
       grip: @reachRig.grip;
-      elbow: "negative";
-      rotation: 60deg;
+      elbow: negative;
+      rotation: @angle;
+      initial: @initial;
+    }
+  }
+  pose idle {
+    parts: { torsoRig: { transform: { rotation: 0deg; }; }; headRig: { transform: { rotation: 4deg; }; }; mouth: { shape: @mouthNeutral; }; };
+    instance goal {
+      component: @reachArm;
+      args: { target: [543.33, 528.088]; angle: 60deg; initial: true; point: (0, 0); };
     }
   }
   pose anticipate {
     parts: { torsoRig: { transform: { rotation: -1.8deg; }; }; headRig: { transform: { rotation: 4deg; }; }; mouth: { shape: @mouthNeutral; }; };
-    arm reach {
-      actor: @hero;
-      upper: @frontArm;
-      fore: @foreArm;
-      hand: @hand;
-      lengths: @reachRig.lengths;
-      target: [538.4, 520.575];
-      grip: @reachRig.grip;
-      elbow: "negative";
-      rotation: 50deg;
+    instance goal {
+      component: @reachArm;
+      args: { target: [526, 514]; angle: 50deg; point: (0, 0); };
     }
   }
   pose reachArc {
     parts: { torsoRig: { transform: { rotation: 2.5deg; }; }; headRig: { transform: { rotation: 3.5deg; }; }; mouth: { shape: @mouthNeutral; }; };
-    arm reach {
-      actor: @hero;
-      upper: @frontArm;
-      fore: @foreArm;
-      hand: @hand;
-      lengths: @reachRig.lengths;
-      target: @lantern;
-      point: @reachRig.crown;
-      offsetPoint: [-43.633, 9.588];
-      grip: @reachRig.grip;
-      elbow: "negative";
-      rotation: 5deg;
+    instance goal {
+      component: @reachArm;
+      args: { offset: [-48, -14]; angle: -8deg; };
     }
   }
   pose near {
     parts: { torsoRig: { transform: { rotation: 2.5deg; }; }; headRig: { transform: { rotation: 3deg; }; }; mouth: { shape: @mouthNeutral; }; };
-    arm reach {
-      actor: @hero;
-      upper: @frontArm;
-      fore: @foreArm;
-      hand: @hand;
-      lengths: @reachRig.lengths;
-      target: @lantern;
-      point: @reachRig.crown;
-      offsetPoint: [-1, 0];
-      grip: @reachRig.grip;
-      elbow: "negative";
-      rotation: 0deg;
+    instance goal {
+      component: @reachArm;
+      args: { offset: [-6, 0]; };
     }
   }
   pose reach {
     parts: { torsoRig: { transform: { rotation: 2.5deg; }; }; headRig: { transform: { rotation: 3deg; }; }; mouth: { shape: @mouthNeutral; }; };
-    arm reach {
-      actor: @hero;
-      upper: @frontArm;
-      fore: @foreArm;
-      hand: @hand;
-      lengths: @reachRig.lengths;
-      target: @lantern;
-      point: @reachRig.crown;
-      offsetPoint: [0, 0];
-      grip: @reachRig.grip;
-      elbow: "negative";
-      rotation: 0deg;
+    instance goal {
+      component: @reachArm;
     }
   }
   pose liftArc {
     parts: { torsoRig: { transform: { rotation: 1deg; }; }; headRig: { transform: { rotation: 1.5deg; }; }; mouth: { shape: @mouthNeutral; }; };
-    arm reach {
-      actor: @hero;
-      upper: @frontArm;
-      fore: @foreArm;
-      hand: @hand;
-      lengths: @reachRig.lengths;
-      target: @lantern;
-      point: @reachRig.crown;
-      offsetPoint: [-24, -42.5];
-      grip: @reachRig.grip;
-      elbow: "negative";
-      rotation: 0deg;
+    instance goal {
+      component: @reachArm;
+      args: { offset: [-24, -42.5]; };
     }
   }
   pose lift {
     parts: { torsoRig: { transform: { rotation: 0deg; }; }; headRig: { transform: { rotation: 0.5deg; }; }; mouth: { shape: @mouthNeutral; }; };
-    arm reach {
-      actor: @hero;
-      upper: @frontArm;
-      fore: @foreArm;
-      hand: @hand;
-      lengths: @reachRig.lengths;
-      target: @lantern;
-      point: @reachRig.crown;
-      offsetPoint: [-83, -67.5];
-      grip: @reachRig.grip;
-      elbow: "negative";
-      rotation: 0deg;
+    instance goal {
+      component: @reachArm;
+      args: { offset: [-83, -67.5]; };
     }
   }
   pose settled {
     parts: { torsoRig: { transform: { rotation: 0.4deg; }; }; headRig: { transform: { rotation: 0.2deg; }; }; mouth: { shape: @mouthNeutral; }; };
-    arm reach {
-      actor: @hero;
-      upper: @frontArm;
-      fore: @foreArm;
-      hand: @hand;
-      lengths: @reachRig.lengths;
-      target: @lantern;
-      point: @reachRig.crown;
-      offsetPoint: [-80, -61.5];
-      grip: @reachRig.grip;
-      elbow: "negative";
-      rotation: 0deg;
+    instance goal {
+      component: @reachArm;
+      args: { offset: [-80, -61.5]; };
     }
   }
   pose smile {
     parts: { torsoRig: { transform: { rotation: 0.4deg; }; }; headRig: { transform: { rotation: 0.2deg; }; }; mouth: { shape: @mouthSmile; }; };
-    arm reach {
-      actor: @hero;
-      upper: @frontArm;
-      fore: @foreArm;
-      hand: @hand;
-      lengths: @reachRig.lengths;
-      target: @lantern;
-      point: @reachRig.crown;
-      offsetPoint: [-80, -61.5];
-      grip: @reachRig.grip;
-      elbow: "negative";
-      rotation: 0deg;
+    instance goal {
+      component: @reachArm;
+      args: { offset: [-80, -61.5]; };
     }
   }
 }

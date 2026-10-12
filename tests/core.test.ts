@@ -389,6 +389,11 @@ describe('compact temporal authoring',()=>{
     expect(compileSource(entry,[],{...options,resolveModule:()=>({id:'/scene/main.afx',source:'module art {}'})})).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'MODULE_CYCLE'})]});
     expect(compileSource(entry,[],{...options,sourceBytes:entry.length+10})).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'LIMIT_EXCEEDED'})]});
     expect(compileSource(entry,[],{...options,resolveModule:()=>({id:'/scene/art.afx',source:'module art {'})})).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'PARSE_ERROR',range:expect.objectContaining({source:'/scene/art.afx'})})]});
+    for (const source of ['project p {', 'project p { # }']) {
+      const result = compileSource(source, [], { sourceId: '/scene/main.afx' });
+      expect(result).toMatchObject({ok:false,diagnostics:[expect.objectContaining({range:expect.objectContaining({source:'/scene/main.afx'})})]});
+    }
+    expect(parse(entry, { sourceId: '/scene/main.afx', depth: 1 })).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'LIMIT_EXCEEDED',range:expect.objectContaining({source:'/scene/main.afx'})})]});
   });
   it('solves a bounded two-segment arm in either elbow direction and rejects unreachable goals',async()=>{
     const {twoSegmentArm}=await import('@aether-fx/core');
@@ -399,9 +404,14 @@ describe('compact temporal authoring',()=>{
     }
     expect(()=>twoSegmentArm([0,0],[80,0],[40,30],'negative')).toThrow(/ARM_UNREACHABLE/);
     expect(()=>twoSegmentArm([0,0],[0,0],[40,30],'negative')).toThrow(/ARM_UNREACHABLE/);
-    const rig=(parts:string)=>`project arm {viewport:(100,100);fps:(24,1);shape dot {primitive:circle;radius:1;}part upper {shape:@dot;}part fore {shape:@dot;parent:@upper;transform:{x:4;};}part hand {shape:@dot;parent:@fore;transform:{x:3;};}actor a {parts:[@upper,@fore,@hand];}pose pose {parts:${parts};arm solve {actor:@a;upper:@upper;fore:@fore;hand:@hand;lengths:(4,3);target:(5,0);elbow:negative;rotation:0deg;}}scene s {shot s {duration:1f;}}}`;
-    expect(compileSource(rig('{}')).ok).toBe(true);
-    for(const parts of ['{upper:null;}','{upper:0;}','{upper:{transform:null;};}','{upper:{transform:{rotation:0deg;};};}'])expect(compileSource(rig(parts)).ok).toBe(false);
+    const rigWithParts=(parts:string)=>`project arm {viewport:(100,100);fps:(24,1);shape dot {primitive:circle;radius:1;}part upper {shape:@dot;}part fore {shape:@dot;parent:@upper;transform:{x:4;};}part hand {shape:@dot;parent:@fore;transform:{x:3;};}actor a {parts:[@upper,@fore,@hand];}pose pose {parts:${parts};arm solve {actor:@a;upper:@upper;fore:@fore;hand:@hand;lengths:(4,3);target:(5,0);elbow:negative;rotation:0deg;}}scene s {shot s {duration:1f;}}}`;
+    expect(compileSource(rigWithParts('{}')).ok).toBe(true);
+    const recipe = rigWithParts('{}')
+      .replace('arm solve {actor:@a;upper:@upper;fore:@fore;hand:@hand;lengths:(4,3);target:(5,0);elbow:negative;rotation:0deg;}',
+        'instance goal {component:@chain;args:{target:(5,0);};}')
+      .replace('scene s {', 'component chain {params:{target:(4,0);};arm solve {actor:@a;upper:@upper;fore:@fore;hand:@hand;lengths:(4,3);target:@target;elbow:negative;rotation:0deg;}}scene s {');
+    expect(unwrap(compileSource(recipe))).toEqual(unwrap(compileSource(rigWithParts('{}'))));
+    for(const parts of ['{upper:null;}','{upper:0;}','{upper:{transform:null;};}','{upper:{transform:{rotation:0deg;};};}'])expect(compileSource(rigWithParts(parts)).ok).toBe(false);
     const rig=`project rig {viewport:(100,100);fps:(24,1);shape dot {primitive:circle;radius:1;}
       part upper {shape:@dot;}part fore {shape:@dot;parent:@upper;transform:{x:4;};}part hand {shape:@dot;parent:@fore;transform:{x:3;};}
       actor a {parts:[@upper,@fore,@hand];}

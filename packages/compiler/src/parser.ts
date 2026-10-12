@@ -1,7 +1,7 @@
 import { createToken, EmbeddedActionsParser, Lexer, EOF } from 'chevrotain';
 import type { IToken } from 'chevrotain';
 import { DEFAULT_LIMITS, diagnostic, failure, success } from '@aether-fx/core';
-import type { Result, SourceRange } from '@aether-fx/core';
+import type { Diagnostic, Result, SourceRange } from '@aether-fx/core';
 export type AstValue =
   | { kind: 'scalar'; value: string | number | boolean | null; unit?: string; raw?: string; range: SourceRange }
   | { kind: 'reference'; value: string; range: SourceRange }
@@ -58,20 +58,22 @@ class Parser extends EmbeddedActionsParser {
 }
 const parser = new Parser();
 export function parse(source: string, options: { sourceBytes?: number; depth?: number; sourceId?: string } = {}): Result<DocumentAST> {
+  const failed = (diagnostics: Diagnostic[]): Result<DocumentAST> => failure(diagnostics.map(d =>
+    options.sourceId && d.range ? { ...d, range: { ...d.range, source: options.sourceId } } : d));
   const bytes = new TextEncoder().encode(source).length;
-  if (bytes > (options.sourceBytes ?? DEFAULT_LIMITS.sourceBytes)) return failure([diagnostic('LIMIT_EXCEEDED', 'Source byte limit exceeded')]);
+  if (bytes > (options.sourceBytes ?? DEFAULT_LIMITS.sourceBytes)) return failed([diagnostic('LIMIT_EXCEEDED', 'Source byte limit exceeded')]);
   const lexed = lexer.tokenize(source);
-  if (lexed.errors.length) return failure(lexed.errors.map(e => diagnostic('LEX_ERROR', e.message, { range: { start: e.offset, end: e.offset + e.length, line: e.line ?? 1, column: e.column ?? 1 } })));
+  if (lexed.errors.length) return failed(lexed.errors.map(e => diagnostic('LEX_ERROR', e.message, { range: { start: e.offset, end: e.offset + e.length, line: e.line ?? 1, column: e.column ?? 1 } })));
   let depth = 0;
   for (const token of lexed.tokens) {
     if ([LBrace, LBracket, LParen].includes(token.tokenType)) depth++;
-    if (depth > (options.depth ?? DEFAULT_LIMITS.depth)) return failure([diagnostic('LIMIT_EXCEEDED', 'Source nesting limit exceeded', { range: range(token) })]);
+    if (depth > (options.depth ?? DEFAULT_LIMITS.depth)) return failed([diagnostic('LIMIT_EXCEEDED', 'Source nesting limit exceeded', { range: range(token) })]);
     if ([RBrace, RBracket, RParen].includes(token.tokenType)) depth--;
   }
   parser.input = lexed.tokens;
   try {
     const ast = parser.document();
-    if (parser.errors.length) return failure(parser.errors.map(e => {
+    if (parser.errors.length) return failed(parser.errors.map(e => {
       const lines = source.split(/\r\n|\r|\n/);
       const location = e.token.tokenType === EOF ? { start: source.length, end: source.length, line: lines.length, column: lines.at(-1)!.length + 1 } : range(e.token);
       return diagnostic('PARSE_ERROR', e.message, { range: location });
@@ -86,7 +88,7 @@ export function parse(source: string, options: { sourceBytes?: number; depth?: n
       mark(ast);
     }
     return success({...ast,sourceBytes:bytes});
-  } catch (cause) { return failure([diagnostic('PARSE_ERROR', cause instanceof Error ? cause.message : 'Invalid source')]); }
+  } catch (cause) { return failed([diagnostic('PARSE_ERROR', cause instanceof Error ? cause.message : 'Invalid source')]); }
 }
 export function print(ast: DocumentAST): string {
   function value(v: AstValue): string {

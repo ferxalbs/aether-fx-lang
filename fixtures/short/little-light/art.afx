@@ -1,4 +1,9 @@
 module art {
+  theme palette {
+    coat: { fill: { type: linear; from: (-55, -10); to: (60, 145); stops: [{ offset: 0; color: "#73aaa3"; }, { offset: 1; color: "#477a82"; }]; }; };
+    sleeve: { fill: { type: linear; from: (0, -20); to: (100, 20); stops: [{ offset: 0; color: "#73aaa3"; }, { offset: 1; color: "#477a82"; }]; }; };
+    brass: { top: "#f9d58a"; light: "#e3a24b"; dark: "#ac723d"; };
+  }
   asset nunito {
     kind: "font";
     src: "assets/Nunito.ttf";
@@ -45,6 +50,23 @@ module art {
     material: { fill: "#ae8e80"; stroke: null; strokeWidth: 0; };
     layer: 2;
   }
+  shape windowLight {
+    primitive: polygon;
+    points: [(48, 270), (330, 270), (880, 720), (455, 720)];
+  }
+  part windowLight {
+    shape: @windowLight;
+    material: { fill: { type: linear; from: (220, 270); to: (690, 720); stops: [{ offset: 0; color: "#fff7de38"; }, { offset: 1; color: "#fff7de00"; }]; }; };
+    layer: 0;
+  }
+  actor windowLight {
+    parts: [@windowLight];
+    layer: 3;
+  }
+  background lightDepth {
+    actor: @windowLight;
+    parallax: 1;
+  }
   actor room {
     parts: [@wall, @floor, @baseboard];
     transform: { x: 0; y: 0; };
@@ -55,94 +77,58 @@ module art {
     parallax: 0;
   }
   shape windowFrameShape {
-    contour outline {
-      closed: true;
-      curve: "catmull-rom";
-      node n0 {
-        point: [112, 184];
-      }
-      node n1 {
-        point: [155, 135];
-      }
-      node n2 {
-        point: [352, 135];
-      }
-      node n3 {
-        point: [396, 184];
-      }
-      node n4 {
-        point: [396, 416];
-      }
-      node n5 {
-        point: [112, 416];
-      }
-    }
+    primitive: roundedRect;
+    size: (284, 280);
+    radius: 50;
   }
   part windowFrame {
     shape: @windowFrameShape;
     material: { fill: "#aa8271"; stroke: null; strokeWidth: 0; };
     layer: 0;
-    transform: {  };
+    transform: { x: 112; y: 135; };
   }
   shape windowGlassShape {
-    contour outline {
-      closed: true;
-      curve: "catmull-rom";
-      node n0 {
-        point: [130, 190];
-      }
-      node n1 {
-        point: [170, 155];
-      }
-      node n2 {
-        point: [335, 155];
-      }
-      node n3 {
-        point: [377, 190];
-      }
-      node n4 {
-        point: [377, 395];
-      }
-      node n5 {
-        point: [130, 395];
-      }
-    }
+    primitive: roundedRect;
+    size: (248, 240);
+    radius: 36;
   }
   part windowGlass {
     shape: @windowGlassShape;
     material: { fill: "#acd0c8"; stroke: null; strokeWidth: 0; };
     layer: 1;
-    transform: {  };
+    transform: { x: 130; y: 155; };
   }
   shape hillsShape {
     contour outline {
       closed: true;
       curve: "catmull-rom";
       node n0 {
-        point: [130, 345];
+        point: [0, 190];
       }
       node n1 {
-        point: [198, 297];
+        point: [68, 142];
       }
       node n2 {
-        point: [259, 327];
+        point: [129, 172];
       }
       node n3 {
-        point: [311, 272];
+        point: [181, 117];
       }
       node n4 {
-        point: [377, 310];
+        point: [247, 155];
       }
       node n5 {
-        point: [377, 395];
+        point: [247, 240];
       }
       node n6 {
-        point: [130, 395];
+        point: [0, 240];
       }
     }
   }
   part hills {
     shape: @hillsShape;
+    parent: @windowGlass;
+    clip: @windowGlassShape;
     material: { fill: "#81aaa5"; stroke: null; strokeWidth: 0; };
     layer: 2;
     transform: {  };
@@ -159,18 +145,18 @@ module art {
   }
   shape windowRailShape {
     primitive: "rect";
-    size: [250, 10];
+    size: [248, 10];
   }
   part windowRail {
     shape: @windowRailShape;
     material: { fill: "#cda68d"; stroke: null; strokeWidth: 0; };
     layer: 3;
-    transform: { x: 128; y: 276; };
+    transform: { x: 130; y: 276; };
   }
   actor window {
     parts: [@windowFrame, @windowGlass, @hills, @windowDivider, @windowRail];
     transform: { x: -65; y: 0; };
-    layer: 0;
+    layer: 4;
   }
   background windowDepth {
     actor: @window;
@@ -203,22 +189,8 @@ module art {
     image: { asset: @paper; width: 98; height: 86; };
   }
   shape potShape {
-    contour outline {
-      closed: true;
-      curve: "catmull-rom";
-      node n0 {
-        point: [1022, 251];
-      }
-      node n1 {
-        point: [1072, 251];
-      }
-      node n2 {
-        point: [1065, 293];
-      }
-      node n3 {
-        point: [1030, 293];
-      }
-    }
+    primitive: polygon;
+    points: [(1022, 251), (1072, 251), (1065, 293), (1030, 293)];
   }
   part pot {
     shape: @potShape;
@@ -275,43 +247,31 @@ module art {
     parallax: 0.5;
   }
   shape shadowShape {
-    contour outline {
-      closed: true;
-      curve: "catmull-rom";
-      node n0 {
-        point: [580, 626];
-      }
-      node n1 {
-        point: [541.631, 637.314];
-      }
-      node n2 {
-        point: [449, 642];
-      }
-      node n3 {
-        point: [356.369, 637.314];
-      }
-      node n4 {
-        point: [318, 626];
-      }
-      node n5 {
-        point: [356.369, 614.686];
-      }
-      node n6 {
-        point: [449, 610];
-      }
-      node n7 {
-        point: [541.631, 614.686];
-      }
-    }
+    primitive: ellipse;
+    radius: (131, 16);
   }
   part shadow {
     shape: @shadowShape;
-    material: { fill: "#b59687"; stroke: null; strokeWidth: 0; };
+    material: { fill: { type: radial; from: (0, 0); to: (0, 0); radius0: 0; radius1: 131; stops: [{ offset: 0; color: "#78594b65"; }, { offset: 1; color: "#78594b00"; }]; }; };
     layer: 0;
-    transform: {  };
+    transform: { x: 449; y: 626; };
+  }
+  shape soleContact {
+    primitive: ellipse;
+    radius: (29, 4);
+  }
+  part leftSoleContact {
+    shape: @soleContact;
+    transform: { x: 391; y: 628; };
+    material: { fill: "#624d4b55"; };
+  }
+  part rightSoleContact {
+    shape: @soleContact;
+    transform: { x: 460; y: 628; };
+    material: { fill: "#624d4b55"; };
   }
   actor shadow {
-    parts: [@shadow];
+    parts: [@shadow, @leftSoleContact, @rightSoleContact];
     transform: { x: 0; y: 0; };
     layer: 10;
   }
@@ -477,7 +437,7 @@ module art {
   }
   part body {
     shape: @bodyShape;
-    material: { fill: { type: "linear"; from: [-55, -10]; to: [60, 145]; stops: [{ offset: 0; color: "#73aaa3"; }, { offset: 1; color: "#477a82"; }]; }; };
+    material: @palette.coat;
     layer: 4;
     transform: {  };
     parent: @torsoRig;
@@ -723,28 +683,15 @@ module art {
     transform: {  };
   }
   shape lanternGlassShape {
-    contour outline {
-      closed: true;
-      curve: "catmull-rom";
-      node n0 {
-        point: [-16, 12];
-      }
-      node n1 {
-        point: [16, 12];
-      }
-      node n2 {
-        point: [19, 54];
-      }
-      node n3 {
-        point: [-19, 54];
-      }
-    }
+    primitive: roundedRect;
+    size: (36, 44);
+    radius: 8;
   }
   part lanternGlass {
     shape: @lanternGlassShape;
-    material: { fill: { type: "radial"; from: [0, 28]; to: [0, 28]; radius0: 0; radius1: 38; stops: [{ offset: 0; color: "#fffbe2"; }, { offset: 1; color: "#e6bc77"; }]; }; };
+    material: { fill: { type: "radial"; from: [14, 16]; to: [14, 16]; radius0: 0; radius1: 34; stops: [{ offset: 0; color: "#fffbe2"; }, { offset: 1; color: "#e6bc77"; }]; }; };
     layer: 1;
-    transform: {  };
+    transform: { x: -18; y: 10; };
     clip: @lanternGlassShape;
   }
   shape handleShape {
@@ -766,7 +713,7 @@ module art {
     material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
     layer: 0;
     transform: { x: 78; y: 80; };
-    text: { content: "THE LITTLE LIGHT"; font: @nunito; size: 34; };
+    text: { content: "THE LITTLE LIGHT"; font: @nunito; size: 38; };
   }
   actor title {
     parts: [@title];
@@ -777,7 +724,7 @@ module art {
     material: { fill: "#725e67"; };
     layer: 0;
     transform: { x: 80; y: 111; };
-    text: { content: "A quiet moment, drawn in curves."; font: @nunito; size: 17; };
+    text: { content: "A quiet moment, drawn in curves."; font: @nunito; size: 16; };
   }
   actor subtitle {
     parts: [@subtitle];
@@ -876,7 +823,7 @@ module art {
   }
   instance housing {
     component: @turnedPiece;
-    args: { radius: 30; height: 64; z: -72; materials: { top: "#f9d58a"; light: "#e3a24b"; dark: "#ac723d"; }; parent: @lantern.lanternBody; layer: 60; };
+    args: { radius: 30; height: 64; z: -72; materials: @palette.brass; parent: @lantern.lanternBody; layer: 60; };
   }
   instance lampFoot {
     component: @turnedPiece;
