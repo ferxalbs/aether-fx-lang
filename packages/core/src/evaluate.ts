@@ -4,6 +4,23 @@ import { interpolateShape, multiply, transformMatrix } from './geometry.js';
 import { contactState } from './contact.js';
 import { ease } from './time.js';
 
+/** Copy validated numeric geometry directly; preserve editable nodes and owned arrays. */
+function ownedShape(shape: Shape): Shape {
+  return { ...shape, contours: shape.contours.map(c => ({
+    ...c, start: [...c.start],
+    ...(c.authoring ? { authoring: { ...c.authoring, nodes: c.authoring.nodes.map(n => ({
+      ...n, point: [...n.point], ...(n.in ? { in: [...n.in] } : {}), ...(n.out ? { out: [...n.out] } : {})
+    })) } } : {}),
+    segments: c.segments.map(s => ({ ...s, control1: [...s.control1], control2: [...s.control2], end: [...s.end] }))
+  })) };
+}
+function ownedMaterial(material: import('./types.js').Material): import('./types.js').Material {
+  const fill = material.fill;
+  return { ...material, fill: fill && typeof fill === 'object' ? {
+    ...fill, from: [...fill.from], to: [...fill.to], stops: fill.stops.map(stop => ({ ...stop }))
+  } : fill };
+}
+
 export function initialSnapshot(d: FxDocument): Snapshot {
   const values: Snapshot['values'] = {}, shapes: Snapshot['shapes'] = {};
   for (const actor of d.actors) {
@@ -126,7 +143,7 @@ export function evaluate(plan:PlaybackPlan,options:{frame:number}): DrawList {
     const parallax=d.backgrounds.find(b=>b.actor===actor.id)?.parallax ?? 1;
     const cameraMatrix=inverse(transformMatrix({...camera,x:camera.x*parallax,y:camera.y*parallax}));
     const shape=state.shapes[target] ?? d.shapes.find(s=>s.id===v.shape) ?? null;
-    commands.push({...(part.clip ? {clip:structuredClone(d.shapes.find(s=>s.id===part.clip)!)} : {}),id:target,matrix:multiply(cameraMatrix,w.matrix),opacity:w.opacity,layer:(state.values[actor.id]!.layer as number)+(v.layer as number),shape:shape ? structuredClone(shape) : null,material:structuredClone(part.material),text:part.text ? {...part.text} : null,image:part.image ? {...part.image} : null});
+    commands.push({...(part.clip ? {clip:ownedShape(d.shapes.find(s=>s.id===part.clip)!)} : {}),id:target,matrix:multiply(cameraMatrix,w.matrix),opacity:w.opacity,layer:(state.values[actor.id]!.layer as number)+(v.layer as number),shape:shape ? ownedShape(shape) : null,material:ownedMaterial(part.material),text:part.text ? {...part.text} : null,image:part.image ? {...part.image} : null});
   }
   commands.sort((a,b)=>a.layer-b.layer);
   return {frame,shot:item.shot.id,viewport:[...d.viewport],commands};

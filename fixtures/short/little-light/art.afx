@@ -1,0 +1,931 @@
+module art {
+  asset nunito {
+    kind: "font";
+    src: "assets/Nunito.ttf";
+    version: 1;
+    locked: true;
+  }
+  asset paper {
+    kind: "image";
+    src: "assets/paper.png";
+    version: 1;
+    locked: true;
+  }
+  asset score {
+    kind: "audio";
+    src: "assets/score.wav";
+    version: 1;
+    locked: true;
+  }
+  shape wallShape {
+    primitive: "rect";
+    size: [1650, 1000];
+  }
+  part wall {
+    shape: @wallShape;
+    material: { fill: { type: "linear"; from: [100, 100]; to: [1120, 600]; stops: [{ offset: 0; color: "#f4ebd9"; }, { offset: 1; color: "#e3d4c2"; }]; }; };
+    layer: 0;
+    transform: { x: -150; y: -150; };
+  }
+  shape floorShape {
+    primitive: "polygon";
+    points: [[-150, 568], [1500, 655], [1500, 905], [-150, 905]];
+  }
+  part floor {
+    shape: @floorShape;
+    material: { fill: { type: "linear"; from: [420, 600]; to: [1000, 850]; stops: [{ offset: 0; color: "#d3bfa8"; }, { offset: 1; color: "#b9a090"; }]; }; };
+    layer: 1;
+  }
+  shape baseboardShape {
+    primitive: "polygon";
+    points: [[-150, 558], [1500, 645], [1500, 657], [-150, 570]];
+  }
+  part baseboard {
+    shape: @baseboardShape;
+    material: { fill: "#ae8e80"; stroke: null; strokeWidth: 0; };
+    layer: 2;
+  }
+  actor room {
+    parts: [@wall, @floor, @baseboard];
+    transform: { x: 0; y: 0; };
+    layer: 0;
+  }
+  background wallDepth {
+    actor: @room;
+    parallax: 0;
+  }
+  shape windowFrameShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [112, 184];
+      }
+      node n1 {
+        point: [155, 135];
+      }
+      node n2 {
+        point: [352, 135];
+      }
+      node n3 {
+        point: [396, 184];
+      }
+      node n4 {
+        point: [396, 416];
+      }
+      node n5 {
+        point: [112, 416];
+      }
+    }
+  }
+  part windowFrame {
+    shape: @windowFrameShape;
+    material: { fill: "#aa8271"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: {  };
+  }
+  shape windowGlassShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [130, 190];
+      }
+      node n1 {
+        point: [170, 155];
+      }
+      node n2 {
+        point: [335, 155];
+      }
+      node n3 {
+        point: [377, 190];
+      }
+      node n4 {
+        point: [377, 395];
+      }
+      node n5 {
+        point: [130, 395];
+      }
+    }
+  }
+  part windowGlass {
+    shape: @windowGlassShape;
+    material: { fill: "#acd0c8"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: {  };
+  }
+  shape hillsShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [130, 345];
+      }
+      node n1 {
+        point: [198, 297];
+      }
+      node n2 {
+        point: [259, 327];
+      }
+      node n3 {
+        point: [311, 272];
+      }
+      node n4 {
+        point: [377, 310];
+      }
+      node n5 {
+        point: [377, 395];
+      }
+      node n6 {
+        point: [130, 395];
+      }
+    }
+  }
+  part hills {
+    shape: @hillsShape;
+    material: { fill: "#81aaa5"; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: {  };
+  }
+  shape windowDividerShape {
+    primitive: "rect";
+    size: [13, 250];
+  }
+  part windowDivider {
+    shape: @windowDividerShape;
+    material: { fill: "#cda68d"; stroke: null; strokeWidth: 0; };
+    layer: 3;
+    transform: { x: 245; y: 155; };
+  }
+  shape windowRailShape {
+    primitive: "rect";
+    size: [250, 10];
+  }
+  part windowRail {
+    shape: @windowRailShape;
+    material: { fill: "#cda68d"; stroke: null; strokeWidth: 0; };
+    layer: 3;
+    transform: { x: 128; y: 276; };
+  }
+  actor window {
+    parts: [@windowFrame, @windowGlass, @hills, @windowDivider, @windowRail];
+    transform: { x: -65; y: 0; };
+    layer: 0;
+  }
+  background windowDepth {
+    actor: @window;
+    parallax: 1;
+  }
+  shape shelfShape {
+    primitive: "rect";
+    size: [268, 14];
+  }
+  part shelf {
+    shape: @shelfShape;
+    material: { fill: "#86655f"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 840; y: 294; };
+  }
+  shape pictureFrameShape {
+    primitive: "rect";
+    size: [112, 100];
+  }
+  part pictureFrame {
+    shape: @pictureFrameShape;
+    material: { fill: "#9b7366"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: { x: 885; y: 177; };
+  }
+  part picture {
+    material: { fill: null; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: { x: 892; y: 184; };
+    image: { asset: @paper; width: 98; height: 86; };
+  }
+  shape potShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [1022, 251];
+      }
+      node n1 {
+        point: [1072, 251];
+      }
+      node n2 {
+        point: [1065, 293];
+      }
+      node n3 {
+        point: [1030, 293];
+      }
+    }
+  }
+  part pot {
+    shape: @potShape;
+    material: { fill: "#be7a64"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: {  };
+  }
+  shape leavesShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [1047, 253];
+      }
+      node n1 {
+        point: [1023, 220];
+      }
+      node n2 {
+        point: [1013, 191];
+      }
+      node n3 {
+        point: [1041, 212];
+      }
+      node n4 {
+        point: [1047, 242];
+      }
+      node n5 {
+        point: [1060, 201];
+      }
+      node n6 {
+        point: [1084, 179];
+      }
+      node n7 {
+        point: [1074, 225];
+      }
+      node n8 {
+        point: [1054, 253];
+      }
+    }
+  }
+  part leaves {
+    shape: @leavesShape;
+    material: { fill: "#315f68"; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: {  };
+  }
+  actor shelf {
+    parts: [@shelf, @pictureFrame, @picture, @pot, @leaves];
+    transform: { x: 0; y: 0; };
+    layer: 0;
+  }
+  background shelfDepth {
+    actor: @shelf;
+    parallax: 0.5;
+  }
+  shape shadowShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [580, 626];
+      }
+      node n1 {
+        point: [541.631, 637.314];
+      }
+      node n2 {
+        point: [449, 642];
+      }
+      node n3 {
+        point: [356.369, 637.314];
+      }
+      node n4 {
+        point: [318, 626];
+      }
+      node n5 {
+        point: [356.369, 614.686];
+      }
+      node n6 {
+        point: [449, 610];
+      }
+      node n7 {
+        point: [541.631, 614.686];
+      }
+    }
+  }
+  part shadow {
+    shape: @shadowShape;
+    material: { fill: "#b59687"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: {  };
+  }
+  actor shadow {
+    parts: [@shadow];
+    transform: { x: 0; y: 0; };
+    layer: 10;
+  }
+  shape backArmShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [-52, 18];
+      }
+      node n1 {
+        point: [-92, 33];
+      }
+      node n2 {
+        point: [-103, 86];
+      }
+      node n3 {
+        point: [-75, 116];
+      }
+      node n4 {
+        point: [-51, 100];
+      }
+      node n5 {
+        point: [-62, 78];
+      }
+      node n6 {
+        point: [-59, 54];
+      }
+    }
+  }
+  part backArm {
+    shape: @backArmShape;
+    material: { fill: "#315f68"; stroke: null; strokeWidth: 0; };
+    layer: 1;
+    transform: {  };
+    parent: @torsoRig;
+  }
+  shape legsShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [-44, 122];
+      }
+      node n1 {
+        point: [42, 122];
+      }
+      node n2 {
+        point: [48, 229];
+      }
+      node n3 {
+        point: [15, 236];
+      }
+      node n4 {
+        point: [2, 166];
+      }
+      node n5 {
+        point: [-7, 238];
+      }
+      node n6 {
+        point: [-41, 234];
+      }
+    }
+  }
+  part legs {
+    shape: @legsShape;
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 2;
+    transform: {  };
+  }
+  shape shoesShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [-43, 224];
+      }
+      node n1 {
+        point: [-11, 225];
+      }
+      node n2 {
+        point: [-6, 246];
+      }
+      node n3 {
+        point: [-58, 246];
+      }
+      node n4 {
+        point: [-58, 236];
+      }
+      node n5 {
+        point: [-43, 231];
+      }
+    }
+    contour right {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [13, 225];
+      }
+      node n1 {
+        point: [43, 222];
+      }
+      node n2 {
+        point: [52, 232];
+      }
+      node n3 {
+        point: [68, 236];
+      }
+      node n4 {
+        point: [68, 246];
+      }
+      node n5 {
+        point: [10, 246];
+      }
+    }
+  }
+  part shoes {
+    shape: @shoesShape;
+    material: { fill: "#315f68"; stroke: null; strokeWidth: 0; };
+    layer: 3;
+    transform: {  };
+  }
+  shape neckShape {
+    primitive: "rect";
+    size: [32, 90];
+  }
+  part neck {
+    shape: @neckShape;
+    material: { fill: "#edb68e"; stroke: null; strokeWidth: 0; };
+    layer: 4;
+    transform: { x: -16; y: -82; };
+    parent: @torsoRig;
+  }
+  shape bodyShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [-30, -13];
+      }
+      node n1 {
+        point: [29, -13];
+      }
+      node n2 {
+        point: [62, 22];
+      }
+      node n3 {
+        point: [65, 91];
+      }
+      node n4 {
+        point: [50, 145];
+      }
+      node n5 {
+        point: [-54, 145];
+      }
+      node n6 {
+        point: [-63, 80];
+      }
+      node n7 {
+        point: [-59, 27];
+      }
+    }
+  }
+  part body {
+    shape: @bodyShape;
+    material: { fill: { type: "linear"; from: [-55, -10]; to: [60, 145]; stops: [{ offset: 0; color: "#73aaa3"; }, { offset: 1; color: "#477a82"; }]; }; };
+    layer: 4;
+    transform: {  };
+    parent: @torsoRig;
+  }
+  shape collarShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [-34, -14];
+      }
+      node n1 {
+        point: [32, -14];
+      }
+      node n2 {
+        point: [35, 11];
+      }
+      node n3 {
+        point: [3, 31];
+      }
+      node n4 {
+        point: [-34, 11];
+      }
+    }
+  }
+  part collar {
+    shape: @collarShape;
+    material: { fill: "#f1b955"; stroke: null; strokeWidth: 0; };
+    layer: 5;
+    transform: {  };
+    parent: @torsoRig;
+  }
+  shape headShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [-44, -175];
+      }
+      node n1 {
+        point: [-5, -191];
+      }
+      node n2 {
+        point: [41, -168];
+      }
+      node n3 {
+        point: [54, -122];
+      }
+      node n4 {
+        point: [41, -76];
+      }
+      node n5 {
+        point: [10, -60];
+      }
+      node n6 {
+        point: [-30, -72];
+      }
+      node n7 {
+        point: [-54, -112];
+      }
+    }
+  }
+  part head {
+    shape: @headShape;
+    material: { fill: { type: "linear"; from: [-42, -160]; to: [60, -50]; stops: [{ offset: 0; color: "#f2c29c"; }, { offset: 1; color: "#dfaa84"; }]; }; };
+    layer: 6;
+    transform: {  };
+    parent: @headRig;
+  }
+  shape hairShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [-54, -124];
+      }
+      node n1 {
+        point: [-65, -165];
+      }
+      node n2 {
+        point: [-43, -199];
+      }
+      node n3 {
+        point: [6, -208];
+      }
+      node n4 {
+        point: [43, -185];
+      }
+      node n5 {
+        point: [58, -145];
+      }
+      node n6 {
+        point: [26, -156];
+      }
+      node n7 {
+        point: [4, -176];
+      }
+      node n8 {
+        point: [-17, -147];
+      }
+      node n9 {
+        point: [-40, -143];
+      }
+    }
+  }
+  part hair {
+    shape: @hairShape;
+    material: { fill: "#49354d"; stroke: null; strokeWidth: 0; };
+    layer: 7;
+    transform: {  };
+    parent: @headRig;
+  }
+  shape eyeOpen {
+    contour left {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [-32, -126];
+      }
+      node n1 {
+        point: [-23, -137];
+      }
+      node n2 {
+        point: [-14, -128];
+      }
+      node n3 {
+        point: [-21, -113];
+      }
+    }
+    contour right {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [8, -129];
+      }
+      node n1 {
+        point: [18, -140];
+      }
+      node n2 {
+        point: [28, -130];
+      }
+      node n3 {
+        point: [21, -116];
+      }
+    }
+  }
+  shape eyeClosed {
+    contour left {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [-32, -126];
+      }
+      node n1 {
+        point: [-23, -125];
+      }
+      node n2 {
+        point: [-14, -128];
+      }
+      node n3 {
+        point: [-21, -127];
+      }
+    }
+    contour right {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [8, -129];
+      }
+      node n1 {
+        point: [18, -128];
+      }
+      node n2 {
+        point: [28, -130];
+      }
+      node n3 {
+        point: [21, -129];
+      }
+    }
+  }
+  part eyes {
+    shape: @eyeOpen;
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 8;
+    transform: {  };
+    parent: @headRig;
+  }
+  shape noseShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [0, -126];
+      }
+      node n1 {
+        point: [9, -106];
+      }
+      node n2 {
+        point: [-2, -101];
+      }
+    }
+  }
+  part nose {
+    shape: @noseShape;
+    material: { fill: "#c98675"; stroke: null; strokeWidth: 0; };
+    layer: 9;
+    transform: {  };
+    parent: @headRig;
+  }
+  shape mouthNeutral {
+    contour mouth {
+      start: [-13, -88];
+      closed: false;
+      cubic smile {
+        control1: [-7, -86];
+        control2: [11, -88];
+        end: [17, -91];
+      }
+    }
+  }
+  shape mouthSmile {
+    contour mouth {
+      start: [-13, -88];
+      closed: false;
+      cubic smile {
+        control1: [-7, -73];
+        control2: [11, -75];
+        end: [17, -91];
+      }
+    }
+  }
+  part mouth {
+    shape: @mouthNeutral;
+    material: { fill: null; stroke: "#3f354d"; strokeWidth: 3; };
+    layer: 10;
+    transform: {  };
+    parent: @headRig;
+  }
+  part lanternBody {
+    shape: @blank;
+    material: { fill: null; };
+    layer: 0;
+    transform: {  };
+  }
+  shape lanternGlassShape {
+    contour outline {
+      closed: true;
+      curve: "catmull-rom";
+      node n0 {
+        point: [-16, 12];
+      }
+      node n1 {
+        point: [16, 12];
+      }
+      node n2 {
+        point: [19, 54];
+      }
+      node n3 {
+        point: [-19, 54];
+      }
+    }
+  }
+  part lanternGlass {
+    shape: @lanternGlassShape;
+    material: { fill: { type: "radial"; from: [0, 28]; to: [0, 28]; radius0: 0; radius1: 38; stops: [{ offset: 0; color: "#fffbe2"; }, { offset: 1; color: "#e6bc77"; }]; }; };
+    layer: 1;
+    transform: {  };
+    clip: @lanternGlassShape;
+  }
+  shape handleShape {
+    primitive: "path";
+    data: "M -16 1 C -17 -10 -17 -24 -12 -29 C -6 -37 6 -37 12 -29 C 17 -24 17 -10 16 1 L 9 1 C 10 -10 11 -20 7 -24 C 3 -29 -3 -29 -7 -24 C -11 -20 -10 -10 -9 1 Z";
+  }
+  part lanternHandle {
+    material: { fill: "#8e655b"; stroke: null; strokeWidth: 0; };
+    layer: 3;
+    transform: {  };
+    shape: @handleShape;
+  }
+  actor lantern {
+    parts: [@lanternBody, @lanternGlass, @lanternHandle];
+    transform: @lampPlacement;
+    layer: 60;
+  }
+  part title {
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 78; y: 80; };
+    text: { content: "THE LITTLE LIGHT"; font: @nunito; size: 34; };
+  }
+  actor title {
+    parts: [@title];
+    transform: { x: 0; y: 0; };
+    layer: 100;
+  }
+  part subtitle {
+    material: { fill: "#725e67"; };
+    layer: 0;
+    transform: { x: 80; y: 111; };
+    text: { content: "A quiet moment, drawn in curves."; font: @nunito; size: 17; };
+  }
+  actor subtitle {
+    parts: [@subtitle];
+    transform: { x: 0; y: 0; };
+    layer: 100;
+  }
+  part caption {
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 81; y: 680; };
+    text: { content: "Notice."; font: @nunito; size: 25; };
+  }
+  actor caption {
+    parts: [@caption];
+    transform: { x: 0; y: 0; };
+    layer: 100;
+  }
+  part captionReach {
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 81; y: 680; };
+    text: { content: "Reach. Hold."; font: @nunito; size: 25; };
+  }
+  actor captionReach {
+    parts: [@captionReach];
+    transform: { x: 0; y: 0; };
+    layer: 100;
+  }
+  part captionClose {
+    material: { fill: "#3f354d"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 705; y: 535; };
+    text: { content: "Keep a little light."; font: @nunito; size: 25; };
+  }
+  actor captionClose {
+    parts: [@captionClose];
+    transform: { x: 0; y: 0; };
+    layer: 100;
+  }
+  shape pulseShape {
+    primitive: "rect";
+    size: [28, 8];
+  }
+  part syncPulse {
+    shape: @pulseShape;
+    material: { fill: "#f1b955"; stroke: null; strokeWidth: 0; };
+    layer: 0;
+    transform: { x: 0; y: 0; };
+  }
+  actor sync {
+    parts: [@syncPulse];
+    transform: { x: 1170; y: 82; };
+    layer: 120;
+  }
+  audio soundtrack {
+    asset: @score;
+    offset: 0f;
+    trimStart: 0f;
+    duration: 480f;
+    gain: 1;
+  }
+  theme wood {
+    top: "#ba8b70";
+    light: "#a57561";
+    dark: "#80565a";
+  }
+  component leg {
+    params: { ring: [{ id: "a"; point: [650, 14]; }, { id: "b"; point: [670, 14]; }, { id: "c"; point: [670, 30]; }, { id: "d"; point: [650, 30]; }]; };
+    solid post {
+      kind: "extrude";
+      ring: @ring;
+      z: -696;
+      height: 159;
+      projection: @tableView;
+      materials: { top: @wood.top; light: @wood.light; dark: @wood.dark; };
+      layer: 40;
+      transform: { x: @tableX; };
+    }
+  }
+  instance left {
+    component: @leg;
+  }
+  instance right {
+    component: @leg;
+    args: { ring: [{ id: "a"; point: [917, 14]; }, { id: "b"; point: [937, 14]; }, { id: "c"; point: [937, 30]; }, { id: "d"; point: [917, 30]; }]; };
+  }
+  solid table {
+    kind: "extrude";
+    height: 20;
+    z: -537;
+    projection: @tableView;
+    ring: [{ id: "backLeft"; point: [585, -40]; }, { id: "backRight"; point: [1000, -40]; }, { id: "frontRight"; point: [1000, 40]; }, { id: "frontLeft"; point: [585, 40]; }];
+    materials: { top: @wood.top; light: @wood.light; dark: @wood.dark; };
+    layer: 44;
+    transform: { x: @tableX; };
+  }
+  instance housing {
+    component: @turnedPiece;
+    args: { radius: 30; height: 64; z: -72; materials: { top: "#f9d58a"; light: "#e3a24b"; dark: "#ac723d"; }; parent: @lantern.lanternBody; layer: 60; };
+  }
+  instance lampFoot {
+    component: @turnedPiece;
+    args: { radius: 33; height: 9; z: -80; materials: { top: "#ad8370"; light: "#956958"; dark: "#704e4d"; }; parent: @lantern.lanternBody; layer: 64; };
+  }
+  instance lampRim {
+    component: @turnedPiece;
+    args: { radius: 31; height: 5; z: -8; materials: { top: "#f9d58a"; light: "#ad8370"; dark: "#704e4d"; }; parent: @lantern.lanternBody; layer: 62; };
+  }
+  shape lampShadow {
+    primitive: "ellipse";
+    radius: [40, 7];
+  }
+  part lampShadow {
+    shape: @lampShadow;
+    transform: { x: 690; y: 472; };
+    material: { fill: "#80565a"; };
+    pivot: [0, 0];
+  }
+  actor contactShadow {
+    parts: [@lampShadow];
+    layer: 49;
+    parent: @table.table_top;
+  }
+  solid apron {
+    kind: "extrude";
+    height: 15;
+    z: -552;
+    projection: @tableView;
+    ring: [{ id: "a"; point: [638, 24]; }, { id: "b"; point: [950, 24]; }, { id: "c"; point: [950, 30]; }, { id: "d"; point: [638, 30]; }];
+    materials: { top: "#a57561"; light: "#946651"; dark: "#80565a"; };
+    layer: 43;
+    transform: { x: @tableX; };
+  }
+  const tableView {
+    value: { origin: [0, -41.3]; azimuth: 8deg; elevation: 22deg; };
+  }
+  shape tableShadowShape {
+    primitive: "ellipse";
+    radius: [190, 18];
+  }
+  part tableShadow {
+    shape: @tableShadowShape;
+    transform: { x: 800; y: 655; };
+    material: { fill: "#9e8377"; };
+  }
+  actor tableShadow {
+    parts: [@tableShadow];
+    transform: { x: @tableX; opacity: 0.42; };
+    layer: 5;
+  }
+}

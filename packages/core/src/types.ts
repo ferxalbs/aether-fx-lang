@@ -1,6 +1,6 @@
 export const SCHEMA_VERSION = 1 as const;
 export type Result<T> = { ok: true; value: T } | { ok: false; diagnostics: Diagnostic[] };
-export interface SourceRange { start: number; end: number; line: number; column: number }
+export interface SourceRange { start: number; end: number; line: number; column: number; source?: string }
 export interface Diagnostic {
   code: string; severity: 'error' | 'warning'; message: string;
   range?: SourceRange; id?: string; frame?: number; interval?: [number, number]; path?: string;

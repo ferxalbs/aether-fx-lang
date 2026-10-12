@@ -1,0 +1,200 @@
+module sequence {
+  scene moment {
+    shot notice {
+      duration: 144f;
+      play curiosity {
+        clip: @excursion;
+        start: 24f;
+      }
+      play beat {
+        clip: @marker;
+        start: 24f;
+      }
+      initial sync {
+        visible: false;
+      }
+      initial captionReach {
+        visible: false;
+      }
+      initial captionClose {
+        visible: false;
+      }
+      track lookTrack {
+        target: @hero.eyes;
+        property: "x";
+        keys: [
+          { id: "look0"; frame: 0f; value: 0; hold: 2f; },
+          { id: "look1"; frame: 72f; value: 5; hold: 2f; }
+        ];
+      }
+      expose firstBlink {
+        actor: @hero;
+        drawing: @eyesClosed;
+        start: 103f;
+        end: 106f;
+      }
+      camera wide {
+        x: 0;
+        y: 0;
+      }
+      track headNoticeTrack {
+        target: @hero.headRig;
+        property: "rotation";
+        keys: [
+          { id: "headNotice0"; frame: 0f; value: 0deg; },
+          { id: "headNotice1"; frame: 72f; value: 4deg; }
+        ];
+      }
+    }
+    shot reachAndLift {
+      duration: 192f;
+      play beat {
+        clip: @marker;
+        start: 24f;
+      }
+      initial caption {
+        visible: false;
+      }
+      initial captionReach {
+        visible: true;
+      }
+      initial sync {
+        visible: false;
+      }
+      play gesture {
+        clip: @reachAndCarry;
+        start: 0f;
+      }
+      expose reachBlink {
+        actor: @hero;
+        drawing: @eyesClosed;
+        start: 166f;
+        end: 169f;
+      }
+      camera reachCamera {
+        x: 0;
+        y: 0;
+      }
+      track cameraTrack {
+        target: @camera;
+        property: "x";
+        keys: [
+          { id: "camera0"; frame: 0f; value: 0; },
+          { id: "camera1"; frame: 150f; value: 20; }
+        ];
+      }
+      contact carry {
+        target: @lantern;
+        anchor: @hero.hand;
+        targetPoint: [-2, -31];
+        anchorPoint: "grip";
+        start: 60f;
+        end: 192f;
+      }
+      track shadowTrack {
+        target: @contactShadow;
+        property: "opacity";
+        keys: [
+          { id: "shadow0"; frame: 72f; value: 1; easing: "ease-in-out"; },
+          { id: "shadow1"; frame: 102f; value: 0.18; },
+          { id: "shadow2"; frame: 130f; value: 0.07; },
+          { id: "shadow3"; frame: 154f; value: 0.1; }
+        ];
+      }
+      track shadowWidthTrack {
+        target: @contactShadow.lampShadow;
+        property: "scaleX";
+        keys: [
+          { id: "shadowWidth0"; frame: 72f; value: 1; easing: "ease-in-out"; },
+          { id: "shadowWidth1"; frame: 130f; value: 0.6; },
+          { id: "shadowWidth2"; frame: 154f; value: 0.65; }
+        ];
+      }
+      track shadowXTrack {
+        target: @contactShadow.lampShadow;
+        property: "x";
+        keys: [
+          { id: "shadowX0"; frame: 72f; value: 690; easing: "ease-in-out"; },
+          { id: "shadowX1"; frame: 102f; value: 666; },
+          { id: "shadowX2"; frame: 130f; value: 607; },
+          { id: "shadowX3"; frame: 154f; value: 610; }
+        ];
+      }
+    }
+    shot keep {
+      duration: 144f;
+      play beat {
+        clip: @marker;
+        start: 24f;
+      }
+      initial captionReach {
+        visible: false;
+      }
+      initial captionClose {
+        visible: true;
+        x: 245;
+        y: 105;
+        scaleX: 0.62;
+        scaleY: 0.62;
+      }
+      initial title {
+        visible: false;
+      }
+      initial subtitle {
+        visible: false;
+      }
+      initial sync {
+        visible: false;
+        x: 970.4;
+        y: 155.84;
+        scaleX: 0.62;
+        scaleY: 0.62;
+      }
+      camera close {
+        x: 245;
+        y: 105;
+        scaleX: 0.62;
+        scaleY: 0.62;
+      }
+      expose closeBlink {
+        actor: @hero;
+        drawing: @eyesClosed;
+        start: 91f;
+        end: 94f;
+      }
+      track gazeTrack {
+        target: @hero.eyes;
+        property: "x";
+        keys: [
+          { id: "gaze0"; frame: 0f; value: 5; hold: 2f; },
+          { id: "gaze1"; frame: 36f; value: 1; hold: 2f; }
+        ];
+      }
+      morph expression {
+        actor: @hero;
+        from: @settled;
+        to: @smile;
+        start: 12f;
+        end: 72f;
+        easing: "ease-in-out";
+      }
+      initial hero.hand {
+        shape: @palmHolding;
+      }
+      initial hero.fingers {
+        shape: @fingersHolding;
+      }
+      initial hero.thumb {
+        shape: @thumbHolding;
+      }
+      contact restCarry {
+        target: @lantern;
+        anchor: @hero.hand;
+        targetPoint: [-2, -31];
+        anchorPoint: "grip";
+        start: 0f;
+        end: 144f;
+      }
+    }
+  }
+}

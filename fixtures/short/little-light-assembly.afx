@@ -1,0 +1,65 @@
+project littleLightAssembly {
+  viewport: (1280, 720);
+  fps: (24, 1);
+  import lamp { src: "little-light/lamp.afx"; }
+  import motion { src: "little-light/motion.afx"; }
+  theme brass {
+    bright: { top: "#f9d58a"; light: "#e3a24b"; dark: "#ac723d"; };
+    dark: { top: "#ad8370"; light: "#956958"; dark: "#704e4d"; };
+  }
+  shape paper { primitive: rect; size: (1280, 720); }
+  part paper {
+    shape: @paper;
+    material: { fill: "#eee4d3"; };
+  }
+  actor paper { parts: [@paper]; layer: -100; }
+  shape blank {
+    contour origin { start: (0, 0); closed: false; }
+  }
+  part root { shape: @blank; material: { fill: null; }; }
+  actor mount {
+    parts: [@root];
+    transform: { x: 640; y: 290; scaleX: 2.2; scaleY: 2.2; };
+  }
+  // Identical component recipes to the short, with a new mount and dimensions.
+  instance housing {
+    component: @turnedPiece;
+    args: { parent: @mount.root; materials: @brass.bright; };
+  }
+  instance foot {
+    component: @turnedPiece;
+    args: { radius: 33; height: 9; z: -80; parent: @mount.root; materials: @brass.dark; layer: 64; };
+  }
+  instance rim {
+    component: @turnedPiece;
+    args: { radius: 31; height: 5; z: -8; parent: @mount.root; materials: @brass.bright; layer: 62; };
+  }
+  shape shadow { primitive: ellipse; radius: (125, 18); }
+  part shadow {
+    shape: @shadow;
+    transform: { x: 640; y: 485; opacity: 0.4; };
+    material: { fill: "#b49b89"; };
+  }
+  actor shadow { parts: [@shadow]; layer: -50; }
+  scene assembly {
+    shot separateAndReturn {
+      duration: 144f;
+      // Pause at the exploded pose, then return to the exact seated pose.
+      play housingTravel {
+        clip: @excursion;
+        start: 12f;
+        args: { target: @housing_piece; away: -26; };
+      }
+      play rimTravel {
+        clip: @excursion;
+        start: 12f;
+        args: { target: @rim_piece; away: -62; };
+      }
+      play footTravel {
+        clip: @excursion;
+        start: 12f;
+        args: { target: @foot_piece; away: 20; };
+      }
+    }
+  }
+}

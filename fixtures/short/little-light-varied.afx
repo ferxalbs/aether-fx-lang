@@ -1,0 +1,26 @@
+project littleLightVaried {
+  version: 1;
+  viewport: [1280, 720];
+  fps: [24, 1];
+  const tableX {
+    value: -24;
+  }
+  const lampPlacement {
+    value: { x: 666; y: 384.5; scaleX: 1.1; scaleY: 1.1; };
+  }
+  import lamp {
+    src: "little-light/lamp.afx";
+  }
+  import art {
+    src: "little-light/art.afx";
+  }
+  import rig {
+    src: "little-light/rig.afx";
+  }
+  import motion {
+    src: "little-light/motion.afx";
+  }
+  import sequence {
+    src: "little-light/sequence.afx";
+  }
+}

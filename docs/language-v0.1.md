@@ -16,6 +16,117 @@ Easing names and the analytic spring domain/equations are documented in the pack
 
 The reference short's 480 states were compared against the baseline compiler/evaluator; geometry/artwork was not changed. Pixel parity has a measured tolerance for native versus Chromium and no cross-platform exactness promise. See release evidence for source/tool hashes. Linear/radial fills and local vector clips use the bounded contracts below. General shadows, blend modes and text layout/reveal remain outside this syntax.
 
+## Compact tracks, reusable clips and modules
+
+These constructs expand during compilation into schema-1 keys, poses, drawings and intervals. Playback still evaluates an absolute integer frame. `.afx` contains no arithmetic expressions, JavaScript, runtime scripts or implicit IO.
+
+```afx
+// Inside a shot: the left key controls interpolation to the next key.
+track gaze {
+  target: @hero.eyes;
+  property: x;
+  easing: ease-in-out;
+  hold: 2f;
+  keys: [
+    { id: start; frame: 0f; value: 0; },
+    { id: notice; frame: 72f; value: 5; hold: 1f; }
+  ];
+}
+```
+
+A track declares `target` and `property` once. Its nonempty `keys` list contains objects with `frame`, `value`, optional `id`, `easing`, `rotationMode`, `hold` and time `offset`. Track-level easing/rotationMode/hold provide defaults; each key can override them. Rotation values retain `deg`/`rad`. Times can reference shot anchors. IDs expand to `gaze_start` and `gaze_notice`; omitted labels use zero-based indices. Named labels remain stable when other rows are inserted. Duplicate labels, unknown fields, missing targets, duplicate writers and canonical limits remain errors. Repeats also stagger compact tracks and clip plays, using the existing rational stagger conversion.
+
+```afx
+// At project/module scope; references can be supplied by clip arguments.
+clip grip {
+  duration: 24f;
+  params: { performer: @hero; };
+  morph close {
+    actor: @performer; from: @near; to: @reach;
+    start: 0f; end: 12f; easing: ease-in-out;
+  }
+  expose fingers {
+    actor: @performer; drawing: @handHolding;
+    start: 12f; end: 24f;
+  }
+}
+// Inside a shot; this occupies local frames 48..72.
+play pickup {
+  clip: @grip;
+  start: 48f;
+  duration: 24f;
+  args: { performer: @hero; };
+}
+```
+
+A clip accepts keys/tracks, morphs, exposures, contacts, local time anchors and nested plays. `start` is a shot time or anchor. `duration` on a play is optional and must equal the definition's duration: this version neither stretches nor truncates clips. Each authored time converts to frame space once; the start offset is then added. The complete declared span must fit the containing clip/shot, even if its final event occurs earlier. Keys must remain strictly inside the shot; interval ends may equal its boundary. A clip does not reset actor state or introduce an automatic return pose. Exposures remain temporary, destinations of morphs persist, and ordinary writer-conflict validation applies across all plays. Event IDs acquire the play prefix; local time anchors are remapped, while external pose/drawing/actor references retain their names. Unknown or duplicate arguments fail. All clip dependency cycles, including unused cycles, are checked; depth is limited to 32 and temporal lowering to 20,000 declarations, in addition to existing expansion and canonical limits.
+
+```afx
+project short {
+  viewport: (1280, 720); fps: (24, 1);
+  import art { src: "little-light/art.afx"; }
+  import rig { src: "little-light/rig.afx"; }
+  import sequence { src: "little-light/sequence.afx"; }
+}
+// little-light/art.afx
+module art {
+  shape dot { primitive: circle; radius: 12; }
+  part dot { shape: @dot; }
+  actor dot { parts: [@dot]; }
+}
+```
+
+An import inserts a `module` root's declarations into the shared project scope, in import order; it does not prefix names or override definitions. Module roots have no project header fields. Duplicate declarations still diagnose. Relative paths resolve from the **importing file**, not the working directory. The resolver must return a canonical module ID; each ID is included once, transitive dependencies are visited, and active-stack cycles diagnose `MODULE_CYCLE`. Limits are 64 distinct dependency modules, depth 32 and 2 MB of combined source by default, including the entry and trailing comments. Diagnostics retain original UTF-16 offsets/line/column and a `range.source` ID for identified files. `parse` records source byte metadata; formatting emits only language text.
+
+`compileSource(text, manifest, { sourceId, resolveModule })` and `normalize(ast, options)` require an explicit synchronous resolver when imports exist. For a browser, preload an authorized map and resolve only against it; the compiler performs no filesystem or network access:
+
+```ts
+const sources = new Map([
+  ['https://example.invalid/art.afx', 'module art {shape dot {primitive:circle;radius:12;}}']
+]);
+const result = compileSource(text, manifest, {
+  sourceId: 'https://example.invalid/main.afx',
+  resolveModule(specifier, importer) {
+    const id = new URL(specifier, importer).href;
+    const source = sources.get(id);
+    if (source === undefined) throw new Error('Module unavailable');
+    return { id, source };
+  }
+});
+```
+
+The Node `loadProject` host preloads local dependencies under the entry file's directory, checks realpath containment (including symlinks), and returns `sources`, a canonical-ID/text map. External schemes, absolute paths, escaping paths and excessive source budgets are rejected. Asset paths retain the existing convention: relative to the entry project's directory, irrespective of the module declaring the asset. Hosts needing broader source roots must supply their own explicit resolver; the default Node loader does not grant them implicitly. `authorDiagnostics` optionally receives the current source ID and never proposes entry-file edits using another module's offsets.
+
+## Bounded two-segment arm authoring
+
+A pose can contain one `arm` declaration. It computes three rotations during normalization, then emits ordinary pose transforms. It installs no runtime constraint and is not a general IK system.
+
+```afx
+pose reach {
+  parts: { torsoRig: { transform: { rotation: 2.5deg; }; }; };
+  arm right {
+    actor: @hero; upper: @frontArm; fore: @foreArm; hand: @hand;
+    lengths: (104, 120);
+    target: @lantern; point: (-2, -31);
+    offsetPoint: (0, 0); grip: (18, -5);
+    elbow: negative; rotation: 0deg;
+  }
+}
+```
+
+Lengths are positive project units. The upper shoulder comes from its part placement; all three segment pivots are explicitly `(0,0)`. Fore/hand parenting must form the specified chain, fore x must equal the first length and hand x the second, with y zero and unit scales. The upper's parent must be a rigid unit-scale transform. `target` is a project-space xy tuple or an actor/actor.part reference sampled at its authored placement; `point` is target-local, `offsetPoint` is project-space, `grip` is hand-local, and `rotation` is the desired world hand angle. The current pose's parent transforms are included. Choose `positive` or `negative` elbow explicitly. Targets outside the annulus or the ambiguous zero-distance goal diagnose `ARM_UNREACHABLE`, rather than being clamped. Explicit pose transforms on these same arm parts conflict. Optional `initial:true` on one arm pose supplies those three default part rotations; a second initial writer for the same parts conflicts. No copied derived rotations are needed in the rig. The pure `twoSegmentArm(shoulder, target, lengths, elbow)` core helper returns upper/relative-fore radians.
+
+The editable [short](../fixtures/short/little-light-authored.afx) imports visible art, rig, lamp recipes, motion and sequence modules. Its [dimensional variation](../fixtures/short/little-light-varied.afx) changes table placement and lamp scale using the same modules and goal poses. The [assembly](../fixtures/short/little-light-assembly.afx) reuses the turned-piece component and the excursion clip for separation, a held exploded pose and exact return; that same clip animates the short's curious gaze. Both short entries reuse the pose/drawing grip clip. The historical [short](../fixtures/short/little-light.afx) and [guide carriage](../fixtures/assembly/guide-carriage.afx) remain supported.
+
+```sh
+npm run check
+node examples/browser/serve.mjs fixtures/short/little-light-authored.afx
+node scripts/verify-authored-short.mjs
+# A fresh directory may be supplied; the verifier rejects existing movies/PNGs.
+```
+
+The verifier checks every frame in linear, reverse and shuffled order, planted feet and grip alignment, bind/support/lift and shot continuity, Chromium/Skia parity at all declared critical frames, and exports/decode of all three examples. Its PNG sheets require visual review; numeric parity does not qualify artistic quality. Timings distinguish preloaded text compilation, pure evaluation and full export. The default evidence directory is outside the checkout; the final reviewed history images are versioned separately.
+
 ## Public projected solids, editable curves and contact
 
 These are additive schema-1 fields. Older runtimes may reject them. Projection is baked at authoring time; playback and the shot camera still operate in 2D at absolute frames. There is no arbitrary 3D camera orbit.

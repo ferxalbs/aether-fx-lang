@@ -1,12 +1,13 @@
 import { readFile, realpath, stat } from 'node:fs/promises';
 import { dirname, isAbsolute, resolve, sep } from 'node:path';
 import { createHash } from 'node:crypto';
-import { compile, failure } from '@aether-fx/core';
+import { compile, diagnostic, failure } from '@aether-fx/core';
 import type { AssetManifest, FxDocument, PlaybackPlan, Result } from '@aether-fx/core';
 import { normalize, parse, compileSource } from '@aether-fx/compiler';
+import type { SourceOptions } from '@aether-fx/compiler';
 import { FxEnvironmentError } from './errors.js';
 export interface ResolvedAssets { manifest:AssetManifest; files:Map<string,{path:string;bytes:Buffer}> }
-export interface LoadedProject { plan:PlaybackPlan; assets:ResolvedAssets }
+export interface LoadedProject { plan:PlaybackPlan; assets:ResolvedAssets; sources?:Map<string,string> }
 export function wavMetadata(bytes:Buffer):{duration:number;sampleRate:number;channels:number;bits:number;dataOffset:number;dataLength:number} {
   if(bytes.length<44||bytes.toString('ascii',0,4)!=='RIFF'||bytes.toString('ascii',8,12)!=='WAVE'||bytes.readUInt32LE(4)+8!==bytes.length)throw new FxEnvironmentError('ASSET_FORMAT','Expected a complete RIFF WAV file');
   let channels=0,sampleRate=0,bits=0,alignment=0,dataOffset=0,dataLength=0;
@@ -49,12 +50,40 @@ export async function resolveAssets(document:FxDocument,options:{root:string;sig
   return {manifest,files};
 }
 export async function loadProject(path:string,options:{signal?:AbortSignal}={}):Promise<Result<LoadedProject>> {
-  const absolute=resolve(path);let source:string;
-  try{const info=await stat(absolute);if(info.size>2_000_000)throw new FxEnvironmentError('SOURCE_LIMIT','Source exceeds 2 MB limit');source=await readFile(absolute,{encoding:'utf8',signal:options.signal});}
+  let absolute=resolve(path),source:string;
+  try{absolute=await realpath(absolute);const info=await stat(absolute);if(info.size>2_000_000)throw new FxEnvironmentError('SOURCE_LIMIT','Source exceeds 2 MB limit');source=await readFile(absolute,{encoding:'utf8',signal:options.signal});}
   catch(cause){if(cause instanceof FxEnvironmentError)throw cause;throw new FxEnvironmentError('SOURCE_READ',`Cannot read ${absolute}`,{cause});}
   const ast=parse(source);if(!ast.ok)return failure(ast.diagnostics);
-  const document=normalize(ast.value);if(!document.ok)return failure(document.diagnostics);
+  const sources=new Map<string,string>([[absolute,source]]),aliases=new Map<string,string>(),root=await realpath(dirname(absolute));
+  let totalBytes=Buffer.byteLength(source),moduleRange:import('@aether-fx/core').SourceRange|undefined;
+  const loadModules=async(text:string,importer:string,depth:number):Promise<void>=>{
+    if(depth>32)throw new FxEnvironmentError('SOURCE_LIMIT','Module depth exceeds 32');
+    const parsed=parse(text,{sourceId:importer});if(!parsed.ok)return;
+    for(const d of parsed.value.project.children.filter(d=>d.keyword==='import')){
+      moduleRange=d.range;
+      const src=d.fields.find(f=>f.name==='src')?.value;
+      if(src?.kind!=='scalar'||typeof src.value!=='string'||isAbsolute(src.value)||/^[A-Za-z][A-Za-z0-9+.-]*:/.test(src.value)||src.value.includes('\0'))continue;
+      const requested=resolve(dirname(importer),src.value),modulePath=await realpath(requested);
+      aliases.set(requested,modulePath);
+      if(!modulePath.startsWith(root+sep))throw new FxEnvironmentError('SOURCE_PATH','Module escapes authorized project root');
+      if(sources.has(modulePath))continue;
+      const info=await stat(modulePath);
+      if(!info.isFile()||info.size>2_000_000||sources.size>=65)throw new FxEnvironmentError('SOURCE_LIMIT','Module source limit exceeded');
+      const text=await readFile(modulePath,{encoding:'utf8',signal:options.signal});
+      totalBytes+=Buffer.byteLength(text);if(totalBytes>2_000_000)throw new FxEnvironmentError('SOURCE_LIMIT','Combined source exceeds 2 MB');
+      sources.set(modulePath,text);await loadModules(text,modulePath,depth+1);
+    }
+  };
+  try{await loadModules(source,absolute,0);}
+  catch(cause){return failure([diagnostic(cause instanceof FxEnvironmentError?cause.code:'SOURCE_READ',String(cause),{...(moduleRange?{range:moduleRange}:{})})]);}
+  const sourceOptions:SourceOptions={sourceId:absolute,resolveModule:(specifier,importer)=>{
+    const requested=resolve(dirname(importer),specifier),id=aliases.get(requested)??requested,text=sources.get(id);
+    if(text===undefined)throw new FxEnvironmentError('SOURCE_READ','Module is unavailable');
+    return {id,source:text};
+  }};
+  const locatedAst=parse(source,{sourceId:absolute});if(!locatedAst.ok)return failure(locatedAst.diagnostics);
+  const document=normalize(locatedAst.value,sourceOptions);if(!document.ok)return failure(document.diagnostics);
   const assets=await resolveAssets(document.value,{root:dirname(absolute),...(options.signal?{signal:options.signal}:{})});
-  const compiled=compile(document.value,assets.manifest);if(!compiled.ok){const located=compileSource(source,assets.manifest);return failure(located.ok?compiled.diagnostics:located.diagnostics);}
-  return {ok:true,value:{plan:compiled.value,assets}};
+  const compiled=compile(document.value,assets.manifest);if(!compiled.ok){const located=compileSource(source,assets.manifest,sourceOptions);return failure(located.ok?compiled.diagnostics:located.diagnostics);}
+  return {ok:true,value:{plan:compiled.value,assets,sources}};
 }

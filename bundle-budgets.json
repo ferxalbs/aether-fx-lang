@@ -5,9 +5,9 @@
   "referenceEsbuild": "0.28.2",
   "method": "Standalone minified ESM browser exports, ES2022, bundled dependencies, Node gzip default compression. Totals include shared dependencies and are not additive. Caps accept measured, justified authoring and contact-plan correctness growth under AGENTS.md; unaffected caps are retained. Original caps and failures remain historical evidence in KNOW-ISSUES.md and docs/performance-v0.1.md. Further justified growth permits a documented measured cap update within the task, without separate size-only approval; unexplained growth and import-isolation failures remain actionable.",
   "maxGzipBytes": {
-    "core": 16613,
+    "core": 17039,
     "player": 5758,
-    "parser": 52744,
-    "export": 41617
+    "parser": 56473,
+    "export": 41787
   }
 }

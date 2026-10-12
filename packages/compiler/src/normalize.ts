@@ -5,6 +5,11 @@ import { parse } from './parser.js';
 import { expand, timeFrames } from './expand.js';
 import { resolveAnchors } from './anchors.js';
 import { primitive } from './primitives.js';
+import { resolveModules } from './modules.js';
+import type { SourceOptions } from './modules.js';
+import { expandTemporal } from './temporal.js';
+import { armPose } from './arms.js';
+import type { ArmAuthoring } from './arms.js';
 
 const frameFields=new Set(['frame','duration','start','end','offset','trimStart','hold']);
 const badKeys=new Set(['__proto__','prototype','constructor']);
@@ -38,11 +43,17 @@ function sourceRangeForPath(root:Declaration,path=''):SourceRange {
   }
   return node.range;
 }
-export function normalize(ast:DocumentAST):Result<FxDocument> {const expanded=expand(ast);return expanded.ok?normalizeExpanded(expanded.value):expanded;}
+function prepare(ast: DocumentAST, options: SourceOptions = {}, bytes?: number): Result<DocumentAST> {
+  const modules = resolveModules(ast, options, bytes); if (!modules.ok) return modules;
+  const expanded = expand(modules.value); if (!expanded.ok) return expanded;
+  return expandTemporal(expanded.value);
+}
+export function normalize(ast: DocumentAST, options: SourceOptions = {}): Result<FxDocument> { const expanded = prepare(ast, options); return expanded.ok ? normalizeExpanded(expanded.value) : expanded; }
 function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
   const fpsValue=ast.project.fields.find(f=>f.name==='fps')?.value;
   const rationalFps:[number,number]=fpsValue?.kind==='array'&&fpsValue.items.length===2&&fpsValue.items.every(v=>v.kind==='scalar'&&typeof v.value==='number'&&Number.isSafeInteger(v.value)&&v.value>0)?[Number((fpsValue.items[0] as {value:number}).value),Number((fpsValue.items[1] as {value:number}).value)]:[24,1];
   const errors:Diagnostic[]=[];
+  const arms:{pose:string;declaration:Declaration;value:ArmAuthoring}[]=[];
   const fail=(code:string,message:string,range:SourceRange,id?:string)=>errors.push(diagnostic(code,message,{range,...(id?{id}:{})}));
   function convert(value:AstValue,property:string):unknown {
     if (value.kind==='scalar') {
@@ -123,7 +134,9 @@ function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
     } else if (d.keyword==='actor') {
       const f=allowed(d,['parts','transform','parent','layer']); append('actors',{id:d.id,parent:null,layer:0,...f,transform:transform(f.transform)});
     } else if (d.keyword==='pose'||d.keyword==='drawing') {
-      append(d.keyword==='pose'?'poses':'drawings',{id:d.id,...allowed(d,['parts'])});
+      append(d.keyword==='pose'?'poses':'drawings',{id:d.id,...allowed(d,['parts'],d.keyword==='pose'?['arm']:[])});
+      if(d.children.length>1)fail('ARM_INVALID','Pose permits one arm',d.range,d.id);
+      for(const a of d.children.filter(c=>c.keyword==='arm'))arms.push({pose:d.id,declaration:a,value:allowed(a,['actor','upper','fore','hand','lengths','target','point','offsetPoint','grip','elbow','rotation','initial']) as unknown as ArmAuthoring});
     } else if (d.keyword==='background') {
       append('backgrounds',{id:d.id,...allowed(d,['actor','parallax'])});
     } else if (d.keyword==='audio') {
@@ -156,6 +169,11 @@ function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
       }
     }
   }
+  const armInitials=new Set<string>();
+  for (const arm of arms) {
+    try { if(arm.value.initial){for(const id of [arm.value.upper,arm.value.fore,arm.value.hand]){if(armInitials.has(id))throw new Error('PROPERTY_CONFLICT: Duplicate initial arm writer');armInitials.add(id);}} armPose(result as unknown as FxDocument, (result.poses as FxDocument['poses']).find(p => p.id === arm.pose)!, arm.value); }
+    catch (cause) { fail(/(ARM_[A-Z_]+|REFERENCE_MISSING|PROPERTY_CONFLICT|HIERARCHY_CYCLE)/.exec(String(cause))?.[1] ?? 'ARM_INVALID', String(cause), arm.declaration.range, arm.pose); }
+  }
   // Spatial landmark names resolve after all declarations, independently of source order.
   for(const shot of result.shots as Shot[])for(const contact of shot.contacts??[]) {
     if(typeof contact.anchorPoint==='string') {
@@ -172,13 +190,13 @@ function normalizeExpanded(ast:DocumentAST):Result<FxDocument> {
   if (invalid.length) return failure(invalid.map(e=>({...e,range:sourceRangeForPath(root,e.code==='SCHEMA_VERSION'?'/schemaVersion':e.path)})));
   return success(result as unknown as FxDocument);
 }
-export function compileSource(source:string,manifest:AssetManifest=[],options:Partial<Limits>={}):Result<PlaybackPlan> {
-  const ast=parse(source,{sourceBytes:options.sourceBytes??DEFAULT_LIMITS.sourceBytes,depth:options.depth??DEFAULT_LIMITS.depth});if (!ast.ok) return ast;
-  const expanded=expand(ast.value);if(!expanded.ok)return expanded;
-  const document=normalizeExpanded(expanded.value);if (!document.ok) return document;
-  const plan=compile(document.value,manifest,options);
+export function compileSource(source: string, manifest: AssetManifest = [], options: SourceOptions = {}): Result<PlaybackPlan> {
+  const ast = parse(source, { sourceBytes: options.sourceBytes ?? DEFAULT_LIMITS.sourceBytes, depth: options.depth ?? DEFAULT_LIMITS.depth, ...(options.sourceId ? { sourceId: options.sourceId } : {}) }); if (!ast.ok) return ast;
+  const expanded = prepare(ast.value, options, new TextEncoder().encode(source).length); if (!expanded.ok) return expanded;
+  const document = normalizeExpanded(expanded.value); if (!document.ok) return document;
+  const plan = compile(document.value, manifest, options);
   if (!plan.ok) {
-    return failure(plan.diagnostics.map(e=>e.path==='/manifest'||e.path?.startsWith('/manifest/')?e:{...e,range:sourceRangeForPath(expanded.value.project,e.path)}));
+    return failure(plan.diagnostics.map(e => e.path === '/manifest' || e.path?.startsWith('/manifest/') ? e : { ...e, range: sourceRangeForPath(expanded.value.project, e.path) }));
   }
   return plan;
 }

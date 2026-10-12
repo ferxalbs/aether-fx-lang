@@ -4,7 +4,7 @@ import { queryWebExport } from '@aether-fx/export';
 import { describe, it, expect, vi } from 'vitest';
 import { readFile, mkdtemp, writeFile, symlink, rm, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { loadProject, resolveAssets, wavMetadata, imageMetadata, doctor } from '@aether-fx/node';
 import { compile, evaluate, serializePlan, deserializePlan } from '@aether-fx/core';
 import { normalize, parse } from '@aether-fx/compiler';
@@ -182,16 +182,17 @@ describe('CI functional regressions',()=>{
 });
 
 describe('integrated vector scenes',()=>{
-  it.each(['fixtures/short/little-light-authored.afx','fixtures/assembly/guide-carriage.afx'])('roundtrips public authoring and seeks contact boundaries in %s',async(file)=>{
+  it.each(['fixtures/short/little-light-authored.afx','fixtures/short/little-light-varied.afx','fixtures/short/little-light-assembly.afx','fixtures/assembly/guide-carriage.afx'])('roundtrips public authoring and seeks contact boundaries in %s',async(file)=>{
     const {compileSource,print}=await import('@aether-fx/compiler');
     const {matrixPoint}=await import('@aether-fx/core');
 
-      const {plan,assets}=unwrap(await loadProject(file));
-      expect(unwrap(compileSource(print(unwrap(parse(await readFile(file,'utf8')))),assets.manifest))).toEqual(plan);
-      const frames=file.includes('little-light')?[0,144,156,174,194,203,204,205,216,240,274,335,336,479]:[0,36,60,84,132,156,191,192,193,239];
+      const {plan,assets,sources}=unwrap(await loadProject(file));
+      const sourceOptions={sourceId:resolve(file),resolveModule:(specifier:string,importer:string)=>{const id=resolve(dirname(importer),specifier);return {id,source:sources!.get(id)!};}};
+      expect(unwrap(compileSource(print(unwrap(parse(await readFile(file,'utf8')))),assets.manifest,sourceOptions))).toEqual(plan);
+      const frames=file.includes('little-light-assembly')?[0,12,35,36,60,84,108,143]:file.includes('little-light')?[0,144,156,174,194,203,204,205,216,240,274,335,336,479]:[0,36,60,84,132,156,191,192,193,239];
       const expected=new Map(frames.map(frame=>[frame,evaluate(plan,{frame})]));
       for(const frame of [...frames].reverse())expect(evaluate(plan,{frame})).toEqual(expected.get(frame));
-      if(file.includes('little-light'))for(const frame of [203,204,205,216,240,274,335,336,479]){
+      if(file.includes('little-light')&&!file.includes('assembly'))for(const frame of [203,204,205,216,240,274,335,336,479]){
         const draw=expected.get(frame)!,hand=draw.commands.find(c=>c.id==='hero.hand')!,lamp=draw.commands.find(c=>c.id==='lantern.lanternBody')!;
         const a=matrixPoint(hand.matrix,[18,-5]),b=matrixPoint(lamp.matrix,[-2,-31]);
         if(frame>=204)expect(Math.hypot(a[0]-b[0],a[1]-b[1])).toBeLessThan(1e-8);

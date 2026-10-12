@@ -1,6 +1,16 @@
 import type { Contour, CurveNode, Vec2 } from './types.js';
 
 const identifier = /^[A-Za-z][A-Za-z0-9_-]{0,63}$/;
+/** Authoring only: two rigid segments on +x, explicit elbow side, radians. */
+export function twoSegmentArm(shoulder: Vec2, target: Vec2, lengths: Vec2, elbow: 'positive' | 'negative'): { upper: number; fore: number } {
+  authorPoint(shoulder); authorPoint(target); authorPoint(lengths);
+  if (lengths.some(n => n <= 0 || n > 1e6) || !['positive', 'negative'].includes(elbow)) throw new RangeError('ARM_INVALID: Positive lengths and explicit elbow side required');
+  const dx = target[0] - shoulder[0], dy = target[1] - shoulder[1], distance = Math.hypot(dx, dy);
+  const [a, b] = lengths;
+  if (distance < 1e-9 || distance > a + b + 1e-9 || distance < Math.abs(a - b) - 1e-9) throw new RangeError('ARM_UNREACHABLE: Target outside two-segment reach');
+  const fore = (elbow === 'positive' ? 1 : -1) * Math.acos(Math.max(-1, Math.min(1, (distance * distance - a * a - b * b) / (2 * a * b))));
+  return { upper: Math.atan2(dy, dx) - Math.atan2(b * Math.sin(fore), a + b * Math.cos(fore)), fore };
+}
 export function authorPoint(value: Vec2): Vec2 {
   if (!Array.isArray(value) || value.length !== 2 || !value.every(Number.isFinite)) throw new RangeError('Expected finite xy point');
   return [...value];

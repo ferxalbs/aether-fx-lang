@@ -1,4 +1,6 @@
 import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { applyPatch, compile, deserializeDocument, deserializePlan, evaluate, frameTimestamp, serializeDocument, serializePlan, validate } from '@aether-fx/core';
 import type { FxDocument, PlaybackPlan, Result } from '@aether-fx/core';
@@ -99,7 +101,8 @@ describe('validation and serialization',()=>{
   });
   it('accepts engine roundoff only in rebuilt contact snapshots, without trusting wire values',()=>{
     const source=readFileSync(new URL('../fixtures/short/little-light-authored.afx',import.meta.url),'utf8');
-    const p=unwrap(compileSource(source,shortManifest));
+    const sourceId=fileURLToPath(new URL('../fixtures/short/little-light-authored.afx',import.meta.url));
+    const p=unwrap(compileSource(source,shortManifest,{sourceId,resolveModule:(specifier,importer)=>{const id=resolve(dirname(importer),specifier);return {id,source:readFileSync(id,'utf8')};}}));
     const wire=JSON.parse(serializePlan(p));
     // Chromium and Node differ at this boundary by these ulps after rotated FK/contact.
     wire.shots[2].snapshot.values.lantern.scaleX+=Number.EPSILON;
@@ -334,12 +337,90 @@ describe('v0.1 authoring extensions',()=>{
  it('evaluates analytic spring independently of seeking order and guards camera overshoot',()=>{const p=unwrap(compileSource(example('shape g {primitive:circle; radius:10;} part p {shape:@g;} actor a { parts:[@p]; }','duration:48f; key a {target:@a; property:x; frame:0f; value:0; easing:{type:spring; frequency:12; damping:0.7; velocity:0;};} key b {target:@a; property:x; frame:47f; value:100;}')));const frames=[47,25,0,12,25];const states=frames.map(frame=>evaluate(p,{frame}));expect(states[1]).toEqual(states[4]);expect(compileSource(example('','duration:48f; key a {target:camera; property:scaleX; frame:0f; value:1; easing:back-out;} key b {target:camera; property:scaleX; frame:47f; value:2;}')).ok).toBe(false);});
 });
 
+describe('compact temporal authoring',()=>{
+  const source=(definitions:string,events:string)=>`project p {viewport:(100,100);fps:(24,1);
+    shape dot {primitive:circle;radius:5;} part dot {shape:@dot;} actor a {parts:[@dot];}
+    pose idle {parts:{dot:{transform:{x:0;};};};}
+    pose raised {parts:{dot:{transform:{x:10;};};};}
+    drawing closed {parts:{dot:@dot;};}
+    ${definitions} scene scene {shot shot {duration:48f;${events}}}}`;
+  it('lowers tracks exactly to expanded keys, preserving key IDs, units and seeking',()=>{
+    const compact=source('',`anchor beat {at:12f;} track travel {target:@a;property:rotation;hold:2f;
+      keys:[{id:start;frame:0f;value:0deg;easing:ease-in-out;},{id:end;frame:@beat;value:90deg;}];}`);
+    const expanded=source('',`key travel_start {target:@a;property:rotation;hold:2f;frame:0f;value:0deg;easing:ease-in-out;}
+      key travel_end {target:@a;property:rotation;hold:2f;frame:12f;value:90deg;}`);
+    const p=unwrap(compileSource(compact)),q=unwrap(compileSource(expanded));expect(p).toEqual(q);
+    expect(unwrap(compileSource(print(unwrap(parse(compact)))))).toEqual(p);
+    for(const frame of [47,12,0,3,23,3])expect(evaluate(p,{frame})).toEqual(evaluate(q,{frame}));
+  });
+  it('reuses pose/drawing clips with offsets and instance-local anchors without capturing pose names',()=>{
+    const definitions=`clip gesture {duration:12f;params:{actor:@a;};anchor touch {at:6f;}
+      morph idle {actor:@actor;from:@idle;to:@raised;start:0f;end:@touch;}
+      expose closed {actor:@actor;drawing:@closed;start:@touch;end:12f;}}`;
+    const compact=source(definitions,`anchor entry {at:12f;} play first {clip:@gesture;start:@entry;duration:12f;}
+      play second {clip:@gesture;start:30f;args:{actor:@a;};}`);
+    const expanded=source('',`morph first_idle {actor:@a;from:@idle;to:@raised;start:12f;end:18f;}
+      expose first_closed {actor:@a;drawing:@closed;start:18f;end:24f;}
+      morph second_idle {actor:@a;from:@idle;to:@raised;start:30f;end:36f;}
+      expose second_closed {actor:@a;drawing:@closed;start:36f;end:42f;}`);
+    expect(unwrap(compileSource(compact))).toEqual(unwrap(compileSource(expanded)));
+  });
+  it('diagnoses compact key locations, incompatible writers, unused clip cycles and expansion limits',()=>{
+    const broken=source('',`track travel {target:@absent;property:x;keys:[{frame:0f;value:0;}];}`);
+    const result=compileSource(broken);expect(result.ok).toBe(false);
+    if(!result.ok){const diagnostic=result.diagnostics.find(d=>d.code==='REFERENCE_MISSING');expect(diagnostic?.range?.start).toBe(broken.indexOf('@absent'));}
+    expect(compileSource(source('', 'track t {target:@a;property:x;keys:[{id:first;id:second;frame:0f;value:0;}];}'))).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'TEMPORAL_INVALID'})]});
+    for(const definitions of [
+      'clip a {duration:1f;play b {clip:@b;start:0f;}} clip b {duration:1f;play a {clip:@a;start:0f;}}',
+      'clip a {duration:1f;play missing {clip:@absent;start:0f;}}'
+    ])expect(compileSource(source(definitions,''))).toMatchObject({ok:false});
+    const clip='clip c {duration:12f;track t {target:@a;property:y;keys:[{frame:0f;value:0;},{frame:12f;value:1;}];}}';
+    for(const play of ['play c {clip:@c;start:42f;}','play c {clip:@c;start:0f;duration:6f;}','play c {clip:@c;start:0f;args:{unknown:1;};}'])expect(compileSource(source(clip,play)).ok).toBe(false);
+    expect(compileSource(source(clip,'play c {clip:@c;start:0f;} key clash {target:@a;property:y;frame:0f;value:3;}'))).toMatchObject({ok:false});
+    const many=Array.from({length:20001},(_,i)=>`{frame:${i}f;value:0;}`).join(',');
+    expect(compileSource(source('',`track many {target:@a;property:x;keys:[${many}];}`))).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'LIMIT_EXCEEDED'})]});
+  });
+  it('requires explicit module resolution, deduplicates canonical dependencies and retains imported locations',()=>{
+    const entry='project p {viewport:(100,100);fps:(24,1);import art {src:"art.afx";}import again {src:"art.afx";}scene s {shot s {duration:1f;}}}';
+    expect(compileSource(entry)).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'MODULE_RESOLVER_REQUIRED'})]});
+    const options={sourceId:'/scene/main.afx',resolveModule:()=>({id:'/scene/art.afx',source:'module art {shape dot {primitive:circle;radius:5;}part p {shape:@dot;}actor a {parts:[@p];}}'})};
+    expect(unwrap(compileSource(entry,[],options)).document.actors).toHaveLength(1);
+    expect(compileSource(entry,[],{...options,resolveModule:()=>({id:'/scene/art.afx',source:'module art {part p {shape:@missing;}}'})})).toMatchObject({ok:false,diagnostics:expect.arrayContaining([expect.objectContaining({range:expect.objectContaining({source:'/scene/art.afx',line:1})})])});
+    expect(compileSource(entry,[],{...options,resolveModule:()=>({id:'/scene/main.afx',source:'module art {}'})})).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'MODULE_CYCLE'})]});
+    expect(compileSource(entry,[],{...options,sourceBytes:entry.length+10})).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'LIMIT_EXCEEDED'})]});
+    expect(compileSource(entry,[],{...options,resolveModule:()=>({id:'/scene/art.afx',source:'module art {'})})).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'PARSE_ERROR',range:expect.objectContaining({source:'/scene/art.afx'})})]});
+  });
+  it('solves a bounded two-segment arm in either elbow direction and rejects unreachable goals',async()=>{
+    const {twoSegmentArm}=await import('@aether-fx/core');
+    for(const elbow of ['positive','negative'] as const){const p=twoSegmentArm([10,20],[60,60],[40,30],elbow);
+      expect(10+40*Math.cos(p.upper)+30*Math.cos(p.upper+p.fore)).toBeCloseTo(60,10);
+      expect(20+40*Math.sin(p.upper)+30*Math.sin(p.upper+p.fore)).toBeCloseTo(60,10);
+      expect(Math.sign(p.fore)).toBe(elbow==='positive'?1:-1);
+    }
+    expect(()=>twoSegmentArm([0,0],[80,0],[40,30],'negative')).toThrow(/ARM_UNREACHABLE/);
+    expect(()=>twoSegmentArm([0,0],[0,0],[40,30],'negative')).toThrow(/ARM_UNREACHABLE/);
+    const rig=(parts:string)=>`project arm {viewport:(100,100);fps:(24,1);shape dot {primitive:circle;radius:1;}part upper {shape:@dot;}part fore {shape:@dot;parent:@upper;transform:{x:4;};}part hand {shape:@dot;parent:@fore;transform:{x:3;};}actor a {parts:[@upper,@fore,@hand];}pose pose {parts:${parts};arm solve {actor:@a;upper:@upper;fore:@fore;hand:@hand;lengths:(4,3);target:(5,0);elbow:negative;rotation:0deg;}}scene s {shot s {duration:1f;}}}`;
+    expect(compileSource(rig('{}')).ok).toBe(true);
+    for(const parts of ['{upper:null;}','{upper:0;}','{upper:{transform:null;};}','{upper:{transform:{rotation:0deg;};};}'])expect(compileSource(rig(parts)).ok).toBe(false);
+    const rig=`project rig {viewport:(100,100);fps:(24,1);shape dot {primitive:circle;radius:1;}
+      part upper {shape:@dot;}part fore {shape:@dot;parent:@upper;transform:{x:4;};}part hand {shape:@dot;parent:@fore;transform:{x:3;};}
+      actor a {parts:[@upper,@fore,@hand];}
+      pose pose {parts:{};arm arm {actor:@a;upper:@upper;fore:@fore;hand:@hand;lengths:(4,3);target:(5,0);elbow:negative;rotation:0deg;}}
+      scene s {shot s {duration:1f;}}}`;
+    expect(compileSource(rig).ok).toBe(true);
+    for(const state of ['{transform:null;}','null','0','[]'])expect(compileSource(rig.replace('parts:{};',`parts:{upper:${state};};`)).ok).toBe(false);
+
+  });
+});
+
 describe('safe diagnostic edits',()=>{
  it('repairs only an unequivocal semicolon and rejects stale/overlapping edits',async()=>{const {safeEdits,applySafeEdits,authorDiagnostics}=await import('@aether-fx/compiler');const source='project x { viewport:(1,1); fps:(24,1); scene s { shot a { duration:1f } } }';const edits=safeEdits(source);expect(edits).toHaveLength(1);const result=applySafeEdits(source,source,edits);expect(result.ok).toBe(true);if(result.ok)expect(compileSource(result.value).ok).toBe(true);expect(applySafeEdits(source+' ',source,edits).ok).toBe(false);expect(applySafeEdits(source,source,[...edits,...edits]).ok).toBe(false);const invalid=compileSource(source);if(!invalid.ok)expect(authorDiagnostics(source,invalid.diagnostics)[0]).toMatchObject({canonicalPath:'/source',edits});expect(safeEdits('project x {duration:2;}')).toEqual([]);});
 });
 
 describe('stagger and geometry boundary regressions',()=>{
- it('rounds each rational stagger once and supports offsets on shared anchors',()=>{const source='project p {viewport:(100,100);fps:(24,1);shape g {primitive:circle;radius:10;}part p {shape:@g;}actor a {parts:[@p];}scene s {shot a {duration:48f;anchor beat {at:0f;}repeat keys {count:3;stagger:62.5ms;key k {target:@a;property:x;frame:@beat;offset:1f;value:@index;}}}}}';const result=unwrap(compileSource(source));expect(result.document.shots[0]!.keys.map(k=>k.frame)).toEqual([1,3,4]);});
+ it('rounds each rational stagger once and supports offsets on shared anchors',()=>{const source='project p {viewport:(100,100);fps:(24,1);shape g {primitive:circle;radius:10;}part p {shape:@g;}actor a {parts:[@p];}scene s {shot a {duration:48f;anchor beat {at:0f;}repeat keys {count:3;stagger:62.5ms;key k {target:@a;property:x;frame:@beat;offset:1f;value:@index;}}}}}';const result=unwrap(compileSource(source));expect(result.document.shots[0]!.keys.map(k=>k.frame)).toEqual([1,3,4]);
+    const tracked=source.replace('key k {target:@a;property:x;frame:@beat;offset:1f;value:@index;}', 'track k {target:@a;property:x;keys:[{frame:@beat;value:@index;}];}');
+    expect(unwrap(compileSource(tracked)).document.shots[0]!.keys.map(k=>k.frame)).toEqual([0,2,3]);});
  it('rejects malformed SVG and rounds arcs into stable cubic subdivisions',()=>{for(const data of ['L0 0','M0 0 Z 4','M0 0 A20 20 0 2 1 40 0','M0 0 X20 20','M0 0 L1e999 0'])expect(compileSource(`project p {viewport:(100,100);fps:(24,1);shape g {primitive:path;data:${JSON.stringify(data)};}scene s {shot a {duration:1f;}}}`).ok).toBe(false);});
 });
 
@@ -357,6 +438,11 @@ describe('public vector authoring',()=>{
     expect(unwrap(deserializePlan(serializePlan(p)))).toEqual(p);
     expect(p.document.actors.find(a=>a.id==='block')!.solid!.height).toBe(12);
     const stale=structuredClone(p.document);stale.actors.find(a=>a.id==='block')!.solid!.height=20;expect(validate(stale).map(d=>d.code)).toContain('SOLID_STALE');
+    const expectedDraw=evaluate(p,{frame:0}),owned=evaluate(p,{frame:0}),hand=owned.commands.find(c=>c.id==='hero.hand')!;
+    hand.shape!.contours[0]!.authoring!.nodes[0]!.point[0]=999;
+    hand.clip!.contours[0]!.segments[0]!.control1[0]=999;
+    if(typeof hand.material.fill==='object'&&hand.material.fill)hand.material.fill.stops[0]!.color='#ff0000';
+    expect(evaluate(p,{frame:0})).toEqual(expectedDraw);
     const staleCurve=structuredClone(p.document);staleCurve.shapes.find(s=>s.id==='curve')!.contours[0]!.authoring!.nodes[0]!.point=[3,0];expect(validate(staleCurve).map(d=>d.code)).toContain('CURVE_STALE');
     const expected=Array.from({length:24},(_,frame)=>evaluate(p,{frame}));
     for(const frame of [23,0,12,11,1,13,7])expect(evaluate(p,{frame})).toEqual(expected[frame]);

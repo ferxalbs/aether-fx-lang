@@ -1,6 +1,6 @@
 import { doctor, loadProject, exportVideo } from '@aether-fx/node';
 import { serializePlan } from '@aether-fx/core';
-import { readFile, writeFile, open, copyFile } from 'node:fs/promises';
+import { readFile, writeFile, open, copyFile, realpath } from 'node:fs/promises';
 import { parse, print, expand, normalize, authorDiagnostics, safeEdits, applySafeEdits } from '@aether-fx/compiler';
 import { hashProject } from './hash.js';
 import { lsp } from './lsp.js';
@@ -22,17 +22,20 @@ export async function main(args:string[]):Promise<number>{
         if(rest.join(' ')!=='--safe')throw new Error('Usage: afx fix file.afx --safe');
         const edits=safeEdits(source),file=await open(path,'r+');
         try{const current=await file.readFile('utf8'),applied=applySafeEdits(current,source,edits);if(!applied.ok){console.log(JSON.stringify(applied));return 1;}if(edits.length){await file.write(applied.value,0,'utf8');await file.truncate(Buffer.byteLength(applied.value));}}finally{await file.close();}
-        const checked=await loadProject(path);console.log(JSON.stringify({ok:checked.ok,applied:edits.length,...(!checked.ok?{diagnostics:authorDiagnostics(await readFile(path,'utf8'),checked.diagnostics)}:{})}));return checked.ok?0:1;
+        const checked=await loadProject(path);console.log(JSON.stringify({ok:checked.ok,applied:edits.length,...(!checked.ok?{diagnostics:authorDiagnostics(await readFile(path,'utf8'),checked.diagnostics,await realpath(path))}:{})}));return checked.ok?0:1;
       }
       if(command==='hash')return await hashProject(path,rest);
-      const ast=parse(source);if(!ast.ok){console.error(JSON.stringify(ast));return 1;}const result=command==='expand'?expand(ast.value):ast;
+      const ast=parse(source);if(!ast.ok){console.error(JSON.stringify(ast));return 1;}
+      // Modular expand uses the authorized Node host; retain asset-free legacy expansion.
+      if(command==='expand'&&ast.value.project.children.some(d=>d.keyword==='import')){const loaded=await loadProject(path);if(!loaded.ok){console.error(JSON.stringify(loaded));return 1;}console.log(JSON.stringify(loaded.value.plan.document,null,2));return 0;}
+      const result=command==='expand'?expand(ast.value):ast;
       if(!result.ok){console.error(JSON.stringify(result));return 1;}
       if(command==='expand'){const doc=normalize(result.value);if(!doc.ok){console.error(JSON.stringify(doc));return 1;}console.log(JSON.stringify(doc.value,null,2));return 0;}
       const formatted=print(result.value);if(rest.length===1&&rest[0]==='--write'){if(await readFile(path,'utf8')!==source)throw new Error('SOURCE_CHANGED');await writeFile(path,formatted);}else if(!rest.length)process.stdout.write(formatted);else throw new Error('Usage: afx fmt file.afx [--write]');return 0;
     }
     if(command==='doctor'){const result=await doctor();console.log(JSON.stringify(result,null,2));return result.ok?0:1;}
     if((command==='check'||command==='compile'||command==='render')&&path){
-      const loaded=await loadProject(path);if(!loaded.ok){const diagnostics=authorDiagnostics(await readFile(path,'utf8'),loaded.diagnostics);if(command==='check'&&rest.includes('--json'))console.log(JSON.stringify({ok:false,diagnostics}));else console.error(JSON.stringify(diagnostics,null,2));return 1;}
+      const loaded=await loadProject(path);if(!loaded.ok){const diagnostics=authorDiagnostics(await readFile(path,'utf8'),loaded.diagnostics,await realpath(path));if(command==='check'&&rest.includes('--json'))console.log(JSON.stringify({ok:false,diagnostics}));else console.error(JSON.stringify(diagnostics,null,2));return 1;}
       if(command==='compile'){if(rest.length!==2||rest[0]!=='--out')throw new Error('Usage: afx compile file.afx --out plan.json');await writeFile(rest[1]!,serializePlan(loaded.value.plan),{flag:'wx'});}
       else if(command==='render'){
         const allowed=new Set(['--out','--width','--height','--format','--timeout','--backend']);const values=new Map<string,string>();

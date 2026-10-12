@@ -1,0 +1,108 @@
+module motion {
+  clip marker {
+    duration: 3f;
+    params: { target: @sync; };
+    track visibility {
+      target: @target;
+      property: "visible";
+      keys: [
+        { frame: 0f; value: true; },
+        { frame: 3f; value: false; }
+      ];
+    }
+  }
+  clip reachAndCarry {
+    duration: 192f;
+    params: { performer: @hero; };
+    morph anticipate {
+      actor: @performer;
+      from: @idle;
+      to: @anticipate;
+      start: 0f;
+      end: 12f;
+      easing: "ease-in-out";
+    }
+    morph arc {
+      actor: @performer;
+      from: @anticipate;
+      to: @reachArc;
+      start: 12f;
+      end: 38f;
+      easing: "ease-in-out";
+    }
+    morph approach {
+      actor: @performer;
+      from: @reachArc;
+      to: @near;
+      start: 38f;
+      end: 50f;
+      easing: "ease-out";
+    }
+    morph closeGrip {
+      actor: @performer;
+      from: @near;
+      to: @reach;
+      start: 50f;
+      end: 60f;
+      easing: "ease-in-out";
+    }
+    morph liftArc {
+      actor: @performer;
+      from: @reach;
+      to: @liftArc;
+      start: 72f;
+      end: 102f;
+      easing: "ease-in-out";
+    }
+    morph lift {
+      actor: @performer;
+      from: @liftArc;
+      to: @lift;
+      start: 102f;
+      end: 130f;
+      easing: "ease-out";
+    }
+    morph settleWeight {
+      actor: @performer;
+      from: @lift;
+      to: @settled;
+      start: 130f;
+      end: 154f;
+      easing: { type: spring; frequency: 9; damping: 0.82; velocity: 0; };
+    }
+    expose openGrip {
+      actor: @performer;
+      drawing: @handOpen;
+      start: 0f;
+      end: 50f;
+    }
+    expose closingGrip {
+      actor: @performer;
+      drawing: @handClosing;
+      start: 50f;
+      end: 60f;
+    }
+    expose heldGrip {
+      actor: @performer;
+      drawing: @handHolding;
+      start: 60f;
+      end: 192f;
+    }
+  }
+  // A held excursion; the same clip moves eyes and separated assembly pieces.
+  clip excursion {
+    duration: 96f;
+    params: { target: @hero.eyes; property: y; home: 0; away: -2; };
+    track move {
+      target: @target;
+      property: @property;
+      easing: ease-in-out;
+      keys: [
+        { id: leave; frame: 0f; value: @home; },
+        { id: pause; frame: 24f; value: @away; },
+        { id: return; frame: 48f; value: @away; },
+        { id: rest; frame: 96f; value: @home; }
+      ];
+    }
+  }
+}

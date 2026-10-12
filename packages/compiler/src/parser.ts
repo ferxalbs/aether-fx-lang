@@ -9,7 +9,7 @@ export type AstValue =
   | { kind: 'object'; fields: AstField[]; range: SourceRange };
 export interface AstField { name: string; value: AstValue; range: SourceRange }
 export interface Declaration { keyword: string; id: string; fields: AstField[]; children: Declaration[]; range: SourceRange }
-export interface DocumentAST { schemaVersion: 1; project: Declaration }
+export interface DocumentAST { schemaVersion: 1; project: Declaration; sourceBytes?: number }
 const Space = createToken({ name: 'Space', pattern: /\s+/, group: Lexer.SKIPPED });
 const Comment = createToken({ name: 'Comment', pattern: /\/\/[^\r\n]*|\/\*[\s\S]*?\*\//, group: Lexer.SKIPPED, line_breaks: true });
 const StringToken = createToken({ name: 'String', pattern: /"(?:[^"\\\r\n]|\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4}))*"/ });
@@ -57,7 +57,7 @@ class Parser extends EmbeddedActionsParser {
   document = this.RULE('document', () => { const project = this.SUBRULE(this.declaration); this.CONSUME(EOF); return this.ACTION(() => ({ schemaVersion: 1 as const, project })); });
 }
 const parser = new Parser();
-export function parse(source: string, options: { sourceBytes?: number; depth?: number } = {}): Result<DocumentAST> {
+export function parse(source: string, options: { sourceBytes?: number; depth?: number; sourceId?: string } = {}): Result<DocumentAST> {
   const bytes = new TextEncoder().encode(source).length;
   if (bytes > (options.sourceBytes ?? DEFAULT_LIMITS.sourceBytes)) return failure([diagnostic('LIMIT_EXCEEDED', 'Source byte limit exceeded')]);
   const lexed = lexer.tokenize(source);
@@ -76,7 +76,16 @@ export function parse(source: string, options: { sourceBytes?: number; depth?: n
       const location = e.token.tokenType === EOF ? { start: source.length, end: source.length, line: lines.length, column: lines.at(-1)!.length + 1 } : range(e.token);
       return diagnostic('PARSE_ERROR', e.message, { range: location });
     }));
-    return success(ast);
+    if (options.sourceId) {
+      const sourceId = options.sourceId;
+      const mark = (value: unknown): void => {
+        if (!value || typeof value !== 'object') return;
+        if ('range' in value) (value as { range: SourceRange }).range.source = sourceId;
+        for (const child of Object.values(value)) if (Array.isArray(child)) child.forEach(mark); else if (child && typeof child === 'object') mark(child);
+      };
+      mark(ast);
+    }
+    return success({...ast,sourceBytes:bytes});
   } catch (cause) { return failure([diagnostic('PARSE_ERROR', cause instanceof Error ? cause.message : 'Invalid source')]); }
 }
 export function print(ast: DocumentAST): string {

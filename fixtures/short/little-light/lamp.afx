@@ -1,0 +1,17 @@
+module lamp {
+  component turnedPiece {
+    params: { radius: 30; height: 64; z: -72; materials: { top: "#f9d58a"; light: "#e3a24b"; dark: "#ac723d"; }; parent: @lantern.lanternBody; layer: 60; };
+    solid piece {
+      kind: "cylinder";
+      radius: @radius;
+      height: @height;
+      z: @z;
+      steps: 64;
+      tolerance: 0.1;
+      projection: { origin: [0, -6]; azimuth: 8deg; elevation: 22deg; };
+      materials: @materials;
+      parent: @parent;
+      layer: @layer;
+    }
+  }
+}

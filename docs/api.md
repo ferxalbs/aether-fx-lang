@@ -31,6 +31,8 @@ Core has no parser, React, DOM, filesystem or implicit network access.
 | `interpolateShape(a, b, t)` | Numeric interpolation retaining semantic correspondence; topology mismatch throws |
 | `diagnostic`, `success`, `failure` | Constructors for diagnostic/result values; `diagnostic` defaults severity to `error` |
 
+The pure `twoSegmentArm(shoulder, target, lengths, elbow)` helper returns upper and relative forearm radians for a rigid two-segment authoring goal. Lengths are positive; elbow is `positive` or `negative`; unreachable and ambiguous zero-distance goals throw `ARM_UNREACHABLE`. Pose lowering emits ordinary transforms and installs no runtime IK. See [arm bounds](language-v0.1.md#bounded-two-segment-arm-authoring).
+
 Projected authoring is also available at the package root:
 
 | Function | Contract |
@@ -77,7 +79,7 @@ console.log(JSON.stringify({ duration: restored.value.duration, shot: frame.shot
 
 ## `@aether-fx/compiler`
 
-`parse(source, { sourceBytes?, depth? })` returns `Result<DocumentAST>`. `normalize(ast)` returns `Result<FxDocument>` with contextual units/references converted to the canonical model. `print(ast)` produces normalized DSL text; comments and original whitespace are not preserved. `compileSource(source, manifest?, limits?)` combines parsing, normalization and compilation, retaining owning source ranges on diagnostics. The default manifest is empty, so asset-bearing projects need explicit resolved metadata. Parsing never executes embedded JavaScript. Public AST types are `AstValue`, `AstField`, `Declaration` and `DocumentAST`.
+`parse(source, { sourceBytes?, depth?, sourceId? })` returns `Result<DocumentAST>`. `normalize(ast, options?)` returns `Result<FxDocument>` with contextual units/references converted to the canonical model. `print(ast)` produces normalized DSL text; comments and original whitespace are not preserved. `compileSource(source, manifest?, options?: SourceOptions)` combines parsing, normalization and compilation, retaining owning source ranges on diagnostics. The default manifest is empty, so asset-bearing projects need explicit resolved metadata. Parsing never executes embedded JavaScript. Public AST types are `AstValue`, `AstField`, `Declaration` and `DocumentAST`. `SourceOptions` extends `Partial<Limits>` with `sourceId` and a synchronous `resolveModule(specifier, importer)` returning `{ id, source }`. Imports require that explicit resolver; `resolveModules(ast, options?)` returns a merged AST without executing source or performing IO. Identified declarations retain `range.source`, and parsed ASTs retain source byte metadata. Compact tracks/clips lower to existing keys/intervals. See [modular authoring](language-v0.1.md#compact-tracks-reusable-clips-and-modules).
 
 ## `@aether-fx/canvas`
 
@@ -106,7 +108,7 @@ console.log(JSON.stringify({ duration: restored.value.duration, shot: frame.shot
 
 ## `@aether-fx/node`
 
-`loadProject(path, { signal? })` returns `Promise<Result<LoadedProject>>`: `plan` plus `assets: ResolvedAssets { manifest, files }`, where each file has real `path` and `Buffer` bytes. DSL/schema failures are diagnostics; filesystem/format/cancellation failures can throw `FxEnvironmentError` with `code`. Asset paths resolve beneath the source directory, including realpath containment; URLs and escaping paths are rejected. The default source limit is 2 MB.
+`loadProject(path, { signal? })` returns `Promise<Result<LoadedProject>>`: `plan` plus `assets: ResolvedAssets { manifest, files }`, where each file has real `path` and `Buffer` bytes. DSL/schema failures are diagnostics; filesystem/format/cancellation failures can throw `FxEnvironmentError` with `code`. Asset paths resolve beneath the source directory, including realpath containment; URLs and escaping paths are rejected. The default source limit is 2 MB across entry and modules. The Node host preloads relative modules with realpath containment under the entry directory and returns `sources`, a canonical-ID/text map (optional in manually constructed `LoadedProject` values). Asset paths stay relative to the entry directory.
 
 `resolveAssets(document, { root, signal?, maxAssetBytes?, maxTotalAssetBytes? })` resolves explicit local assets and computes manifest hashes/metadata. Defaults are 32 MB per asset and 128 MB total. `imageMetadata(Buffer)` reads supported PNG/WebP headers; `wavMetadata(Buffer)` validates integer PCM RIFF WAV and returns duration/sampleRate/channels/bits/dataOffset/dataLength. These metadata helpers do not substitute for full browser image/font decoding.
 
@@ -141,7 +143,7 @@ Commands report JSON. Success exits 0; validation/environment/render failures ex
 
 ## v0.1 authoring / 0.2.0-rc.1 additions
 
-Compiler adds `expand(ast)`, `safeEdits(source)`, `applySafeEdits(source, expectedSource, edits)` and `authorDiagnostics(source, diagnostics)`. Expansion returns an AST; `normalize` yields schema-1 canonical data. Safe edits are UTF-16, nonoverlapping and expected-text checked. No source evaluation or I/O is introduced in core/compiler.
+Compiler adds `expand(ast)`, `safeEdits(source)`, `applySafeEdits(source, expectedSource, edits)` and `authorDiagnostics(source, diagnostics, sourceId?)`. Expansion returns an AST; `normalize` yields schema-1 canonical data. Safe edits are UTF-16, nonoverlapping and expected-text checked. No source evaluation or I/O is introduced in core/compiler.
 
 Node `createNativeRenderer(plan,assets,{width,height})` is a still-frame Skia renderer with owned font sessions and PNG/pixel capture. Video `exportVideo` defaults to Skia/external FFmpeg (`backend: native`); `backend: chromium` selects the explicit compatibility renderer. `doctor()` diagnoses required tools and encoders. Coordinator `peakRssBytes` differs from `afx bench` aggregate tree RSS.
 
