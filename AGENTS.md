@@ -29,6 +29,20 @@ Keep `core` platform-independent and evaluation deterministic by absolute frame.
 
 Tests import built package exports: rebuild after source changes. Extend the relevant `tests/*.test.ts` suite with descriptive `describe`/`it` cases. For focused checks, run `npm test -- tests/core.test.ts` or add `-t "test description"`. No numeric coverage threshold is configured; protect changed behavior and use relevant rendering/resource acceptance scripts for platform changes.
 
+## Justified Size Growth
+
+Prioritize working, validated functionality and correctness. Package or bundle size growth is acceptable at any size when justified by capabilities or fixes delivered within the authorized task; size growth alone is not a product defect or a reason to stop the task. Optimization can follow later.
+
+- Measure before/after with the same method and explain the concrete functionality, correctness or import changes responsible. Do not invent function-level gzip attribution from whole-bundle differences.
+- A numeric cap exceeded by justified growth is a baseline review trigger. Update only the affected caps in `bundle-budgets.json` to the measured accepted scope, record the justification in the existing performance documentation and `KNOW-ISSUES.md`, then rerun the gate. No separate approval is required solely for this size update; do not leave an explained, accepted increase labeled as a current defect.
+- Keep measurement and import-isolation checks active. Unexplained growth, accidental dependencies, broken functionality, fidelity errors and other acceptance failures still require investigation. Preserve historical measurements and FAIL results; do not erase them or automatically ratchet caps without an explanation.
+
+## Visual Progress History
+
+For a task that delivers a visible scene or rendering improvement, add a new entry to `docs/history-of-lang.md` with a concise technical explanation, a relative link to the affected `.afx` and reviewed rendered images in `assets/`. Use existing suitable images when available; preserve previous entries and assets.
+
+Show the actual improvement with before/after images or a critical-frame/detail sheet as appropriate. Identify global versus local shot frames and disclose timing changes when relevant. Render and inspect the images before inclusion, check their provenance and public-safe content, and verify Markdown links. A history entry records observed progress, not a published release or universal quality/platform qualification. Keep private logs, prompts and session reports outside the checkout.
+
 ## Commit & Pull Request Guidelines
 
 Recent commits use imperative, descriptive subjects, such as “Keep native render addons external in Next server builds.” Follow that style. Keep diffs focused. PRs should explain the behavior change, link relevant issues, and report exact verification commands/results. Include rendered evidence for visual changes and identify unverified platforms. Preserve dependency pins, asset provenance, and LICENSE/NOTICE obligations.

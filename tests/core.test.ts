@@ -97,6 +97,20 @@ describe('validation and serialization',()=>{
     const corrupted=JSON.parse(serializePlan(p));corrupted.shots[0].snapshot.values.hero.x=900;
     expect(deserializePlan(JSON.stringify(corrupted))).toMatchObject({ok:false,diagnostics:[{code:'PLAN_INVALID'}]});
   });
+  it('accepts engine roundoff only in rebuilt contact snapshots, without trusting wire values',()=>{
+    const source=readFileSync(new URL('../fixtures/short/little-light-authored.afx',import.meta.url),'utf8');
+    const p=unwrap(compileSource(source,shortManifest));
+    const wire=JSON.parse(serializePlan(p));
+    // Chromium and Node differ at this boundary by these ulps after rotated FK/contact.
+    wire.shots[2].snapshot.values.lantern.scaleX+=Number.EPSILON;
+    wire.shots[2].snapshot.values.lantern.scaleY+=Number.EPSILON;
+    wire.shots[2].snapshot.values.lantern.rotation+=Number.EPSILON/8;
+    expect(unwrap(deserializePlan(JSON.stringify(wire)))).toEqual(p);
+    const changed=structuredClone(wire);changed.shots[2].snapshot.values.lantern.x+=1e-7;
+    expect(deserializePlan(JSON.stringify(changed))).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'PLAN_INVALID'})]});
+    const track=structuredClone(wire);track.shots[2].shot.camera.x+=1e-12;
+    expect(deserializePlan(JSON.stringify(track))).toMatchObject({ok:false,diagnostics:[expect.objectContaining({code:'PLAN_INVALID'})]});
+  });
   it('enforces configurable structural and duration limits',()=>{
     expect(compile(document(),[],{duration:100})).toMatchObject({ok:false,diagnostics:[{code:'LIMIT_EXCEEDED'}]});
     expect(parse(source,{sourceBytes:10})).toMatchObject({ok:false,diagnostics:[{code:'LIMIT_EXCEEDED'}]});

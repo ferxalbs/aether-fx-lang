@@ -21,7 +21,7 @@ Core has no parser, React, DOM, filesystem or implicit network access.
 | `serializeDocument(document)` | JSON string after structural checking; invalid structure throws `TypeError` |
 | `deserializeDocument(json)` | `Result<FxDocument>` after JSON/structural checks; call `compile` for semantic validation and an immutable plan |
 | `serializePlan(plan)` | JSON string after structural checking |
-| `deserializePlan(json)` | Rebuilds from document/manifest and compares snapshots/indices; returns an immutable `Result<PlaybackPlan>` or `PLAN_INVALID` |
+| `deserializePlan(json)` | Rebuilds from document/manifest; document, tracks and indices compare exactly. Computed snapshot numbers allow at most `32 * Number.EPSILON * max(1, abs(a), abs(b))` for engine roundoff. Returns the rebuilt immutable `Result<PlaybackPlan>` or `PLAN_INVALID` |
 | `frameTimestamp(frame, fps, units?)` | Integer rational timestamp, default microseconds; nearest rounding with ties upward. Nonnegative frame and positive FPS/units must be safe integers; invalid/overflow values throw |
 | `frameSeconds(frame, fps)` | Floating seconds, `frame * denominator / numerator`; use `frameTimestamp` for integer media timestamps |
 | `ease(t, easing)` | Linear or cubic Bézier easing; endpoints/outside `[0,1]` return `t` |

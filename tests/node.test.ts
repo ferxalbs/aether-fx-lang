@@ -193,11 +193,50 @@ describe('integrated vector scenes',()=>{
       for(const frame of [...frames].reverse())expect(evaluate(plan,{frame})).toEqual(expected.get(frame));
       if(file.includes('little-light'))for(const frame of [203,204,205,216,240,274,335,336,479]){
         const draw=expected.get(frame)!,hand=draw.commands.find(c=>c.id==='hero.hand')!,lamp=draw.commands.find(c=>c.id==='lantern.lanternBody')!;
-        const a=matrixPoint(hand.matrix,[0,0]),b=matrixPoint(lamp.matrix,[0,-20]);
+        const a=matrixPoint(hand.matrix,[18,-5]),b=matrixPoint(lamp.matrix,[-2,-31]);
         if(frame>=204)expect(Math.hypot(a[0]-b[0],a[1]-b[1])).toBeLessThan(1e-8);
         expect(draw.commands.find(c=>c.id==='hero.fingers')!.layer).toBeGreaterThan(draw.commands.find(c=>c.id==='lantern.lanternHandle')!.layer);
       }
       });
+  it('keeps the drawn grip on the handle, rigid sleeves, planted feet and supported bind/release poses',async()=>{
+    const {createCanvas}=await import('@napi-rs/canvas'),{createRenderer}=await import('@aether-fx/canvas');
+    const {matrixPoint}=await import('@aether-fx/core');
+    const {plan}=unwrap(await loadProject('fixtures/short/little-light-authored.afx'));
+    const world=structuredClone(plan);
+    for(const item of world.shots){item.snapshot.values['camera']={x:0,y:0,scaleX:1,scaleY:1,rotation:0};item.shot.keys=item.shot.keys.filter(k=>k.target!=='camera');}
+    const draw=(frame:number)=>evaluate(world,{frame}),command=(frame:number,id:string)=>draw(frame).commands.find(c=>c.id===id)!;
+    const near=(a:number[],b:number[])=>{for(let i=0;i<a.length;i++)expect(a[i]).toBeCloseTo(b[i]!,8);};
+    const foot=command(0,'hero.shoes').matrix;
+    for(const frame of [72,143,144,174,194,203,204,216,217,240,274,298,335,336,479]){
+      expect(command(frame,'hero.shoes').matrix).toEqual(foot);
+      for(const id of ['hero.frontArm','hero.foreArm']){
+        expect(command(frame,id).shape).toEqual(command(0,id).shape);
+        expect(Math.hypot(command(frame,id).matrix[0],command(frame,id).matrix[1])).toBeCloseTo(1,10);
+      }
+    }
+    near(command(143,'hero.head').matrix,command(144,'hero.head').matrix);
+    near(command(203,'lantern.lanternBody').matrix,command(204,'lantern.lanternBody').matrix);
+    near(command(204,'lantern.lanternBody').matrix,command(216,'lantern.lanternBody').matrix);
+    expect(command(217,'lantern.lanternBody').matrix[5]).toBeLessThan(command(216,'lantern.lanternBody').matrix[5]);
+    near(command(335,'hero.hand').matrix,command(336,'hero.hand').matrix);
+    near(command(335,'lantern.lanternBody').matrix,command(336,'lantern.lanternBody').matrix);
+    expect(command(193,'hero.fingers').shape).not.toEqual(command(194,'hero.fingers').shape);
+    expect(command(203,'hero.fingers').shape).not.toEqual(command(204,'hero.fingers').shape);
+    const canvas=createCanvas(1280,720),painter=createRenderer(canvas as unknown as HTMLCanvasElement);
+    try{
+      for(const frame of [204,205,216,217,240,274,335,336,479]){
+        const list=draw(frame),handle=command(frame,'lantern.lanternHandle'),fingers=command(frame,'hero.fingers'),hand=command(frame,'hero.hand');
+        const grip=matrixPoint(hand.matrix,[18,-5]),crown=matrixPoint(handle.matrix,[-2,-31]);near(grip,crown);
+        expect(hand.layer).toBeLessThan(handle.layer);expect(fingers.layer).toBeGreaterThan(handle.layer);
+        // Each drawn surface must actually cover the landmark, independently of anchor coincidence.
+        for(const [part,color] of [[handle,[142,101,91]],[fingers,[239,189,153]]] as const){
+          painter.render({...list,commands:[part]});
+          const pixel=canvas.getContext('2d').getImageData(Math.round(crown[0]),Math.round(crown[1]),1,1).data;
+          expect(pixel[3]).toBe(255);for(let c=0;c<3;c++)expect(Math.abs(pixel[c]!-color[c]!)).toBeLessThanOrEqual(2);
+        }
+      }
+    }finally{painter.dispose();}
+  });
   it('reuses a public component with changed dimensions and stable face IDs',async()=>{
     const {compileSource}=await import('@aether-fx/compiler');
     const source=await readFile('fixtures/assembly/guide-carriage.afx','utf8');

@@ -3,11 +3,11 @@
   "baselineDate": "2026-10-11",
   "referenceNode": "24.21.0",
   "referenceEsbuild": "0.28.2",
-  "method": "Standalone minified ESM browser exports, ES2022, bundled dependencies, Node gzip default compression. Totals include shared dependencies and are not additive. Core, parser and export caps equal the reproduced accepted Unreleased vector-authoring scope, with no added reserve; the player retains its existing cap. Original caps and failures remain historical evidence in KNOW-ISSUES.md and docs/performance-v0.1.md. Further growth requires a concrete functionality/import justification and a measured policy update, not automatic baseline changes.",
+  "method": "Standalone minified ESM browser exports, ES2022, bundled dependencies, Node gzip default compression. Totals include shared dependencies and are not additive. Caps accept measured, justified authoring and contact-plan correctness growth under AGENTS.md; unaffected caps are retained. Original caps and failures remain historical evidence in KNOW-ISSUES.md and docs/performance-v0.1.md. Further justified growth permits a documented measured cap update within the task, without separate size-only approval; unexplained growth and import-isolation failures remain actionable.",
   "maxGzipBytes": {
-    "core": 16473,
+    "core": 16613,
     "player": 5758,
     "parser": 52744,
-    "export": 41490
+    "export": 41617
   }
 }

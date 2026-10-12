@@ -66,16 +66,20 @@ export function deserializePlan(json: string): Result<PlaybackPlan> {
   const errors = checkSchema(value, 'plan'); if (errors.length) return failure(errors);
   const p = value as PlaybackPlan, result = compile(p.document, p.manifest);
   if (!result.ok) return result;
-  // Never trust externally supplied snapshots/indices. Compare to a rebuilt plan.
-  if (!equalJSON(p, result.value)) return failure([diagnostic('PLAN_INVALID', 'Plan does not match its compiled document')]);
+  // Trig differs by a few ulps between engines. Only computed snapshots may differ;
+  // document, tracks and indices stay exact, and callers receive the rebuilt plan.
+  const rebuilt = result.value;
+  const canonical = { ...p, shots: p.shots.map((s,i) => ({ ...s, snapshot: rebuilt.shots[i]?.snapshot })) };
+  if (!equalJSON(canonical, rebuilt) || p.shots.some((s,i) => !equalJSON(s.snapshot, rebuilt.shots[i]?.snapshot, true))) return failure([diagnostic('PLAN_INVALID', 'Plan does not match its compiled document')]);
   return result;
 }
-export function equalJSON(a: unknown, b: unknown): boolean {
+export function equalJSON(a: unknown, b: unknown, roundoff = false): boolean {
   if (a === b) return true;
-  if (Array.isArray(a) && Array.isArray(b)) return a.length === b.length && a.every((v, i) => equalJSON(v, b[i]));
+  if (roundoff && typeof a === 'number' && typeof b === 'number') return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a-b) <= 32 * Number.EPSILON * Math.max(1,Math.abs(a),Math.abs(b));
+  if (Array.isArray(a) && Array.isArray(b)) return a.length === b.length && a.every((v, i) => equalJSON(v, b[i], roundoff));
   if (a && b && typeof a === 'object' && typeof b === 'object' && !Array.isArray(a) && !Array.isArray(b)) {
     const left = a as Record<string, unknown>, right = b as Record<string, unknown>, keys = Object.keys(left);
-    return keys.length === Object.keys(right).length && keys.every(k => Object.hasOwn(right, k) && equalJSON(left[k], right[k]));
+    return keys.length === Object.keys(right).length && keys.every(k => Object.hasOwn(right, k) && equalJSON(left[k], right[k], roundoff));
   }
   return false;
 }

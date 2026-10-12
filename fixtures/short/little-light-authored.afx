@@ -322,12 +322,12 @@ project littleLightAuthored {
   }
   actor window {
     "parts": [@windowFrame, @windowGlass, @hills, @windowDivider, @windowRail];
-    "transform": { "x": 0; "y": 0; };
+    "transform": { "x": -65; "y": 0; };
     "layer": 0;
   }
   background windowDepth {
     "actor": @window;
-    "parallax": 0.25;
+    "parallax": 1;
   }
   shape shelfShape {
     contour outline {
@@ -600,6 +600,7 @@ project littleLightAuthored {
     "material": { "fill": "#315f68"; "stroke": null; "strokeWidth": 0; };
     "layer": 1;
     "transform": {  };
+    "parent": @torsoRig;
   }
   shape legsShape {
     contour outline {
@@ -755,6 +756,7 @@ project littleLightAuthored {
     "material": { "fill": "#edb68e"; "stroke": null; "strokeWidth": 0; };
     "layer": 4;
     "transform": {  };
+    "parent": @torsoRig;
   }
   shape bodyShape {
     contour outline {
@@ -807,6 +809,7 @@ project littleLightAuthored {
     "material": { "fill": "#588f91"; "stroke": null; "strokeWidth": 0; };
     "layer": 4;
     "transform": {  };
+    "parent": @torsoRig;
   }
   shape collarShape {
     contour outline {
@@ -844,6 +847,7 @@ project littleLightAuthored {
     "material": { "fill": "#f1b955"; "stroke": null; "strokeWidth": 0; };
     "layer": 5;
     "transform": {  };
+    "parent": @torsoRig;
   }
   shape headShape {
     contour outline {
@@ -896,6 +900,7 @@ project littleLightAuthored {
     "material": { "fill": "#edb68e"; "stroke": null; "strokeWidth": 0; };
     "layer": 6;
     "transform": {  };
+    "parent": @headRig;
   }
   shape hairShape {
     contour outline {
@@ -958,6 +963,7 @@ project littleLightAuthored {
     "material": { "fill": "#49354d"; "stroke": null; "strokeWidth": 0; };
     "layer": 7;
     "transform": {  };
+    "parent": @headRig;
   }
   shape eyeOpen {
     contour left {
@@ -1064,6 +1070,7 @@ project littleLightAuthored {
     "material": { "fill": "#3f354d"; "stroke": null; "strokeWidth": 0; };
     "layer": 8;
     "transform": {  };
+    "parent": @headRig;
   }
   shape noseShape {
     contour outline {
@@ -1091,6 +1098,7 @@ project littleLightAuthored {
     "material": { "fill": "#c98675"; "stroke": null; "strokeWidth": 0; };
     "layer": 9;
     "transform": {  };
+    "parent": @headRig;
   }
   shape mouthNeutral {
     contour mouth {
@@ -1119,203 +1127,26 @@ project littleLightAuthored {
     "material": { "fill": null; "stroke": "#3f354d"; "strokeWidth": 3; };
     "layer": 10;
     "transform": {  };
-  }
-  shape armRest {
-    contour outline {
-      "closed": true;
-      node s0 {
-        "point": [0, -16];
-        "out": [5.12, -5.76];
-        "mode": "mirrored";
-      }
-      node s1 {
-        "point": [28, 0];
-        "out": [8.48, 11.52];
-        "mode": "mirrored";
-      }
-      node s2 {
-        "point": [53, 56];
-        "out": [13.280000000000001, 10.56];
-        "mode": "mirrored";
-      }
-      node s3 {
-        "point": [111, 66];
-        "out": [11.68, 4.64];
-        "mode": "mirrored";
-      }
-      node s4 {
-        "point": [126, 85];
-        "out": [-0.16, 5.76];
-        "mode": "mirrored";
-      }
-      node s5 {
-        "point": [110, 102];
-        "out": [-12, 1.44];
-        "mode": "mirrored";
-      }
-      node s6 {
-        "point": [51, 94];
-        "out": [-18.240000000000002, -10.56];
-        "mode": "mirrored";
-      }
-      node s7 {
-        "point": [-4, 36];
-        "out": [-8.16, -17.6];
-        "mode": "mirrored";
-      }
-    }
-  }
-  shape armReach {
-    contour outline {
-      "closed": true;
-      node s0 {
-        "point": [0, -16];
-        "out": [9.28, -3.84];
-        "mode": "mirrored";
-      }
-      node s1 {
-        "point": [54, 12];
-        "out": [19.04, 6.5600000000000005];
-        "mode": "mirrored";
-      }
-      node s2 {
-        "point": [119, 25];
-        "out": [26.080000000000002, -7.5200000000000005];
-        "mode": "mirrored";
-      }
-      node s3 {
-        "point": [217, -35];
-        "out": [18.72, -6.88];
-        "mode": "mirrored";
-      }
-      node s4 {
-        "point": [236, -18];
-        "out": [0.96, 5.44];
-        "mode": "mirrored";
-      }
-      node s5 {
-        "point": [223, -1];
-        "out": [-18.56, 11.52];
-        "mode": "mirrored";
-      }
-      node s6 {
-        "point": [120, 54];
-        "out": [-36.32, 5.92];
-        "mode": "mirrored";
-      }
-      node s7 {
-        "point": [-4, 36];
-        "out": [-19.2, -11.200000000000001];
-        "mode": "mirrored";
-      }
-    }
-  }
-  shape armLift {
-    contour outline {
-      "closed": true;
-      node s0 {
-        "point": [0, -16];
-        "out": [5.6000000000000005, -9.92];
-        "mode": "mirrored";
-      }
-      node s1 {
-        "point": [31, -26];
-        "out": [6.72, -5.44];
-        "mode": "mirrored";
-      }
-      node s2 {
-        "point": [42, -50];
-        "out": [13.120000000000001, -13.6];
-        "mode": "mirrored";
-      }
-      node s3 {
-        "point": [113, -111];
-        "out": [14.72, -6.5600000000000005];
-        "mode": "mirrored";
-      }
-      node s4 {
-        "point": [134, -91];
-        "out": [0.48, 6.08];
-        "mode": "mirrored";
-      }
-      node s5 {
-        "point": [116, -73];
-        "out": [-12.16, 11.68];
-        "mode": "mirrored";
-      }
-      node s6 {
-        "point": [58, -18];
-        "out": [-19.2, 17.44];
-        "mode": "mirrored";
-      }
-      node s7 {
-        "point": [-4, 36];
-        "out": [-9.28, 0.32];
-        "mode": "mirrored";
-      }
-    }
+    "parent": @headRig;
   }
   part frontArm {
-    "shape": @armRest;
+    "shape": @upperSleeve;
     "material": { "fill": "#588f91"; "stroke": null; "strokeWidth": 0; };
     "layer": 11;
-    "transform": { "x": 45; "y": 10; };
+    "transform": { "x": 45; "y": 10; "rotation": 118.81096327895574deg; };
+    "parent": @torsoRig;
   }
-  shape handShape {
-    contour outline {
-      "closed": true;
-      node s0 {
-        "point": [-14, -8];
-        "out": [1.04, -2.21];
-        "mode": "mirrored";
-      }
-      node s1 {
-        "point": [-5, -14];
-        "out": [1.9500000000000002, 0];
-        "mode": "mirrored";
-      }
-      node s2 {
-        "point": [1, -8];
-        "out": [1.69, 0.91];
-        "mode": "mirrored";
-      }
-      node s3 {
-        "point": [8, -7];
-        "out": [1.17, 1.17];
-        "mode": "mirrored";
-      }
-      node s4 {
-        "point": [10, 1];
-        "out": [-0.52, 2.47];
-        "mode": "mirrored";
-      }
-      node s5 {
-        "point": [4, 12];
-        "out": [-2.08, 1.17];
-        "mode": "mirrored";
-      }
-      node s6 {
-        "point": [-6, 10];
-        "out": [-2.21, -1.17];
-        "mode": "mirrored";
-      }
-      node s7 {
-        "point": [-13, 3];
-        "out": [-1.04, -2.34];
-        "mode": "mirrored";
-      }
-    }
-  }
+  // grip lies on the curled fingers; it meets the visible crown of the handle.
   part hand {
-    "shape": @handShape;
+    "shape": @palmOpen;
     "material": { "fill": "#dca17f"; };
-    "layer": 12;
-    "transform": { "x": 115; "y": 85; };
-    "parent": @frontArm;
-    "anchors": { "grip": [0, 0]; };
+    "layer": 39;
+    "transform": { "x": 120; "y": 0; "rotation": 43.6036238388465deg; };
+    "parent": @foreArm;
+    "anchors": { "grip": [18, -5]; };
   }
   actor hero {
-    "parts": [@backArm, @legs, @shoes, @neck, @body, @collar, @head, @hair, @eyes, @nose, @mouth, @frontArm, @hand, @thumb, @fingers];
+    "parts": [@torsoRig, @headRig, @backArm, @legs, @shoes, @neck, @body, @collar, @head, @hair, @eyes, @nose, @mouth, @frontArm, @foreArm, @cuff, @elbowFold, @hand, @thumb, @fingers];
     "transform": { "x": 420; "y": 380; };
     "layer": 20;
   }
@@ -1359,60 +1190,8 @@ project littleLightAuthored {
     "clip": @lanternGlassShape;
   }
   shape handleShape {
-    contour outline {
-      "start": [-15, 1];
-      "closed": true;
-      cubic s0 {
-        "control1": [-15.417, -0.75];
-        "control2": [-15.25, -17.667];
-        "end": [-14, -20];
-      }
-      cubic s1 {
-        "control1": [-12.75, -22.333];
-        "control2": [-2.333, -27];
-        "end": [0, -27];
-      }
-      cubic s2 {
-        "control1": [2.333, -27];
-        "control2": [12.75, -22.333];
-        "end": [14, -20];
-      }
-      cubic s3 {
-        "control1": [15.25, -17.667];
-        "control2": [15.417, -0.75];
-        "end": [15, 1];
-      }
-      cubic s4 {
-        "control1": [14.583, 2.75];
-        "control2": [9.583, 2.333];
-        "end": [9, 1];
-      }
-      cubic s5 {
-        "control1": [8.417, -0.333];
-        "control2": [8.75, -13.25];
-        "end": [8, -15];
-      }
-      cubic s6 {
-        "control1": [7.25, -16.75];
-        "control2": [1.333, -20];
-        "end": [0, -20];
-      }
-      cubic s7 {
-        "control1": [-1.333, -20];
-        "control2": [-7.25, -16.75];
-        "end": [-8, -15];
-      }
-      cubic s8 {
-        "control1": [-8.75, -13.25];
-        "control2": [-8.417, -0.333];
-        "end": [-9, 1];
-      }
-      cubic s9 {
-        "control1": [-9.583, 2.333];
-        "control2": [-14.583, 2.75];
-        "end": [-15, 1];
-      }
-    }
+    "primitive": "path";
+    "data": "M -16 1 C -17 -10 -17 -24 -12 -29 C -6 -37 6 -37 12 -29 C 17 -24 17 -10 16 1 L 9 1 C 10 -10 11 -20 7 -24 C 3 -29 -3 -29 -7 -24 C -11 -20 -10 -10 -9 1 Z";
   }
   part lanternHandle {
     "material": { "fill": "#8e655b"; "stroke": null; "strokeWidth": 0; };
@@ -1472,7 +1251,7 @@ project littleLightAuthored {
   part captionClose {
     "material": { "fill": "#3f354d"; "stroke": null; "strokeWidth": 0; };
     "layer": 0;
-    "transform": { "x": 81; "y": 680; };
+    "transform": { "x": 740; "y": 540; };
     "text": { "content": "Keep a little light."; "font": @nunito; "size": 25; };
   }
   actor captionClose {
@@ -1517,18 +1296,6 @@ project littleLightAuthored {
     "transform": { "x": 1170; "y": 82; };
     "layer": 120;
   }
-  pose idle {
-    "parts": { "frontArm": { "shape": @armRest; }; "hand": { "transform": { "x": 115; "y": 85; }; }; "mouth": { "shape": @mouthNeutral; }; };
-  }
-  pose reach {
-    "parts": { "frontArm": { "shape": @armReach; }; "hand": { "transform": { "x": 225; "y": -18; }; }; "mouth": { "shape": @mouthNeutral; }; };
-  }
-  pose lift {
-    "parts": { "frontArm": { "shape": @armLift; }; "hand": { "transform": { "x": 120; "y": -95; }; }; "mouth": { "shape": @mouthNeutral; }; };
-  }
-  pose smile {
-    "parts": { "frontArm": { "shape": @armLift; }; "hand": { "transform": { "x": 120; "y": -95; }; }; "mouth": { "shape": @mouthSmile; }; };
-  }
   drawing eyesOpen {
     "parts": { "eyes": @eyeOpen; };
   }
@@ -1559,41 +1326,6 @@ project littleLightAuthored {
         "frame": 27f;
         "value": false;
       }
-      key b0 {
-        "target": @hero;
-        "property": "y";
-        "frame": 0f;
-        "value": 380;
-        "easing": [0.42, 0, 0.58, 1];
-      }
-      key b1 {
-        "target": @hero;
-        "property": "y";
-        "frame": 36f;
-        "value": 377;
-        "easing": [0.42, 0, 0.58, 1];
-      }
-      key b2 {
-        "target": @hero;
-        "property": "y";
-        "frame": 72f;
-        "value": 380;
-        "easing": [0.42, 0, 0.58, 1];
-      }
-      key b3 {
-        "target": @hero;
-        "property": "y";
-        "frame": 108f;
-        "value": 377;
-        "easing": [0.42, 0, 0.58, 1];
-      }
-      key b4 {
-        "target": @hero;
-        "property": "y";
-        "frame": 143f;
-        "value": 380;
-        "easing": [0.42, 0, 0.58, 1];
-      }
       key look0 {
         "target": @hero.eyes;
         "property": "x";
@@ -1617,6 +1349,18 @@ project littleLightAuthored {
       camera wide {
         "x": 0;
         "y": 0;
+      }
+      key headNotice0 {
+        "target": @hero.headRig;
+        "property": "rotation";
+        "frame": 0f;
+        "value": 0deg;
+      }
+      key headNotice1 {
+        "target": @hero.headRig;
+        "property": "rotation";
+        "frame": 72f;
+        "value": 4deg;
       }
     }
     shot reachAndLift {
@@ -1642,12 +1386,6 @@ project littleLightAuthored {
         "frame": 27f;
         "value": false;
       }
-      key armOcclusion {
-        "target": @hero.frontArm;
-        "property": "layer";
-        "frame": 50f;
-        "value": 50;
-      }
       expose reachBlink {
         "actor": @hero;
         "drawing": @eyesClosed;
@@ -1670,6 +1408,15 @@ project littleLightAuthored {
         "frame": 150f;
         "value": 20;
       }
+      // Local 60..192 = global 204..336; the lamp stays on the table through local 72.
+      contact carry {
+        "target": @lantern;
+        "anchor": @hero.hand;
+        "targetPoint": [-2, -31];
+        "anchorPoint": "grip";
+        "start": 60f;
+        "end": 192f;
+      }
       morph anticipate {
         "actor": @hero;
         "from": @idle;
@@ -1686,13 +1433,21 @@ project littleLightAuthored {
         "end": 38f;
         "easing": "ease-in-out";
       }
-      morph settle {
+      morph approach {
         "actor": @hero;
         "from": @reachArc;
-        "to": @reach;
+        "to": @near;
         "start": 38f;
-        "end": 60f;
+        "end": 50f;
         "easing": "ease-out";
+      }
+      morph closeGrip {
+        "actor": @hero;
+        "from": @near;
+        "to": @reach;
+        "start": 50f;
+        "end": 60f;
+        "easing": "ease-in-out";
       }
       morph liftArc {
         "actor": @hero;
@@ -1710,31 +1465,100 @@ project littleLightAuthored {
         "end": 130f;
         "easing": "ease-out";
       }
-      contact carry {
-        "target": @lantern;
-        "anchor": @hero.hand;
-        "targetPoint": [0, -20];
-        "anchorPoint": grip;
+      morph settleWeight {
+        "actor": @hero;
+        "from": @lift;
+        "to": @settled;
+        "start": 130f;
+        "end": 154f;
+        "easing": "ease-in-out";
+      }
+      expose openGrip {
+        "actor": @hero;
+        "drawing": @handOpen;
+        "start": 0f;
+        "end": 50f;
+      }
+      expose closingGrip {
+        "actor": @hero;
+        "drawing": @handClosing;
+        "start": 50f;
+        "end": 60f;
+      }
+      expose heldGrip {
+        "actor": @hero;
+        "drawing": @handHolding;
         "start": 60f;
         "end": 192f;
-      }
-      key palmOrder {
-        "target": @hero.hand;
-        "property": "layer";
-        "frame": 50f;
-        "value": 39;
       }
       key shadow0 {
         "target": @contactShadow;
         "property": "opacity";
         "frame": 72f;
         "value": 1;
+        "easing": "ease-in-out";
       }
       key shadow1 {
         "target": @contactShadow;
         "property": "opacity";
-        "frame": 110f;
-        "value": 0.15;
+        "frame": 102f;
+        "value": 0.18;
+      }
+      key shadow2 {
+        "target": @contactShadow;
+        "property": "opacity";
+        "frame": 130f;
+        "value": 0.07;
+      }
+      key shadow3 {
+        "target": @contactShadow;
+        "property": "opacity";
+        "frame": 154f;
+        "value": 0.1;
+      }
+      key shadowWidth0 {
+        "target": @contactShadow.lampShadow;
+        "property": "scaleX";
+        "frame": 72f;
+        "value": 1;
+        "easing": "ease-in-out";
+      }
+      key shadowWidth1 {
+        "target": @contactShadow.lampShadow;
+        "property": "scaleX";
+        "frame": 130f;
+        "value": 0.6;
+      }
+      key shadowWidth2 {
+        "target": @contactShadow.lampShadow;
+        "property": "scaleX";
+        "frame": 154f;
+        "value": 0.65;
+      }
+      key shadowX0 {
+        "target": @contactShadow.lampShadow;
+        "property": "x";
+        "frame": 72f;
+        "value": 690;
+        "easing": "ease-in-out";
+      }
+      key shadowX1 {
+        "target": @contactShadow.lampShadow;
+        "property": "x";
+        "frame": 102f;
+        "value": 666;
+      }
+      key shadowX2 {
+        "target": @contactShadow.lampShadow;
+        "property": "x";
+        "frame": 130f;
+        "value": 607;
+      }
+      key shadowX3 {
+        "target": @contactShadow.lampShadow;
+        "property": "x";
+        "frame": 154f;
+        "value": 610;
       }
     }
     shot keep {
@@ -1780,14 +1604,6 @@ project littleLightAuthored {
         "scaleX": 0.62;
         "scaleY": 0.62;
       }
-      morph expression {
-        "actor": @hero;
-        "from": @lift;
-        "to": @smile;
-        "start": 12f;
-        "end": 72f;
-        "easing": [0.4, 0, 0.2, 1];
-      }
       expose closeBlink {
         "actor": @hero;
         "drawing": @eyesClosed;
@@ -1808,6 +1624,31 @@ project littleLightAuthored {
         "value": 1;
         "hold": 2f;
       }
+      morph expression {
+        "actor": @hero;
+        "from": @settled;
+        "to": @smile;
+        "start": 12f;
+        "end": 72f;
+        "easing": "ease-in-out";
+      }
+      initial hero.hand {
+        "shape": @palmHolding;
+      }
+      initial hero.fingers {
+        "shape": @fingersHolding;
+      }
+      initial hero.thumb {
+        "shape": @thumbHolding;
+      }
+      contact restCarry {
+        "target": @lantern;
+        "anchor": @hero.hand;
+        "targetPoint": [-2, -31];
+        "anchorPoint": "grip";
+        "start": 0f;
+        "end": 144f;
+      }
     }
   }
   audio soundtrack {
@@ -1823,13 +1664,13 @@ project littleLightAuthored {
     "dark": "#80565a";
   }
   component leg {
-    "params": { "ring": [{ "id": "a"; "point": [650, -8]; }, { "id": "b"; "point": [670, -8]; }, { "id": "c"; "point": [670, 8]; }, { "id": "d"; "point": [650, 8]; }]; };
+    "params": { "ring": [{ "id": "a"; "point": [650, 14]; }, { "id": "b"; "point": [670, 14]; }, { "id": "c"; "point": [670, 30]; }, { "id": "d"; "point": [650, 30]; }]; };
     solid post {
       "kind": "extrude";
       "ring": @ring;
       "z": -696;
-      "height": 161;
-      "projection": { "azimuth": 0deg; "elevation": 22deg; };
+      "height": 159;
+      "projection": { "origin": [0, -41.3]; "azimuth": 8deg; "elevation": 22deg; };
       "materials": { "top": @wood.top; "light": @wood.light; "dark": @wood.dark; };
       "layer": 40;
     }
@@ -1839,14 +1680,14 @@ project littleLightAuthored {
   }
   instance right {
     "component": @leg;
-    "args": { "ring": [{ "id": "a"; "point": [917, -8]; }, { "id": "b"; "point": [937, -8]; }, { "id": "c"; "point": [937, 8]; }, { "id": "d"; "point": [917, 8]; }]; };
+    "args": { "ring": [{ "id": "a"; "point": [917, 14]; }, { "id": "b"; "point": [937, 14]; }, { "id": "c"; "point": [937, 30]; }, { "id": "d"; "point": [917, 30]; }]; };
   }
   solid table {
     "kind": "extrude";
-    "height": 18;
-    "z": -535;
-    "projection": { "azimuth": 0deg; "elevation": 22deg; };
-    "ring": [{ "id": "backLeft"; "point": [585, -26]; }, { "id": "backRight"; "point": [1000, -26]; }, { "id": "frontRight"; "point": [1000, 26]; }, { "id": "frontLeft"; "point": [585, 26]; }];
+    "height": 20;
+    "z": -537;
+    "projection": { "origin": [0, -41.3]; "azimuth": 8deg; "elevation": 22deg; };
+    "ring": [{ "id": "backLeft"; "point": [585, -40]; }, { "id": "backRight"; "point": [1000, -40]; }, { "id": "frontRight"; "point": [1000, 40]; }, { "id": "frontLeft"; "point": [585, 40]; }];
     "materials": { "top": @wood.top; "light": @wood.light; "dark": @wood.dark; };
     "layer": 44;
   }
@@ -1892,52 +1733,19 @@ project littleLightAuthored {
     "parent": @lantern.lanternBody;
     "layer": 62;
   }
-  shape thumbShape {
-    "primitive": "roundedRect";
-    "size": [13, 19];
-    "radius": 5;
-  }
   part thumb {
-    "shape": @thumbShape;
+    "shape": @thumbOpen;
     "parent": @hand;
-    "transform": { "x": -7; "y": 1; };
-    "layer": 64;
+    "transform": {  };
+    "layer": 47;
     "material": { "fill": "#d49678"; };
   }
-  shape gripFinger {
-    contour outline {
-      "closed": true;
-      node a {
-        "point": [-11, -7];
-        "out": [0, -4];
-        "in": [0, 4];
-        "mode": "mirrored";
-      }
-      node b {
-        "point": [-2, -11];
-        "out": [5, 0];
-        "in": [-5, 0];
-        "mode": "mirrored";
-      }
-      node c {
-        "point": [8, -7];
-        "out": [0, 4];
-        "in": [0, -4];
-        "mode": "mirrored";
-      }
-      node d {
-        "point": [5, 3];
-        "out": [-5, 0];
-        "in": [5, 0];
-        "mode": "mirrored";
-      }
-    }
-  }
   part fingers {
-    "shape": @gripFinger;
+    "shape": @fingersOpen;
     "parent": @hand;
-    "layer": 65;
+    "layer": 46;
     "material": { "fill": "#efbd99"; };
+    "transform": {  };
   }
   shape lampShadow {
     "primitive": "ellipse";
@@ -1947,153 +1755,460 @@ project littleLightAuthored {
     "shape": @lampShadow;
     "transform": { "x": 690; "y": 472; };
     "material": { "fill": "#80565a"; };
+    "pivot": [0, 0];
   }
   actor contactShadow {
     "parts": [@lampShadow];
     "layer": 49;
   }
-  shape armAnticipate {
+  shape upperSleeve {
     contour outline {
       "closed": true;
-      node s0 {
-        "point": [0, -16];
-        "out": [4.48, -4.8];
-        "mode": "mirrored";
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [-12, -10];
       }
-      node s1 {
-        "point": [24, 6];
-        "out": [6.88, 14.72];
-        "mode": "mirrored";
+      node n1 {
+        "point": [0, -22];
       }
-      node s2 {
-        "point": [43, 76];
-        "out": [11.52, 11.52];
-        "mode": "mirrored";
+      node n2 {
+        "point": [28, -22];
       }
-      node s3 {
-        "point": [96, 78];
-        "out": [9.92, 3.68];
-        "mode": "mirrored";
+      node n3 {
+        "point": [92, -17];
       }
-      node s4 {
-        "point": [105, 99];
-        "out": [-1.6, 5.76];
-        "mode": "mirrored";
+      node n4 {
+        "point": [110, -8];
       }
-      node s5 {
-        "point": [86, 114];
-        "out": [-11.200000000000001, 0.8];
-        "mode": "mirrored";
+      node n5 {
+        "point": [111, 8];
       }
-      node s6 {
-        "point": [35, 104];
-        "out": [-14.4, -12.48];
-        "mode": "mirrored";
+      node n6 {
+        "point": [92, 17];
       }
-      node s7 {
-        "point": [-4, 36];
-        "out": [-5.6000000000000005, -19.2];
-        "mode": "mirrored";
+      node n7 {
+        "point": [28, 22];
+      }
+      node n8 {
+        "point": [0, 18];
+      }
+      node n9 {
+        "point": [-12, 8];
       }
     }
   }
-  shape armArc {
+  shape foreSleeve {
     contour outline {
       "closed": true;
-      node s0 {
-        "point": [0, -16];
-        "out": [8.48, -5.12];
-        "mode": "mirrored";
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [-14, -11];
       }
-      node s1 {
-        "point": [49, 4];
-        "out": [16.8, 8.64];
-        "mode": "mirrored";
+      node n1 {
+        "point": [0, -17];
       }
-      node s2 {
-        "point": [105, 38];
-        "out": [18.88, -5.44];
-        "mode": "mirrored";
+      node n2 {
+        "point": [32, -16];
       }
-      node s3 {
-        "point": [167, -30];
-        "out": [13.120000000000001, -7.36];
-        "mode": "mirrored";
+      node n3 {
+        "point": [101, -12];
       }
-      node s4 {
-        "point": [187, -8];
-        "out": [0.64, 6.08];
-        "mode": "mirrored";
+      node n4 {
+        "point": [121, -10];
       }
-      node s5 {
-        "point": [171, 8];
-        "out": [-13.6, 12.64];
-        "mode": "mirrored";
+      node n5 {
+        "point": [125, 0];
       }
-      node s6 {
-        "point": [102, 71];
-        "out": [-28, 4.48];
-        "mode": "mirrored";
+      node n6 {
+        "point": [121, 11];
       }
-      node s7 {
-        "point": [-4, 36];
-        "out": [-16.32, -13.92];
-        "mode": "mirrored";
+      node n7 {
+        "point": [98, 13];
+      }
+      node n8 {
+        "point": [28, 17];
+      }
+      node n9 {
+        "point": [0, 16];
+      }
+      node n10 {
+        "point": [-14, 10];
       }
     }
   }
-  shape armLiftArc {
-    contour outline {
-      "closed": true;
-      node s0 {
-        "point": [0, -16];
-        "out": [7.04, -6.88];
-        "mode": "mirrored";
+  shape cuffShape {
+    "primitive": "roundedRect";
+    "size": [10, 25];
+    "radius": 3;
+  }
+  shape elbowFold {
+    contour fold {
+      "closed": false;
+      node a {
+        "point": [-3, 10];
+        "out": [4, 3];
       }
-      node s1 {
-        "point": [40, -7];
-        "out": [12, -0.64];
-        "mode": "mirrored";
-      }
-      node s2 {
-        "point": [75, -20];
-        "out": [17.76, -13.280000000000001];
-        "mode": "mirrored";
-      }
-      node s3 {
-        "point": [151, -90];
-        "out": [15.52, -7.36];
-        "mode": "mirrored";
-      }
-      node s4 {
-        "point": [172, -66];
-        "out": [0.48, 6.72];
-        "mode": "mirrored";
-      }
-      node s5 {
-        "point": [154, -48];
-        "out": [-14.88, 12.48];
-        "mode": "mirrored";
-      }
-      node s6 {
-        "point": [79, 12];
-        "out": [-25.28, 13.44];
-        "mode": "mirrored";
-      }
-      node s7 {
-        "point": [-4, 36];
-        "out": [-12.64, -4.48];
-        "mode": "mirrored";
+      node b {
+        "point": [10, 12];
+        "in": [-4, 1];
       }
     }
+  }
+  part torsoRig {
+    "shape": @blank;
+    "material": { "fill": null; };
+    "pivot": [0, 142];
+    "transform": { "rotation": 0deg; };
+  }
+  part headRig {
+    "shape": @blank;
+    "material": { "fill": null; };
+    "parent": @torsoRig;
+    "pivot": [0, -90];
+    "transform": { "rotation": 4deg; };
+  }
+  part foreArm {
+    "shape": @foreSleeve;
+    "parent": @frontArm;
+    "transform": { "x": 104; "rotation": -102.41458711780224deg; };
+    "layer": 12;
+    "material": { "fill": "#588f91"; };
+  }
+  part cuff {
+    "shape": @cuffShape;
+    "parent": @foreArm;
+    "transform": { "x": 110; "y": -12.5; };
+    "layer": 13;
+    "material": { "fill": "#315f68"; };
+  }
+  part elbowFold {
+    "shape": @elbowFold;
+    "parent": @foreArm;
+    "layer": 14;
+    "material": { "fill": null; "stroke": "#477a7d"; "strokeWidth": 2; };
+  }
+  shape palmOpen {
+    contour outline {
+      "closed": true;
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [-12, -8];
+      }
+      node n1 {
+        "point": [-3, -12];
+      }
+      node n2 {
+        "point": [9, -11];
+      }
+      node n3 {
+        "point": [19, -8];
+      }
+      node n4 {
+        "point": [22, -3];
+      }
+      node n5 {
+        "point": [18, 3];
+      }
+      node n6 {
+        "point": [10, 8];
+      }
+      node n7 {
+        "point": [0, 10];
+      }
+      node n8 {
+        "point": [-10, 7];
+      }
+    }
+  }
+  shape palmClosing {
+    contour outline {
+      "closed": true;
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [-12, -8];
+      }
+      node n1 {
+        "point": [-3, -12];
+      }
+      node n2 {
+        "point": [10, -12];
+      }
+      node n3 {
+        "point": [18, -9];
+      }
+      node n4 {
+        "point": [21, -3];
+      }
+      node n5 {
+        "point": [17, 4];
+      }
+      node n6 {
+        "point": [9, 10];
+      }
+      node n7 {
+        "point": [-1, 10];
+      }
+      node n8 {
+        "point": [-10, 7];
+      }
+    }
+  }
+  shape palmHolding {
+    contour outline {
+      "closed": true;
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [-12, -8];
+      }
+      node n1 {
+        "point": [-3, -12];
+      }
+      node n2 {
+        "point": [9, -12];
+      }
+      node n3 {
+        "point": [16, -9];
+      }
+      node n4 {
+        "point": [20, -3];
+      }
+      node n5 {
+        "point": [17, 5];
+      }
+      node n6 {
+        "point": [9, 11];
+      }
+      node n7 {
+        "point": [-1, 10];
+      }
+      node n8 {
+        "point": [-10, 7];
+      }
+    }
+  }
+  shape fingersOpen {
+    contour outline {
+      "closed": true;
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [10, -11];
+      }
+      node n1 {
+        "point": [24, -14];
+      }
+      node n2 {
+        "point": [31, -12];
+      }
+      node n3 {
+        "point": [33, -8];
+      }
+      node n4 {
+        "point": [30, -5];
+      }
+      node n5 {
+        "point": [18, -4];
+      }
+      node n6 {
+        "point": [12, 0];
+      }
+    }
+  }
+  shape fingersClosing {
+    contour outline {
+      "closed": true;
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [12, -11];
+      }
+      node n1 {
+        "point": [24, -10];
+      }
+      node n2 {
+        "point": [28, -7];
+      }
+      node n3 {
+        "point": [29, 3];
+      }
+      node n4 {
+        "point": [25, 7];
+      }
+      node n5 {
+        "point": [21, 3];
+      }
+      node n6 {
+        "point": [21, -3];
+      }
+      node n7 {
+        "point": [13, -1];
+      }
+    }
+  }
+  shape fingersHolding {
+    contour outline {
+      "closed": true;
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [12, -10];
+      }
+      node n1 {
+        "point": [21, -11];
+      }
+      node n2 {
+        "point": [26, -8];
+      }
+      node n3 {
+        "point": [26, 4];
+      }
+      node n4 {
+        "point": [23, 10];
+      }
+      node n5 {
+        "point": [19, 12];
+      }
+      node n6 {
+        "point": [15, 8];
+      }
+      node n7 {
+        "point": [14, 0];
+      }
+    }
+  }
+  shape thumbOpen {
+    contour outline {
+      "closed": true;
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [2, 6];
+      }
+      node n1 {
+        "point": [8, 3];
+      }
+      node n2 {
+        "point": [16, 4];
+      }
+      node n3 {
+        "point": [22, 9];
+      }
+      node n4 {
+        "point": [21, 13];
+      }
+      node n5 {
+        "point": [15, 12];
+      }
+      node n6 {
+        "point": [9, 10];
+      }
+      node n7 {
+        "point": [4, 13];
+      }
+    }
+  }
+  shape thumbClosing {
+    contour outline {
+      "closed": true;
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [3, 7];
+      }
+      node n1 {
+        "point": [10, 7];
+      }
+      node n2 {
+        "point": [19, 1];
+      }
+      node n3 {
+        "point": [23, 3];
+      }
+      node n4 {
+        "point": [21, 8];
+      }
+      node n5 {
+        "point": [15, 14];
+      }
+      node n6 {
+        "point": [8, 15];
+      }
+      node n7 {
+        "point": [3, 12];
+      }
+    }
+  }
+  shape thumbHolding {
+    contour outline {
+      "closed": true;
+      "curve": "catmull-rom";
+      node n0 {
+        "point": [3, 8];
+      }
+      node n1 {
+        "point": [10, 7];
+      }
+      node n2 {
+        "point": [17, 1];
+      }
+      node n3 {
+        "point": [21, 0];
+      }
+      node n4 {
+        "point": [24, 3];
+      }
+      node n5 {
+        "point": [21, 8];
+      }
+      node n6 {
+        "point": [16, 14];
+      }
+      node n7 {
+        "point": [8, 16];
+      }
+      node n8 {
+        "point": [3, 13];
+      }
+    }
+  }
+  drawing handOpen {
+    "parts": { "hand": @palmOpen; "fingers": @fingersOpen; "thumb": @thumbOpen; };
+  }
+  drawing handClosing {
+    "parts": { "hand": @palmClosing; "fingers": @fingersClosing; "thumb": @thumbClosing; };
+  }
+  drawing handHolding {
+    "parts": { "hand": @palmHolding; "fingers": @fingersHolding; "thumb": @thumbHolding; };
+  }
+  pose idle {
+    "parts": { "torsoRig": { "transform": { "rotation": 0deg; }; }; "headRig": { "transform": { "rotation": 4deg; }; }; "frontArm": { "transform": { "rotation": 118.81096327895574deg; }; }; "foreArm": { "transform": { "rotation": -102.41458711780224deg; }; }; "hand": { "transform": { "rotation": 43.6036238388465deg; }; }; "mouth": { "shape": @mouthNeutral; }; };
   }
   pose anticipate {
-    "parts": { "frontArm": { "shape": @armAnticipate; }; "hand": { "transform": { "x": 98; "y": 96; }; }; "mouth": { "shape": @mouthNeutral; }; };
+    "parts": { "torsoRig": { "transform": { "rotation": -1.8deg; }; }; "headRig": { "transform": { "rotation": 4deg; }; }; "frontArm": { "transform": { "rotation": 122.72618552550055deg; }; }; "foreArm": { "transform": { "rotation": -105.39377180790693deg; }; }; "hand": { "transform": { "rotation": 34.46758628240637deg; }; }; "mouth": { "shape": @mouthNeutral; }; };
   }
   pose reachArc {
-    "parts": { "frontArm": { "shape": @armArc; }; "hand": { "transform": { "x": 177; "y": -15; }; }; "mouth": { "shape": @mouthNeutral; }; };
+    "parts": { "torsoRig": { "transform": { "rotation": 2.5deg; }; }; "headRig": { "transform": { "rotation": 3.5deg; }; }; "frontArm": { "transform": { "rotation": 40.95996218229287deg; }; }; "foreArm": { "transform": { "rotation": -91.78011150048941deg; }; }; "hand": { "transform": { "rotation": 53.32014931819655deg; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+  pose near {
+    "parts": { "torsoRig": { "transform": { "rotation": 2.5deg; }; }; "headRig": { "transform": { "rotation": 3deg; }; }; "frontArm": { "transform": { "rotation": 18.917835707922105deg; }; }; "foreArm": { "transform": { "rotation": -53.68595502587723deg; }; }; "hand": { "transform": { "rotation": 32.268119317955126deg; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+  pose reach {
+    "parts": { "torsoRig": { "transform": { "rotation": 2.5deg; }; }; "headRig": { "transform": { "rotation": 3deg; }; }; "frontArm": { "transform": { "rotation": 18.33364618739294deg; }; }; "foreArm": { "transform": { "rotation": -52.54493742833851deg; }; }; "hand": { "transform": { "rotation": 31.711291240945563deg; }; }; "mouth": { "shape": @mouthNeutral; }; };
   }
   pose liftArc {
-    "parts": { "frontArm": { "shape": @armLiftArc; }; "hand": { "transform": { "x": 163; "y": -74; }; }; "mouth": { "shape": @mouthNeutral; }; };
+    "parts": { "torsoRig": { "transform": { "rotation": 1deg; }; }; "headRig": { "transform": { "rotation": 1.5deg; }; }; "frontArm": { "transform": { "rotation": 12.485274351050837deg; }; }; "foreArm": { "transform": { "rotation": -63.213031030993136deg; }; }; "hand": { "transform": { "rotation": 49.72775667994231deg; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+  pose lift {
+    "parts": { "torsoRig": { "transform": { "rotation": 0deg; }; }; "headRig": { "transform": { "rotation": 0.5deg; }; }; "frontArm": { "transform": { "rotation": 14.800498849326033deg; }; }; "foreArm": { "transform": { "rotation": -94.50324891125143deg; }; }; "hand": { "transform": { "rotation": 79.7027500619254deg; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+  pose settled {
+    "parts": { "torsoRig": { "transform": { "rotation": 0.4deg; }; }; "headRig": { "transform": { "rotation": 0.2deg; }; }; "frontArm": { "transform": { "rotation": 17.261848809252445deg; }; }; "foreArm": { "transform": { "rotation": -95.64606166367626deg; }; }; "hand": { "transform": { "rotation": 77.98421285442382deg; }; }; "mouth": { "shape": @mouthNeutral; }; };
+  }
+  pose smile {
+    "parts": { "torsoRig": { "transform": { "rotation": 0.4deg; }; }; "headRig": { "transform": { "rotation": 0.2deg; }; }; "frontArm": { "transform": { "rotation": 17.261848809252445deg; }; }; "foreArm": { "transform": { "rotation": -95.64606166367626deg; }; }; "hand": { "transform": { "rotation": 77.98421285442382deg; }; }; "mouth": { "shape": @mouthSmile; }; };
+  }
+  solid apron {
+    "kind": "extrude";
+    "height": 15;
+    "z": -552;
+    "projection": { "origin": [0, -41.3]; "azimuth": 8deg; "elevation": 22deg; };
+    "ring": [{ "id": "a"; "point": [638, 24]; }, { "id": "b"; "point": [950, 24]; }, { "id": "c"; "point": [950, 30]; }, { "id": "d"; "point": [638, 30]; }];
+    "materials": { "top": "#a57561"; "light": "#946651"; "dark": "#80565a"; };
+    "layer": 43;
   }
 }
