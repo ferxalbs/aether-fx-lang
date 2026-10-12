@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## Unreleased — bounded follow-up to RC.3
+## Unreleased
+
+Adds public vector authoring in `.afx` and the core API: convex contour extrusion, parametric cylinders, configurable fixed orthographic/isometric projection, orientation-based face materials, persistent face IDs, pivots and projected anchors. Editable identified nodes support corner/aligned/mirrored handles; centripetal Catmull–Rom converts to existing cubic contours, including repeated-point handling. Recipes and node authoring survive serialization, with stale geometry and incompatible winding/topology diagnosed. Projected face-overlap audits identify cases requiring split pieces or explicit layers.
+
+Adds absolute-frame contact intervals with world-pose continuity at bind/release, singular/sheared transform diagnostics and discrete layer keys. Local linear/radial gradients and vector clipping share the browser Canvas/native Skia renderer. The playground exposes nodes/handles, pivots/anchors and layer-order overlays and critical-frame PNG sheets. `fixtures/short/little-light-authored.afx` adds parametric objects, reach/lift breakdown poses and a layered grip while retaining the historical character and shot lengths; `fixtures/assembly/guide-carriage.afx` demonstrates separation/reassembly and dimension-varied components. Native export and stateless evaluation remain the primary contracts.
+
+Local validation passes 144 tests, public-package consumers, preview/native raster checks sampled at 23 critical frames, all-frame shuffled state comparison across both scenes and an additional ten-frame gradient/clip/contact case under a nonuniform camera. Current standalone gzip caps accept the measured authoring scope: Core 16473 B, Compiler 52744 B and Export 41490 B; Player retains its 5758 B cap and measures 5535 B. Measurement and import-isolation checks are unchanged, with no added size reserve. Historical budget failures remain recorded. This policy accepts justified functionality growth and defers optimization; it does not qualify release, change speed/memory criteria or resolve the preexisting WebM Opus decode diagnostic. See [known issues](KNOW-ISSUES.md) and [bundle policy](docs/performance-v0.1.md#accepted-unreleased-vector-authoring-bundle-policy).
+
+The following RC.3 follow-ups preceded the vector-authoring budget decision; their measurements and failures remain historical evidence.
 
 Avoid single-use runtime schema aliases by counting children of shared subtrees once during build. Public schema, APIs and diagnostics are unchanged. Core and Export each save 13 gzip bytes; Compiler saves 15. Their original size gates remain failed. The native export profiler records the actual FFmpeg command and offers explicit verbose filter diagnostics without changing production encoding. RC.3 remains intact; no new candidate or encoding policy change is delivered.
 

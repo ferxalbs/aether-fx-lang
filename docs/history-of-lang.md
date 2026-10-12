@@ -15,3 +15,7 @@ The character was later corrected with a neck bridge connecting the head and tor
 ## Redesing the Render, introduce the Render 3D
 
 ![Refined render and introduce the first render 3D](../assets/first-render-3d.png)
+
+## Before and After
+
+![Before and After, introduce the first render 3D](../assets/before-after.png)

@@ -22,18 +22,18 @@ This is the single register of current defects, mitigations and pending validati
 
 ## KI-04 — Standalone bundle budgets
 
-**Status:** mandatory budget FAIL; import isolation passes. **Scope:** current standalone gzip measurement, unchanged accounting and caps.
+**Status:** current size policy accepts the implemented authoring scope; historical budget FAILs retained. **Scope:** standalone gzip measurement with unchanged accounting and import isolation. Current caps cover reproduced Core/Compiler/Export sizes without added reserve; Player retains its previous cap.
 
-| Bundle | Measured B | Cap B | Status |
-| --- | ---: | ---: | --- |
-| Core | 16473 | 10163 | FAIL |
-| Player | 5535 | 5758 | PASS |
-| Compiler | 52744 | 40920 | FAIL |
-| Export | 41490 | 35351 | FAIL |
+| Bundle | Measured B | Original cap B | Accepted cap B | Current status |
+| --- | ---: | ---: | ---: | --- |
+| Core | 16473 | 10163 | 16473 | PASS |
+| Player | 5535 | 5758 | 5758 | PASS |
+| Compiler | 52744 | 40920 | 52744 | PASS |
+| Export | 41490 | 35351 | 41490 | PASS |
 
-The preceding source measured 10455/4339/46534/36222 B respectively: core, compiler and export already failed. Public vector authoring increases these bundles; the caps and accounting remain unchanged.
+The preceding source measured 10455/4339/46534/36222 B respectively: core, compiler and export already failed the original caps. Vector authoring adds procedural geometry, curve editing, contact, material/clip contracts, schema validation and compiler normalization. Compiler and Export also retain reachable core validation; their standalone totals overlap and are not additive. The increase is accepted for these delivered capabilities, with optimization deferred. No parser or Node tooling enters Core/Player, and optional codecs remain outside default Export.
 
-**Impact:** size gates block release; this is distinct from functional test failures. **Alternative:** current functionality is usable within its platform limits, but packaging is not approval. **Resolution:** `node scripts/verify-bundle-budgets.mjs` must pass unchanged caps/accounting, or an explicit reviewed product-budget decision must establish new requirements. The [v0.2 proposal](docs/performance-v0.1.md#proposed-v02-bundle-policy--not-applied) is unapplied and predates the Opus guard's additional 458 gzip bytes; its export measurement is historical. No further tree-shaking saving sufficient for the compiler cap has been demonstrated through supported Chevrotain interfaces.
+**Impact:** the previous size-only release block is removed for the accepted scope; other release gates and platform/codec limitations remain independent. Historical RC.3 results and archives are not requalified. **Follow-up:** retain measurements and import checks; explain further growth by delivered functionality and inspect contributions before explicitly updating a cap. The earlier [v0.2 reserve proposal](docs/performance-v0.1.md#proposed-v02-bundle-policy--not-applied) remains unapplied; this decision adopts measured sizes without its reserve. See the [accepted policy](docs/performance-v0.1.md#accepted-unreleased-vector-authoring-bundle-policy).
 
 ## KI-05 — Reference-host export speed
 
@@ -87,7 +87,7 @@ The preceding source measured 10455/4339/46534/36222 B respectively: core, compi
 
 **Historical evidence:** the original 384-frame `fixtures/parametric/lamp-table.afx` demonstrator remains supported. Its four Node tests and `node scripts/verify-parametric-demo.mjs` previously verified all-frame state/pixel parity (maximum MAE 0.002889, differing-pixel ratio 0.000220), a sampled front-finger visibility criterion and decoded export frame counts. Its identity-transform parenting example does not establish generic contact semantics; the new interval API has separate tests.
 
-**Impact:** these examples demonstrate bounded reusable authoring and authored ordering. They do not close release size/speed gates or establish general physical contact/non-penetration. **Alternative:** split unsupported forms into convex pieces, author explicit depth layers and corrective drawings, and inspect frame boundaries. **Resolution:** retain current diagnostics and budgets; qualify additional geometry/platform claims separately. Single-host evaluation/draw/export observations and coordinator RSS do not establish causal performance improvement or whole-process-tree memory. See [public authoring contracts](docs/language-v0.1.md#public-projected-solids-editable-curves-and-contact), [API](docs/api.md) and KI-04/KI-05 for unresolved gates.
+**Impact:** these examples demonstrate bounded reusable authoring and authored ordering. They do not qualify a release, close the remaining speed/platform/codec gates or establish general physical contact/non-penetration. The accepted bundle-size policy is recorded in KI-04. **Alternative:** split unsupported forms into convex pieces, author explicit depth layers and corrective drawings, and inspect frame boundaries. **Resolution:** retain current diagnostics and budgets; qualify additional geometry/platform claims separately. Single-host evaluation/draw/export observations and coordinator RSS do not establish causal performance improvement or whole-process-tree memory. See [public authoring contracts](docs/language-v0.1.md#public-projected-solids-editable-curves-and-contact), [API](docs/api.md) and KI-04/KI-05 for unresolved gates.
 
 ## KI-13 — Native WebM Opus decode diagnostic
 

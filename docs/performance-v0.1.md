@@ -94,3 +94,20 @@ The enforced caps remain 10163/5758/40920/35351 gzip bytes; Core/Compiler/Export
 This is an explicit policy proposal for one minor-release cycle, not an empirically proven UX requirement or automatic baseline update. It accommodates the implemented bounded authoring/diagnostic contracts and supported Chevrotain machinery without replacing the parser or hiding dependencies. The reserve is a review trigger for future changes, not a target to consume. The largest standalone proposal transfers about0.410s of payload at1Mbit/s before protocol latency or parse/execute costs; bundles overlap and must not be summed as application size. Approval should require representative cold-load/parse measurements on a declared browser/device/network and no unintended import growth. Without that decision, the current size gates continue failing and release remains unapproved.
 
 No new speed threshold is proposed. The existing three macOS observations still fail10s/factor0.5 and pass700MiB. Production latency/concurrency and a declared reference Linux host must be established before any separate performance-policy review. Hosted Ubuntu observations are platform qualification evidence, not directly comparable reference timings. See [Linux validation preparation](linux-validation.md).
+
+## Accepted Unreleased vector-authoring bundle policy
+
+The Unreleased authoring scope accepts justified size growth for working public capabilities, with optimization deferred. This replaces the current size-only block described in KI-04; it does not retroactively change RC.3 results or approve a release. The preceding measurements remain historical; the reserve proposal above remains unapplied.
+
+The same standalone bundled/minified ES2022 ESM and default Node gzip method measures Core/Player/Compiler/Export at **16473 / 5535 / 52744 / 41490 B**. The earlier source measured **10455 / 4339 / 46534 / 36222 B**: increases are **6018 / 1196 / 6210 / 5268 B**. Core adds procedural solids/projection, node/curve authoring, contact evaluation and material/clip schema validation; Compiler adds normalization and retains core validation; Player adds shared gradient/clip rendering; Export retains reachable core validation and the shared renderer. These are scope/import explanations, not additive gzip attribution to individual functions. No new runtime dependency is added.
+
+| Bundle | Original cap B | Accepted cap B | Added reserve B |
+| --- | ---: | ---: | ---: |
+| Core | 10163 | 16473 | 0 |
+| Player | 5758 | 5758 | 0 |
+| Compiler | 40920 | 52744 | 0 |
+| Export | 35351 | 41490 | 0 |
+
+Core, Compiler and Export caps equal reproduced current sizes. Player keeps its existing cap rather than reducing it or adding headroom. Measurement remains mandatory; Core/Player must exclude parser and Node tooling, and default Export must exclude optional codecs. Future growth requires an explanation tied to delivered behavior, inspection of import/module contributions and an explicit measured cap update. Caps do not increase automatically, and passing them does not establish load-time or device performance.
+
+This decision changes only the current bundle-size policy. Existing speed/memory criteria, decoder fidelity checks, native rendering, codecs, quality and platform qualification remain unchanged. See [known issues](../KNOW-ISSUES.md), including KI-05 and KI-13. No publication or deployment is part of this policy update.
